@@ -1,0 +1,19 @@
+one file for preprocessing			save processed data
+						read csv
+						mean shift, std shrink
+
+
+one file per model				save model type
+	tree					predict-classify (forward pass)
+	mlp					train or error correct (backward pass)
+	bayesian				
+
+one file for trainning (ensemble)		save assembled model
+
+
+one file for testing 				metrics for accuracy
+
+
+
+MAJOR PROBLEM
+	validation info: on 908 mentioned on paper
