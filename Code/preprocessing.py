@@ -37,8 +37,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type = int, default = BATCH_SIZE_DEFAULT,
                         help='Batch size to run trainer.')
-    parser.add_argument('--max_steps', type = int, default = MAX_STEPS_DEFAULT,
-                        help='Number of steps to run trainer.')
 
     FLAGS, unparsed = parser.parse_known_args()
     main(None)

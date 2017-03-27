@@ -12,8 +12,11 @@ one file for trainning (ensemble)		save assembled model
 
 
 one file for testing 				metrics for accuracy
+						False positives, etc
+						plots and stuff (matplotlib)
 
 
 
 MAJOR PROBLEM
 	validation info: on 908 mentioned on paper
+			K-fold with replacement
