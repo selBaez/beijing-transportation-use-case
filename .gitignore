@@ -91,5 +91,9 @@ ENV/
 # Latex extra docs
 *.aux
 *.out
-*.syntex.gz
+*.synctex.gz
 Report/*.log
+
+#Confidential BJUT
+Code/Previous*
+Data/*
