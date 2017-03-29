@@ -56,9 +56,9 @@ Commuters represent a large part of daily travelers, as they consistently follow
 In 2014, previous work by Tu[1] used machine learning techniques to classify commuters versus non-commuters in the city of Beijing. A Support Vector Machine (SVM) was trained and reported 94.24\% accuracy in their results. 
 
 \section{Problem statement}
-Commuters must be identified in order for the government, transit management and operators to better understand them. 
+Different shareholders in the transportation domain -such as government, transit management and operators- may gain a better understanding of commuters if these can be singled out from other less predictable types of travelers. As regular users of the public transportation network, commuters display preferences in mode of transportation (bus or subway in this case), lines (or routes), transfer connections, waiting times and economic value. Therefore, a detailed study of commuters can reveal hidden patterns in their behavior or exhibit shortcomings the public transport system. 
 
-Furthermore, a more detailed study of commuters behavior can reveal hidden patterns or malfunctions in the public transport system. Policies, and resource management can be informed by mining commuters data.
+For all these reasons, mining commuters data can enlighten the decision making processes for policy making and resource management of public transportation networks. This work aims to apply techniques of Data mining in the transportation domain and aid experts to explore and cope with the substantial amounts of data accessible to them. 
 
 \section{Research questions}
 
@@ -81,6 +81,47 @@ Overall, the proposed project includes both supervised and unsupervised techniqu
 This project is part of a collaboration between Vrije Universiteit Amsterdam (VU) and Beijing University of Technology (BJUT). As part of an exchange program, I will spend three months in Beijing, working at The College of Metropolitan Transportation under the supervision of Professor Jiancheng Weng. 
 
 The project started on March 1st, 2017 and is programmed to be finished by August 31st, 2017. The main VU supervisor is Professor Zhisheng Huang. 
+
+A first presentation of the project (equivalent to a first KIM presentation) was presented on March 20th, 2017 to Professor Weng's team in the College of Metropolitan Transportation in Beijing. The final presentation (equivalent to a second KIM presentation) will be presented in Amsterdam, close to the end of the project.
+
+The main steps to follow in this project are as follows:
+
+\begin{enumerate}
+\item[Stage 1:] Classification of commuters vs non-commuters
+	\begin{enumerate}
+	\item Data exploration
+	\item Determine appropriate type of classifiers for the task \footnote{Most likely Random Forest and simple Multilayer Perceptron}
+	\item Data preprocessing
+	\item Individual classifiers set up 
+	\item Ensemble model by bagging
+	\item Tuning: First round of experiments
+	\end{enumerate}
+
+\item[Stage 2:] Variable space reduction 
+	\begin{enumerate}
+	\item Input variable evaluation: qualitative analysis by domain experts and quantitative analysis by correlation tests
+	\item Variable set selection: Second round of experiments
+	\end{enumerate}
+
+\item[Stage 3:] Clustering of commuters
+	\begin{enumerate}
+	\item Determine hyper-parameters for clustering: input variables, number of clusters, number and type of classifiers \footnote{Most likely Neural Networks or Bayesian methods}
+	\item Data preprocessing
+	\item Individual classifier set up
+	\item Preliminary results analysis: qualitative analysis by domain experts
+	\item Ensemble model by bagging
+	\item Tuning: Third round of experiments
+	\end{enumerate}
+
+\end{enumerate}
+
+%Total 19 weeks till mid August, 11 till mid June, 8 rest
+%Stage 1: 5 weeks (4 in Beijing, 1 in Amsterdam for tuning and experiments)
+%Stage 2: 4 weeks (1 in Beijing for interviews and correlation, 3 in Amsterdam for experiments)
+%Stage 3: 6 weeks (4 in Beijing, 2 in Amsterdam for tuning and experiments)
+%Writing: 3 weeks (1 in Beijing, 2 in Amsterdam)
+
+%		  18	   10 			 8
 
 \section*{References}
 
