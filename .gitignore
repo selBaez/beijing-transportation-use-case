@@ -92,6 +92,9 @@ ENV/
 *.aux
 *.out
 *.synctex.gz
+*.bbl
+*.blg
+*.toc
 Report/*.log
 
 #Confidential BJUT

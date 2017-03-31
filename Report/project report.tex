@@ -52,33 +52,82 @@
   This project proposes the usage of ensemble models for classification and clustering of public transport users. For this purpose, transit card data will be used, available from the city of Beijing, China. 
 \end{abstract}
 
+\newpage
+
+\tableofcontents
+
+\newpage
 \section{Introduction}
 
 \subsection{Transportation domain}
-Public transportation facilities. Common problem to identify regular users. 
+Public transportation facilities composed by subway, buses, tram, train and others. As a network, they provide service for the majority of citizens. \selfnote{reference}  
 
-\subsection{Beijing}
-Resources of public tranpsortation network. Number of subway lines and bus lines. Number of users per day.
+Environmental impact, air pollution, noise pollution. \selfnote{references}. 
 
-\subsection{Societal context}
+Energy problems for fuel consumption. Even economic implications. \selfnote{reference}
+
+
+\subsubsection{Who are the commuters?}
+Regular users of public transit. 
+
+Commuting to work or school is the basis for a routine. It directly influences personal life and impacts quality of life \selfnote{reference}. If the experience is bad, daily travel can bring sorrow to users. Bad experiences may include excessively long commuting time, crowded spaces, inconvenient transfers, elevated prices, low-quality of facilities, and others. 
+
+Identifying commuters can help in the long-term planning of public transportation. Policies for improving the overall experience and aid urban areas on a large scale.
+
+Transportation follows swarm behavior. Based on individual travels and routines, on a larger scale travelers exhibit peculiar characteristics. Both levels of understanding are crucial.   
+
+\subsection{The city of Beijing}
+Beijing special case for urbanization. Number of people is massive \selfnote{reference}
+
+Pollution is Beijing \selfnote{reference}
+
+Resources of public transportation network. Number of subway lines and bus lines. Number of users per day. \selfnote{reference}
+
+\subsection{Motivation}
+Interdisciplinary study between Artificial Intelligence and Metropolitan Transportation. Introduce data mining techniques to a data rich domain. 
+
+Relevance of project on both areas. 
+
+\subsubsection{Societal context}
 Commuters use the public transport network regularly to go to work, school or other follow other routines. They need reliable means of transportation.
 
-\subsection{Scientific context}
-Usage of machine learning of data mining has been limited
+Government, transport management and operators can gain spatial and temporal insight. This insight can lead to tangible results, policies and counter measures increasing efficiency of network, adjustable travel fares used as incentives to relieve peak hours, urban planning for residential and industrial land use, and others \selfnote{reference}
 
-Interdisciplinary study between Artificial Intelligence and Metropolitan Transportation.
+\subsubsection{Scientific context}
+Usage of machine learning of data mining has been limited. Current broadly use method is surveys to reach travelers on individual level, aggregated measurements for gathering  their collective behavior. The analysis is usually done with statistical methodology. 
+
+Surveys are costly and based on self-report, which by itself has bias problems. Other problems are small population and non-representative samples. 
+
+Aggregated methods miss the interactions between individuals that cause the collective behavior. 
+
+Technology has reached the data collection point, but has yet to reach the analysis part. Transit cards are capable of recording boarding and alighting stations with their related locations and time stamps. 
+
+Many prediction algorithms available. Constant refinement, state of the art must be applied to real life and large impact situations. Domain experts must focus on analyzing insights and using them, not on techniques for curating and making sense out of raw data. 
 
 
-\section{Related work}
-Preprocess data by Wang in BJUT lab.
+\section{Literature review}
 
-Machine learning for commuters identification. SVM with 94\% accuracy.
+\subsection{Data mining on transit card data}
+Preprocess data by Wang in BJUT lab. \cite{wang2014research}
 
+Data mining to identify transit use cycles in Canadian smart card data \cite{morency2007measuring}
+
+Density Based Scanning Algorithm with Noise to classify travelers according to their travel patterns.  \cite{ma2013mining}
+
+Passenger segmentation by K-means clustering \cite{bhaskar2015passenger}
+
+Machine learning for commuters identification. SVM with 94\% accuracy. \cite{tu2016impact}
+
+11 distinct clusters of users with similar activity and demographic attributes \cite{langlois2016inferring}
+
+Latest work using machine learning by \cite{ma2017understanding}
+
+\subsection{Classifying and clustering spatio-temporal data}
 Ensemble methods
 
 Classifiers in the transportation domain
 
-\section{Objective}
+\section{Research objective}
 Objective is to identify and characterize commuters in the city of Beijing by using IC card data.
 
 \subsection{Research questions}
@@ -87,6 +136,19 @@ Objective is to identify and characterize commuters in the city of Beijing by us
 \item What is the minimal set of information needed from IC card data to reach an acceptable accuracy in classification?
 \item To what extent is clustering commuters by its behavior informative to transportation specialists? 
 \end{enumerate}
+
+\subsubsection{Definition of terms}
+A commuter is someone whose IC card data is repeatable in time and space over a working week (5 days, Monday to Friday).
+
+\subsection{Research approach}
+
+\subsubsection{Ensemble models}
+Robust and modular. May grow in complexity as needed
+
+\subsubsection{Decision trees and random forests}
+
+\subsubsection{Neural networks}
+
 
 \section{Methodology}
 \subsection{Data description}
@@ -140,30 +202,32 @@ Eliminate records that do not make sense or are faulty, for example having empty
 \subsection{Redundant variables}
 Hypothesis: middle area, big area and area overlap. Middle has more precision but maybe not needed.
 
-\section{Results}
-\subsection{Commuters identification}
+\section{Commuters identification}
+\subsection{Model}
+
+\subsection{Experiments}
+
+\subsection{Results}
+
 Accuracy
 
 Confusion matrix
 
-\subsection{Variable evaluation}
-\subsubsection{Qualitative}
+\section{Variable evaluation}
+\subsection{Qualitative}
 Exploration: Experts opinion
 
-\subsubsection{Quantitative}
+\subsection{Quantitative}
 Analysis: Correlation
 
-\subsection{Commuters clustering}
-\subsubsection{Expert judgment}
+\section{Commuters clustering}
+\subsection{Expert judgment}
 
 \section{Conclusion}
 
 \section{Future work}
 
-\section*{References}
-
-\small
-
-[1] Tu, Q.\ Weng, J. C.\ \& Yuan, R. L. Impact Analysis of Public Transport Fare Adjustment on Travel Mode Choice for Travelers in Beijing. {\it CICTP 2016.}, pp.\ 850--863.
+\bibliography{mybib}{}
+\bibliographystyle{plain}
 
 \end{document}
