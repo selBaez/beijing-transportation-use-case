@@ -104,7 +104,11 @@ Technology has reached the data collection point, but has yet to reach the analy
 
 Many prediction algorithms available. Constant refinement, state of the art must be applied to real life and large impact situations. Domain experts must focus on analyzing insights and using them, not on techniques for curating and making sense out of raw data. 
 
+\subsection{Thesis organization}
+First we do a literature review for previous work on mining transit data and for specific state of the art methodologies. Then we establish the scope and objectives of this project. We continue to describe the methodology thoroughly, including the data and the approach. \selfnote{approach in section 3 or 4?}. Three stages of the project and their corresponding experimentation. Then we discuss findings and gather conclusions. Finally, future work opportunities are explored. 
 
+
+\newpage
 \section{Literature review}
 
 \subsection{Data mining on transit card data}
@@ -127,8 +131,10 @@ Ensemble methods
 
 Classifiers in the transportation domain
 
+
+\newpage
 \section{Research objective}
-Objective is to identify and characterize commuters in the city of Beijing by using IC card data.
+Objective is to identify and characterize commuters in the city of Beijing by using IC card data. Find patterns in the spatio-temporal data of public transport travelers. 
 
 \subsection{Research questions}
 \begin{enumerate}
@@ -140,18 +146,28 @@ Objective is to identify and characterize commuters in the city of Beijing by us
 \subsubsection{Definition of terms}
 A commuter is someone whose IC card data is repeatable in time and space over a working week (5 days, Monday to Friday).
 
-\subsection{Research approach}
+A trip is a sequence of IC card transactions, with an origin and destination.
 
-\subsubsection{Ensemble models}
-Robust and modular. May grow in complexity as needed
+A record corresponds to a trip made by an IC card user. \selfnote{better definition}
 
-\subsubsection{Decision trees and random forests}
+A transfer is a change in transportation mode. It can be bus-bus. bus-subway or subway-bus. Changes between subway lines are not recorded. 
 
-\subsubsection{Neural networks}
+We make the assumption that each IC card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. 
+
+\subsection{Scope and structure}
+\selfnote{revise this part}
+part one: classify commuters versus non-commuters. Ensemble model compared to SVM
+
+part two: the set of features will be revised to disregard redundant information. A second comparison with Tu\cite{tu2016impact}'s SVM model will be made. 
+
+part three: commuters will be further clustered according to patterns in their behaviors that will emerge from all variables of the IC card data. The clusters will be analyzed and interpreted to find distinctive characteristics that may be judged as useful by transportation specialists. 
 
 
+\newpage
 \section{Methodology}
-\subsection{Data description}
+\subsection{The data}
+\subsubsection{Data description}
+\selfnote{describe areas and their range. Include a map}
 Every record for an IC card contains the following data fields:
 
 \begin{itemize}
@@ -163,9 +179,10 @@ Every record for an IC card contains the following data fields:
 \item Travel distance: measured in meters \footnote{\textcolor{red}{as measured by route?}}
 \item Transfer number: number of transfers in the trip
 \item Transfer time average: time spent in transfer, divided by number of transfers
+\item Transfer time sum: total time spent in transfer
 \item Start time: time stamp of when the trip started
 \item End time: time stamp of when the trip ended
-\item On traffic:
+\item On traffic: 
 \item Off traffic:
 \item On middle area:
 \item Off middle area:
@@ -179,31 +196,60 @@ Every record for an IC card contains the following data fields:
 \item Transfer detail: Station name, line number, mode of transportation
 \end{itemize}
 
-Every day, more than 50,000 records are collected. This project aims to include data from at least one week. 
+Every day, more than X records are collected. 50, 000 records are sampled every day for a month. 
+\selfnote{how much data can we handle}
+
+The month is April, which does not overlap with summer holidays. 
 
 \subsubsection{Training data}
 Since we perform supervised learning, we need training data for which we know if a record corresponds to a commuter or non-commuter. Such data is expensive and limited since it has only been obtained by asking the users directly if they are commuters or not. Other annotated data is not available, and labeling new records falls beyond the scope of this project. \selfnote{if data is not sufficient (although previous work shows it is) I might need to consider annotating some data myself}
 
-The current training and validation set consists of data from 2015, collected and validated by Tu[1] \selfnote{change references}. The data is composed by:
+The current training and validation set consists of data from 2015, collected and validated by Tu \cite{tu2016impact} \selfnote{make sure it was Tu}. The data is composed by:
 
 \begin{itemize}
 \item 6439 records of 481 commuters
 \item 1628 records of 497 non-commuters
 \end{itemize}
 
-For a total of 978 IC card IDs.
+For a total of 978 IC card IDs. \selfnote{I got these from Tu, check the parameters are the same as the ones given by Liang or search for IDs in current data}
 
 \subsubsection{Testing data}
-Testing data
+Testing data is from 2016. More detailed
 
-\subsection{Data cleaning}
-Eliminate records that do not make sense or are faulty, for example having empty fields. 
+\subsection{Data preprocessing}
+Eliminate records that do not make sense or are faulty, for example having empty fields. \selfnote{include percentage of data eliminated}
 
-\subsection{Redundant variables}
-Hypothesis: middle area, big area and area overlap. Middle has more precision but maybe not needed.
+47101/50000
 
+Whitening vs standardization
+
+\subsection{Data mining techniques}
+Coding using Python. Libraries and toolboxes such as pandas.
+
+\subsubsection{Feature engineering}
+The temporal factors to be explored are represented by the start/end times, as well travel/transfer time.
+
+The spatial factors to be explored are represented by On/Off areas. \selfnote{and route lines?}. 
+
+\subsubsection{Ensemble models}
+Ensemble models are chosen because of its robustness and modularity. Starting from two simple classifiers, assembled via bagging, the model can grow larger or more complex as needed and it may be extended beyond the scope of this Thesis Project. 
+
+\subsubsection{Decision trees and random forests}
+
+\subsubsection{Neural networks}
+
+\subsection{Correlation analysis}
+chi-test
+
+
+\newpage
 \section{Commuters identification}
+\subsection{Hypothesis}
+As suggested by Tu \cite{tu2016impact} results, the data is almost linearly separable thus simple classifiers such as decision trees may suffice. 
+
+
 \subsection{Model}
+A first instance of the model will use all available variables in the data as used by Tu \cite{tu2016impact} for a fair model comparison. 
 
 \subsection{Experiments}
 
@@ -213,20 +259,49 @@ Accuracy
 
 Confusion matrix
 
+
+\newpage
 \section{Variable evaluation}
+\subsection{Hypothesis}
+One of the main focuses of the second phase of this thesis is to determine the appropriate level of detail in the area to be taken into account. 
+
+Middle area, big area and (small) area overlap. Middle and small divisions have more precision but maybe not needed. On the other hand, big area divisions might not capture the changes for people who live and work/study in the same bis district. 
+
 \subsection{Qualitative}
 Exploration: Experts opinion
+
+\subsubsection{Interview}
+\selfnote{In appendix?}
+We interview Liang Quan as an Transportation domain expert. 
+
+\begin{itemize}
+\item To what extent do people live and work on the same area?
+\item what level of detail do you think is appropriate?
+\end{itemize}
 
 \subsection{Quantitative}
 Analysis: Correlation
 
+
+\newpage
 \section{Commuters clustering}
+\subsection{Model}
+
+\subsection{Experiments}
+
+\subsection{Results}
+
 \subsection{Expert judgment}
 
+
+\newpage
 \section{Conclusion}
 
+
+\newpage
 \section{Future work}
 
+\newpage
 \bibliography{mybib}{}
 \bibliographystyle{plain}
 
