@@ -16,23 +16,44 @@ def _loadData(fileName):
     Load csv data on numpy
     """
     # Ignore column 2 'DATA_LINK'
-    # 7 'TRANSFER_TIME_AVG'
-    data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[8,9])
+    fullData = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[8,9])
+    print(len(fullData.index), " records loaded")
 
-    print(data[:3])
+    return fullData
 
-    fig, ax = plt.subplots()
-    #data.plot(x='START_TIME', y='TRAVEL_TIME', ax=ax)
-    #plt.show()
-    return data
-
-def _clean():
+def _clean(fullData):
     """
-    Remove rows with empty fields
+    Remove rows with faulty data
     """
-    print("records removed due to empty fields")
-    print("records removed due to travel distance < 0") #some still make sense in terms of time and transfers
-    print("records removed due to travel time = 0")
+    # Remove rows containing NaN
+    noMissing = fullData.dropna()
+    missingRecords_num = len(fullData.index) - len(noMissing.index)
+
+    print(missingRecords_num, " records removed due to empty fields, ", len(noMissing.index), " records left")
+
+    # Remove records with travel time <= 0
+    timeRelevant = noMissing[noMissing['TRAVEL_TIME'] > 0]
+    timeFaultyRecords_num = len(noMissing.index) - len(timeRelevant.index)
+
+    print(timeFaultyRecords_num, " records removed due to travel time <= 0, ", len(timeRelevant.index), " records left")
+
+    # Remove records with travel distance <= 0
+    #some still make sense in terms of time and transfers
+    distanceRelevant = timeRelevant[timeRelevant['TRAVEL_DISTANCE'] > 0]
+    distanceFaultyRecords_num = len(timeRelevant.index) - len(distanceRelevant.index)
+
+    print(distanceFaultyRecords_num, " records removed due to travel distance <= 0, ", len(distanceRelevant.index), " records left")
+
+
+    #return cleanData
+
+def _parseRoute(data):
+    """
+    Parse 'TRANSFER_DETAIL' column to get line
+    """
+    #TODO find way to split by - (representing a transfer)
+    data['TRANSFER_DETAIL'] = data['TRANSFER_DETAIL'].str.slice(0,10)
+    pass
 
 def _whitening(rawData):
     """
@@ -51,11 +72,14 @@ def preprocess():
     Read raw data, clean it and store preprocessed data
     """
     print("---------------------------- Load data ----------------------------")
-    data = _loadData(FLAGS.file_name)
+    fullData = _loadData(FLAGS.file_name)
 
     print("---------------------------- Cleaning -----------------------------")
+    cleanData = _clean(fullData)
 
     print("-------------------------- Parse  route ---------------------------")
+
+    print("------------------------ Extract weekdays -------------------------")
 
     print("---------------------------- Whitening ----------------------------")
 
