@@ -20,10 +20,11 @@
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
-\usepackage{color}
+\usepackage{xcolor, graphicx, float}
 
 
 \newcommand{\selfnote}[1]{\footnote{\textcolor{red}{#1}}}
+\newcommand{\Liangdoubt}[1]{\footnote{\textcolor{olive}{#1}}}
 
 \title{Commuter classification and behavior clustering: Beijing use case}
 
@@ -60,17 +61,21 @@
 \section{Introduction}
 
 \subsection{Transportation domain}
-Public transportation facilities composed by subway, buses, tram, train and others. As a network, they provide service for the majority of citizens. \selfnote{reference}  
+Public transportation facilities are commonly composed by subway lines, buses, trams, train and others. As a network, they provide service for the majority of citizens in urban areas. \selfnote{reference}  
 
-Environmental impact, air pollution, noise pollution. \selfnote{references}. 
+The usage of the public transport network as a whole has a significant environmental impact on the city, affecting noise and air pollution. \selfnote{references}. 
 
-Energy problems for fuel consumption. Even economic implications. \selfnote{reference}
+Furthermore, abusing motorized vehicles relates to energetic demand. Petroleum and other carbon based products are always in high demand, and electrical supplies are not yet widely spread. This may bring further economical implications.\selfnote{reference}
+
+\Liangdoubt{papers to justify this}
+
+In the last years, smart cards systems appeared, making it possible to track travelers and facilitating the fare collection. Examples are Octopus card in Hong Kong, Oyster card in London, OV-chipcard in The Netherlands and IC card in Beijing, to name a few.
 
 
 \subsubsection{Who are the commuters?}
-Regular users of public transit. 
+A major proportion of public transport users is represented by commuters. These are regular users of public transit, with regularity in the boarding times/stops. 
 
-Commuting to work or school is the basis for a routine. It directly influences personal life and impacts quality of life \selfnote{reference}. If the experience is bad, daily travel can bring sorrow to users. Bad experiences may include excessively long commuting time, crowded spaces, inconvenient transfers, elevated prices, low-quality of facilities, and others. 
+Driven by a routine, commuters travel back and forth from specific places, commonly represented by home to work/school trips. As commuters use public transit almost daily, or with a regular temporal pattern, the  conditions of the public network directly influence commuter's personal life and generally impacts their quality of life \selfnote{reference}. If the commuting experience is bad, daily travel can bring sorrow to users. Bad experiences may include excessively long commuting time, crowded spaces, inconvenient transfers, elevated prices, low-quality of facilities, and others. 
 
 Identifying commuters can help in the long-term planning of public transportation. Policies for improving the overall experience and aid urban areas on a large scale.
 
@@ -79,9 +84,15 @@ Transportation follows swarm behavior. Based on individual travels and routines,
 \subsection{The city of Beijing}
 Beijing special case for urbanization. Number of people is massive \selfnote{reference}
 
-Pollution is Beijing \selfnote{reference}
+Pollution in Beijing \selfnote{reference}
 
-Resources of public transportation network. Number of subway lines and bus lines. Number of users per day. \selfnote{reference}
+Beijing has more than 1000 bus routes and 18 subway lines, and it continues to expand every year. This results in more than 28,000 stops combined. \selfnote{reference Beijing transportation center}. 
+
+Additionally, Beijing has implemented several Bike sharing systems, with specific dropping stations. \Liangdoubt{where to get this info}.
+
+Number of users per day.
+
+By the usage of smart transit cards, collection of payment and transaction monitoring is possible. Buses, subways, bikes and taxis are monitored. Real time and historical data is available. Over 90\% of public transit users are smart card holders. \selfnote{reference}
 
 \subsection{Motivation}
 Interdisciplinary study between Artificial Intelligence and Metropolitan Transportation. Introduce data mining techniques to a data rich domain. 
@@ -89,23 +100,27 @@ Interdisciplinary study between Artificial Intelligence and Metropolitan Transpo
 Relevance of project on both areas. 
 
 \subsubsection{Societal context}
-Commuters use the public transport network regularly to go to work, school or other follow other routines. They need reliable means of transportation.
+Commuters use the public transport network regularly to go to work, school or other follow other routines. They need reliable means of transportation. \selfnote{reference: what do commuters care about}.
+
+The city of Beijing faces a large imbalance between residential and working areas. \selfnote{reference}. Targeting this group brings the largest benefits to the public.  
 
 Government, transport management and operators can gain spatial and temporal insight. This insight can lead to tangible results, policies and counter measures increasing efficiency of network, adjustable travel fares used as incentives to relieve peak hours, urban planning for residential and industrial land use, and others \selfnote{reference}
 
 \subsubsection{Scientific context}
-Usage of machine learning of data mining has been limited. Current broadly use method is surveys to reach travelers on individual level, aggregated measurements for gathering  their collective behavior. The analysis is usually done with statistical methodology. 
+Usage of machine learning of data mining has been limited. Current broadly used method is surveys to reach travelers on individual level and aggregated measurements for gathering  their collective behavior. The analysis is usually done with statistical methodology. 
 
 Surveys are costly and based on self-report, which by itself has bias problems. Other problems are small population and non-representative samples. 
 
 Aggregated methods miss the interactions between individuals that cause the collective behavior. 
 
-Technology has reached the data collection point, but has yet to reach the analysis part. Transit cards are capable of recording boarding and alighting stations with their related locations and time stamps. 
+Technology has reached the data collection point, but has yet to reach the analysis part. Transit cards are capable of recording spatio-temporal information at an individual level over long periods of time. This generates large amounts of data. 
 
 Many prediction algorithms available. Constant refinement, state of the art must be applied to real life and large impact situations. Domain experts must focus on analyzing insights and using them, not on techniques for curating and making sense out of raw data. 
 
 \subsection{Thesis organization}
-First we do a literature review for previous work on mining transit data and for specific state of the art methodologies. Then we establish the scope and objectives of this project. We continue to describe the methodology thoroughly, including the data and the approach. \selfnote{approach in section 3 or 4?}. Three stages of the project and their corresponding experimentation. Then we discuss findings and gather conclusions. Finally, future work opportunities are explored. 
+This Thesis is organized as follows:
+
+First we do a literature review for previous work on mining transit data and for specific state-of-the art methodologies. Consequently, we establish the scope and objectives of this project. We continue to describe the methodology thoroughly, including the data and the approach. Following this description, we identify three distinct stages of the project and report their corresponding experimentation. Then, we discuss the findings and gather conclusions. Finally, future work opportunities are explored. 
 
 
 \newpage
@@ -124,7 +139,9 @@ Machine learning for commuters identification. SVM with 94\% accuracy. \cite{tu2
 
 11 distinct clusters of users with similar activity and demographic attributes \cite{langlois2016inferring}
 
-Latest work using machine learning by \cite{ma2017understanding}
+The latest work on the field corresponds to Ma et Al \cite{ma2017understanding}. The objective of their work is to determine a scoring function for travelers that can correctly identify them as commuters, or non-commuters. In their work, they cluster stops using an improved DBSCAN algorithm. They engineer features for representing the frequency in which travelers follow spatio-temporal patterns. Travelers are then clustered according to these features following the ISODATA algorithm. As an output of the clustering, optimal cutoff levels in the scoring function were determined. As a result, evaluating a traveler does not depend on clustering centroids, but only on calculating the commuting score. This, as expressed by the authors, reduces computing time and treats each traveler independently from the others, which is not true for clustering algorithms.
+
+A common practice, as used by \cite{ma2017understanding} and \cite{langlois2016inferring} is to divide the day into -hourly or half-and-hour- time bins.
 
 \subsection{Classifying and clustering spatio-temporal data}
 Ensemble methods
@@ -144,41 +161,44 @@ Objective is to identify and characterize commuters in the city of Beijing by us
 \end{enumerate}
 
 \subsubsection{Definition of terms}
-A commuter is someone whose IC card data is repeatable in time and space over a working week (5 days, Monday to Friday).
+A commuter is a public transit user whose IC card data reveals repeatable patterns in time and space over a working week (5 days, Monday through Friday).
 
-A trip is a sequence of IC card transactions, with an origin and destination.
+A trip is a sequence of IC card transactions, including transfers, with an origin and destination. A trip is also represented as a record in the data, as it will be further explained in Section \ref{sec:data}
 
-A record corresponds to a trip made by an IC card user. \selfnote{better definition}
+A transfer is a change in transportation mode. Transportation modes include Bus, Subway, and Bike. Transfers can then be: bus-bus, bus-subway, bus-bike, subway-bus, subway-bike, bike-bus, bike-subway or bike-bike. Changes between subway lines are not recorded. \Liangdoubt{transfer possible?} 
 
-A transfer is a change in transportation mode. It can be bus-bus. bus-subway or subway-bus. Changes between subway lines are not recorded. 
-
-We make the assumption that each IC card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. 
+We make the assumption that IC card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. \Liangdoubt{reasonable assumption?}
 
 \subsection{Scope and structure}
 \selfnote{revise this part}
-part one: classify commuters versus non-commuters. Ensemble model compared to SVM
+The coverage of this Thesis is divided in three main stages: 
 
-part two: the set of features will be revised to disregard redundant information. A second comparison with Tu\cite{tu2016impact}'s SVM model will be made. 
+\begin{itemize}
+\item[Part one]: classify commuters versus non-commuters. Ensemble model compared to SVM
 
-part three: commuters will be further clustered according to patterns in their behaviors that will emerge from all variables of the IC card data. The clusters will be analyzed and interpreted to find distinctive characteristics that may be judged as useful by transportation specialists. 
+\item[Part two]: the set of features will be revised to disregard redundant information. A second comparison with Tu\cite{tu2016impact}'s SVM model will be made. 
+
+\item[Part three]: commuters will be further clustered according to patterns in their behaviors that will emerge from all variables of the IC card data. The clusters will be analyzed and interpreted to find distinctive characteristics that may be judged as useful by transportation specialists. 
+\end{itemize}
+
+\selfnote{better itemize bullets}
 
 
 \newpage
 \section{Methodology}
 \subsection{The data}
-\subsubsection{Data description}
+\label{sec:data}
 \selfnote{describe areas and their range. Include a map}
-Every record for an IC card contains the following data fields:
+Every record for an IC card represents a trip. As such, it contains the following data fields:
 
 \begin{itemize}
-\item Data date: date that the trip was made
+\item Data date: Year, month and day that the trip was made
 \item Card code: card identification number
-\item Data link: \selfnote{irrelevant?}
-\item Path link: Mode of transportation. B for bus, R for subway. Transfers shown by a dash. Example: B-B is Bus to Bus.
-\item Travel time: time spent in vehicles, measured in milliseconds
-\item Travel distance: measured in meters \footnote{\textcolor{red}{as measured by route?}}
-\item Transfer number: number of transfers in the trip
-\item Transfer time average: time spent in transfer, divided by number of transfers
+\item Path link: Mode of transportation. B for bus, R for subway, Y for bicycle. Transfers between modes are shown by a dash. \footnote{Example: B-B is Bus to Bus.} \Liangdoubt{calculated column?}
+\item Travel time: Time spent in vehicles, measured in milliseconds
+\item Travel distance: Distance traveled, measured in meters \selfnote{as measured by route?}
+\item Transfer number: number of changes in travel mode during the trip
+\item Transfer time average: time spent in transfer, divided by number of transfers \selfnote{calculated column?}
 \item Transfer time sum: total time spent in transfer
 \item Start time: time stamp of when the trip started
 \item End time: time stamp of when the trip ended
@@ -190,11 +210,18 @@ Every record for an IC card contains the following data fields:
 \item Off big area:
 \item On ring road:
 \item Off ring road:
-\item On area:
-\item Off area:
+\item On/Off area: Integer from 1 to 18 corresponding to the district/county for boarding and alighting, correspondingly. See Figure \ref{fig:beijing/18areas} \selfnote{reference} \selfnote{include in preprocessing dictionary?} 
+%http://www.ebeijing.gov.cn/Government/Administration_region/}
 \item ID: number| time stamp of beginning of trip | card code
 \item Transfer detail: Station name, line number, mode of transportation
 \end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.8\linewidth]{./images/beijing_18areas.png}
+  \caption{Beijing's Districts and its Counties}
+  \label{fig:beijing/18areas}
+\end{figure}
 
 Every day, more than X records are collected. 50, 000 records are sampled every day for a month. 
 \selfnote{how much data can we handle}
@@ -217,9 +244,15 @@ For a total of 978 IC card IDs. \selfnote{I got these from Tu, check the paramet
 Testing data is from 2016. More detailed
 
 \subsection{Data preprocessing}
-Eliminate records that do not make sense or are faulty, for example having empty fields. \selfnote{include percentage of data eliminated}
+A  afirst step for preprocessing the data, we perform a cleaning where we eliminate records that are faulty, for example: 
 
-47101/50000
+\begin{enumerate}
+\item Eliminate records with missing data: ~11\% records eliminated
+\item Eliminate records with travel time <= 0: <1\% records eliminated
+\item Eliminate records with travel distance <= 0: ~10.5\% records eliminated \Liangdoubt{how do we interpret these?}
+\end{enumerate}
+
+
 
 Whitening vs standardization
 
