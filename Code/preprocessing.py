@@ -8,6 +8,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import random
 
 ############ --- BEGIN default constants --- ############
 FILE_NAME_DEFAULT = '../Data/Travel chain sample data(50000).csv'
@@ -28,6 +29,10 @@ TRANSLATE_DICT_DEFAULT = {  '轨道' : 'R',
                             '东' : 'East ',
                             '西' : 'West '}
 ############ --- END default constants--- ############
+
+############ --- BEGIN default directories --- ############
+PLOT_DIR_DEFAULT = './Plots/'
+############ --- END default directories--- ############
 
 def _loadData(fileName):
     """
@@ -86,17 +91,40 @@ def _parseRoute(data, chineseDict):
 
     return data
 
-def _whitening(rawData, plot_distr):
+def _whitening(rawData, plot_distr, plot_dir):
     """
     Remove correlations and fit to variance 1
     """
 
     if plot_distr:
         print("Original travel time distribution")
-        temp = rawData.sort_values(by='TRAVEL_TIME')
+        # ID vs time sorted, time vs frequency histogram, time vs distance scatter
+        # Sample 1000 random points
+        indices = random.sample(rawData.index, 100)
+        sample = rawData.ix[indices]
+
+        # Plot card code vs (sorted) time
         fig, ax = plt.subplots()
-        temp[:1000].plot(y='TRAVEL_TIME', ax=ax)
-        plt.show()
+        sample.sort_values(by='TRAVEL_TIME').plot(x='CARD_CODE', y='TRAVEL_TIME', ax=ax, kind='bar')
+        plt.savefig(plot_dir+'time.png', format='png')
+
+        fig, ax = plt.subplots()
+        sample.plot(x='CARD_CODE', y='TRAVEL_TIME', ax=ax, kind='bar')
+        plt.savefig(plot_dir+'time_nosort.png', format='png')
+
+        # TODO: Plot time vs frequency histogram
+
+        # Plot time, distance box
+        fig, ax = plt.subplots()
+        sample.plot(x='TRAVEL_TIME', ax=ax, kind='box')
+        plt.savefig(plot_dir+'box_distr.png', format='png')
+
+        # Plot time vs distance
+        fig, ax = plt.subplots()
+        sample.plot(x='TRAVEL_DISTANCE',y='TRAVEL_TIME', ax=ax, kind='scatter')
+        plt.savefig(plot_dir+'travel.png', format='png')
+
+
 
     print("Standarize travel time")
     print("Standarize travel distance")
@@ -130,7 +158,7 @@ def preprocess():
     # TODO http://nbviewer.jupyter.org/github/jvns/pandas-cookbook/blob/v0.1/cookbook/Chapter%204%20-%20Find%20out%20on%20which%20weekday%20people%20bike%20the%20most%20with%20groupby%20and%20aggregate.ipynb
 
     print("---------------------------- Whitening ----------------------------")
-    preprocessedData = _whitening(withRouteData, FLAGS.plot_distr)
+    preprocessedData = _whitening(withRouteData, FLAGS.plot_distr, FLAGS.plot_dir)
 
     print("--------------------------- Store  data ---------------------------")
 
@@ -157,7 +185,9 @@ if __name__ == '__main__':
     parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
                         help='Traveler is required to have at least this number of records.')
     parser.add_argument('--plot_distr', type = bool, default = PLOT_DISTR_DEFAULT,
-                        help='Plot time and distance distributions.')
+                        help='Boolean to decide if we plot distributions.')
+    parser.add_argument('--plot_dir', type = str, default = PLOT_DIR_DEFAULT,
+                        help='Directory to which save plots.')
 
     FLAGS, unparsed = parser.parse_known_args()
     main(None)
