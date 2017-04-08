@@ -7,8 +7,10 @@ from __future__ import print_function
 import argparse
 import numpy as np
 import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 import matplotlib.pyplot as plt
 import random
+from sklearn.preprocessing import StandardScaler
 
 ############ --- BEGIN default constants --- ############
 FILE_NAME_DEFAULT = '../Data/Travel chain sample data(50000).csv'
@@ -91,44 +93,77 @@ def _parseRoute(data, chineseDict):
 
     return data
 
-def _whitening(rawData, plot_distr, plot_dir):
+def _to_time_bins(data):
     """
-    Remove correlations and fit to variance 1
+    Start and end time stamps into time bins
+    """
+    print("Extracting start/end hours")
+    data['START_HOUR'] = data['START_TIME'].apply(lambda x : x.hour)
+    data['END_HOUR'] = data['END_TIME'].apply(lambda x : x.hour)
+    return data
+
+def _plotDistribution(sample, plot_dir, variable_name, column_name):
+    """
+    Plot variables distribution
+    """
+    #TODO make plots nice with titles, etc
+
+    # Plot card code vs (sorted) variable
+    #fig, ax = plt.subplots()
+    #sample.sort_values(by=column_name).plot.bar(x='CARD_CODE', y=column_name, ax=ax)
+    #plt.savefig(plot_dir+variable_name+'.png', format='png')
+
+    # Plot variable frequency histogram
+    fig, ax = plt.subplots()
+    sample[column_name].plot.hist(ax=ax, bins=20)
+    plt.savefig(plot_dir+variable_name+'_hist.png', format='png')
+
+    # Plot variable box
+    fig, ax = plt.subplots()
+    sample[column_name].plot.box(ax=ax)
+    plt.savefig(plot_dir+variable_name+'_box.png', format='png')
+
+def _standarize(rawData, plot_distr, plot_dir):
+    """
+    Rescale features to have mean 0 and std 1
     """
 
     if plot_distr:
-        print("Original travel time distribution")
-        # ID vs time sorted, time vs frequency histogram, time vs distance scatter
         # Sample 1000 random points
-        indices = random.sample(rawData.index, 100)
+        indices = random.sample(rawData.index, 1000)
         sample = rawData.ix[indices]
 
-        # Plot card code vs (sorted) time
-        fig, ax = plt.subplots()
-        sample.sort_values(by='TRAVEL_TIME').plot(x='CARD_CODE', y='TRAVEL_TIME', ax=ax, kind='bar')
-        plt.savefig(plot_dir+'time.png', format='png')
-
-        fig, ax = plt.subplots()
-        sample.plot(x='CARD_CODE', y='TRAVEL_TIME', ax=ax, kind='bar')
-        plt.savefig(plot_dir+'time_nosort.png', format='png')
-
-        # TODO: Plot time vs frequency histogram
-
-        # Plot time, distance box
-        fig, ax = plt.subplots()
-        sample.plot(x='TRAVEL_TIME', ax=ax, kind='box')
-        plt.savefig(plot_dir+'box_distr.png', format='png')
+        print("Plotting original travel time and distance distributions")
+        _plotDistribution(sample, plot_dir, 'time', 'TRAVEL_TIME')
+        _plotDistribution(sample, plot_dir, 'distance', 'TRAVEL_DISTANCE')
+        _plotDistribution(sample, plot_dir, 'start_hour', 'START_HOUR')
+        _plotDistribution(sample, plot_dir, 'end_hour', 'END_HOUR')
 
         # Plot time vs distance
         fig, ax = plt.subplots()
         sample.plot(x='TRAVEL_DISTANCE',y='TRAVEL_TIME', ax=ax, kind='scatter')
-        plt.savefig(plot_dir+'travel.png', format='png')
+        plt.savefig(plot_dir+'distance_vs_time.png', format='png')
 
+    # TODO: only fit and transform to train data, and transform test data
+    print("Standarize travel time and distance")
+    scaler = StandardScaler()
+    rawData[['TRAVEL_TIME', 'TRAVEL_DISTANCE']] = scaler.fit_transform(rawData[['TRAVEL_TIME', 'TRAVEL_DISTANCE']])
 
+    if plot_distr:
+        # Sample 1000 random points
+        indices = random.sample(rawData.index, 1000)
+        sample = rawData.ix[indices]
 
-    print("Standarize travel time")
-    print("Standarize travel distance")
+        print("Plotting standarized travel time and distance distributions")
+        _plotDistribution(sample, plot_dir, 'time_standarized', 'TRAVEL_TIME')
+        _plotDistribution(sample, plot_dir, 'distance_standarized', 'TRAVEL_DISTANCE')
 
+        # Plot time vs distance
+        fig, ax = plt.subplots()
+        sample.plot(x='TRAVEL_DISTANCE',y='TRAVEL_TIME', ax=ax, kind='scatter')
+        plt.savefig(plot_dir+'distance_vs_time_standarized.png', format='png')
+
+    return rawData
 
 def _store(preprocessedData):
     """
@@ -151,16 +186,16 @@ def preprocess():
     print("-------------------------- Parse  route ---------------------------")
     withRouteData = _parseRoute(cleanData, TRANSLATE_DICT_DEFAULT)
 
-    print("----------------------- Creating time bins ------------------------")
-    #TODO
+    print("-------------------- Creating time stamp bins ---------------------")
+    withBinsData = _to_time_bins(withRouteData)
 
-    print("------------------------ Extract weekdays -------------------------")
+    #print("------------------------ Extract weekdays -------------------------")
     # TODO http://nbviewer.jupyter.org/github/jvns/pandas-cookbook/blob/v0.1/cookbook/Chapter%204%20-%20Find%20out%20on%20which%20weekday%20people%20bike%20the%20most%20with%20groupby%20and%20aggregate.ipynb
 
-    print("---------------------------- Whitening ----------------------------")
-    preprocessedData = _whitening(withRouteData, FLAGS.plot_distr, FLAGS.plot_dir)
+    print("-------------------------- Standarizing ---------------------------")
+    preprocessedData = _standarize(withBinsData, FLAGS.plot_distr, FLAGS.plot_dir)
 
-    print("--------------------------- Store  data ---------------------------")
+    #print("--------------------------- Store  data ---------------------------")
 
 def print_flags():
     """
