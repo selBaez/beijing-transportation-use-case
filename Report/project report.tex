@@ -20,11 +20,11 @@
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
-\usepackage{xcolor, graphicx, float}
-
+\usepackage{xcolor, graphicx, subcaption, float}
 
 \newcommand{\selfnote}[1]{\footnote{\textcolor{red}{#1}}}
-\newcommand{\Liangdoubt}[1]{\footnote{\textcolor{olive}{#1}}}
+\newcommand{\domainDoubt}[1]{\footnote{\textcolor{teal}{#1}}}
+\newcommand{\technicalDoubt}[1]{\footnote{\textcolor{blue}{#1}}}
 
 \title{Commuter classification and behavior clustering: Beijing use case}
 
@@ -49,7 +49,7 @@
 \maketitle
 
 \begin{abstract}
-  Public transportation, centered on subway and bus networks, is an data-rich domain that can benefit from data mining and machine learning techniques. The classification of commuters versus non-commuter/occasional travelers can help government, transport management and operators to better target their policies in order to improve the transportation network in large cities. Furthermore, characterizing commuters by behavior clustering can bring deeper insight into their needs and routines as a whole. 
+  Public transportation, centered on subway and bus networks, is an data-rich domain that can benefit from data mining and machine learning techniques. The classification of commuters versus non-commuters/occasional travelers can help government, transport management and operators to better target their policies in order to improve the transportation network in large cities. Furthermore, characterizing commuters by behavior clustering can bring deeper insight into their needs and routines as a whole. 
   This project proposes the usage of ensemble models for classification and clustering of public transport users. For this purpose, transit card data will be used, available from the city of Beijing, China. 
 \end{abstract}
 
@@ -61,13 +61,32 @@
 \section{Introduction}
 
 \subsection{Transportation domain}
-Public transportation facilities are commonly composed by subway lines, buses, trams, train and others. As a network, they provide service for the majority of citizens in urban areas. \selfnote{reference}  
+Urban public transportation includes systems that are available for use by anyone in urban areas. Its facilities are commonly composed by buses, subway/metro lines, light rails, tramways, trains and others. As a network, they provide service for the majority of citizens in urban areas. \citep{vuchic1900urban}
 
-The usage of the public transport network as a whole has a significant environmental impact on the city, affecting noise and air pollution. \selfnote{references}. 
+Figure \ref{fig:transportation/passenger} shows the passsenger transport usage, as million passengers per kilometer. This represents the transport of a passenger for one kilometer. From the top image note that United Stated, China, Germany, France, Italy, and United Kingdom contitute the six countries with the most passenger transport, according to their reported data from 2015 or later \cite{OECD2017passenger}. 
 
-Furthermore, abusing motorized vehicles relates to energetic demand. Petroleum and other carbon based products are always in high demand, and electrical supplies are not yet widely spread. This may bring further economical implications.\selfnote{reference}
+Furthermore, historical data in the bottom image reveals the 15 years behavior for each of the aforementioned countries. Most of the countries show stability, with increase or decrease of less than .10 million passengers for European countries, and .5 million passengers for United States. China, however, shows a trend with steep increase for most of the selected years. In fact, comparing its less than 1.2 million passengers in 2000, China doubled its public transport usage to 2.4 million passengers in 2015. 
 
-\Liangdoubt{papers to justify this}
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{.8\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/OECD_passengers_absolute.png}
+  	\caption{Passenger transport data, per country.}
+  \end{subfigure}
+  \begin{subfigure}[b]{.8\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/OECD_passengers_increase.png}
+  	\caption{Historical data for the top six countries with most passenger transport usage.}
+  \end{subfigure}
+  \caption{OECD countries and their passenger transportation data.}
+  	\label{fig:transportation/passenger}
+\end{figure}
+
+The usage of the public transport network as a whole has a significant environmental impact, affecting noise and air pollution. \selfnote{references}. 
+
+
+Public transportation also relates to energetic demand, since its facilities are mostly petroleum or electrical based. In terms of global energy consumption, passenger transportation accounts for about 25\% of the total world energy consumption. Furthermore, the tarnsportation sector consupmtion increases at an annual average rate of 1.4\% \cite{eia2016energy}. This may bring further economical implications.
 
 In the last years, smart cards systems appeared, making it possible to track travelers and facilitating the fare collection. Examples are Octopus card in Hong Kong, Oyster card in London, OV-chipcard in The Netherlands and IC card in Beijing, to name a few.
 
@@ -77,7 +96,7 @@ A major proportion of public transport users is represented by commuters. These 
 
 Driven by a routine, commuters travel back and forth from specific places, commonly represented by home to work/school trips. As commuters use public transit almost daily, or with a regular temporal pattern, the  conditions of the public network directly influence commuter's personal life and generally impacts their quality of life \selfnote{reference}. If the commuting experience is bad, daily travel can bring sorrow to users. Bad experiences may include excessively long commuting time, crowded spaces, inconvenient transfers, elevated prices, low-quality of facilities, and others. 
 
-Identifying commuters can help in the long-term planning of public transportation. Policies for improving the overall experience and aid urban areas on a large scale.
+Identifying commuters can help in the long-term planning (sustainable) of public transportation. Policies for improving the overall experience and aid urban areas on a large scale.
 
 Transportation follows swarm behavior. Based on individual travels and routines, on a larger scale travelers exhibit peculiar characteristics. Both levels of understanding are crucial.   
 
@@ -88,7 +107,7 @@ Pollution in Beijing \selfnote{reference}
 
 Beijing has more than 1000 bus routes and 18 subway lines, and it continues to expand every year. This results in more than 28,000 stops combined. \selfnote{reference Beijing transportation center}. 
 
-Additionally, Beijing has implemented several Bike sharing systems, with specific dropping stations. \Liangdoubt{where to get this info}.
+Additionally, Beijing has implemented several Bike sharing systems, with specific dropping stations. \domainDoubt{where to get this info}.
 
 Number of users per day.
 
@@ -165,9 +184,9 @@ A commuter is a public transit user whose IC card data reveals repeatable patter
 
 A trip is a sequence of IC card transactions, including transfers, with an origin and destination. A trip is also represented as a record in the data, as it will be further explained in Section \ref{sec:data}
 
-A transfer is a change in transportation mode. Transportation modes include Bus, Subway, and Bike. Transfers can then be: bus-bus, bus-subway, bus-bike, subway-bus, subway-bike, bike-bus, bike-subway or bike-bike. Changes between subway lines are not recorded. \Liangdoubt{transfer possible?} 
+A transfer is a change in transportation mode. Transportation modes include Bus, Subway, and Bike. Transfers can then be: bus-bus, bus-subway, bus-bike, subway-bus, subway-bike, bike-bus, bike-subway or bike-bike. Changes between subway lines are not recorded. \domainDoubt{transfer possible?} 
 
-We make the assumption that IC card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. \Liangdoubt{reasonable assumption?}
+We make the assumption that IC card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. \domainDoubt{reasonable assumption?}
 
 \subsection{Scope and structure}
 \selfnote{revise this part}
@@ -188,48 +207,43 @@ The coverage of this Thesis is divided in three main stages:
 \section{Methodology}
 \subsection{The data}
 \label{sec:data}
-\selfnote{describe areas and their range. Include a map}
-Every record for an IC card represents a trip. As such, it contains the following data fields:
+Every record int he data represents a trip performed by a specific IC card. As such, it contains the following data fields:
 
 \begin{itemize}
 \item Data date: Year, month and day that the trip was made
 \item Card code: card identification number
-\item Path link: Mode of transportation. B for bus, R for subway, Y for bicycle. Transfers between modes are shown by a dash. \footnote{Example: B-B is Bus to Bus.} \Liangdoubt{calculated column?}
+\item Path link: Mode of transportation. B for bus, R for subway, Y for bicycle. Transfers between modes are shown by a dash. \footnote{Example: B-B is Bus to Bus.} \domainDoubt{calculated column? there are some inconsistencies between this and transfer detail}
 \item Travel time: Time spent in vehicles, measured in milliseconds
-\item Travel distance: Distance traveled, measured in meters \selfnote{as measured by route?}
-\item Transfer number: number of changes in travel mode during the trip
-\item Transfer time average: time spent in transfer, divided by number of transfers \selfnote{calculated column?}
-\item Transfer time sum: total time spent in transfer
-\item Start time: time stamp of when the trip started
-\item End time: time stamp of when the trip ended
-\item On traffic: 
-\item Off traffic:
-\item On middle area:
-\item Off middle area:
-\item On big area:
-\item Off big area:
-\item On ring road:
-\item Off ring road:
-\item On/Off area: Integer from 1 to 18 corresponding to the district/county for boarding and alighting, correspondingly. See Figure \ref{fig:beijing/18areas} \selfnote{reference} \selfnote{include in preprocessing dictionary?} 
+\item Travel distance: Distance traveled, measured in meters \selfnote{as measured by route? or start-end stops}
+\item Transfer number: Number of changes in travel mode during the trip. Regarding transfers between same travel mode, bus to bus, and bike to bike transfers are counted. Subway to subway transfers are ignored. 
+\item Transfer average time: Time spent in transfer, divided by number of transfers. , Measured in milliseconds \selfnote{calculated column?}
+\item Transfer total time: Total time spent in transfer, measured in milliseconds
+\item Start/End time: Time stamp of when the trip started/ended. Date and time with milliseconds precision
+%Traffic zones
+\item On/Off small traffic area: Integer from 1 to 1911
+\item On/Off middle traffic area: Integer from 1 to 389
+\item On/Off big traffic area: Integer from 1 to 60
+%Municipal zones
+\item On/Off ring road: Integer 1 to 6
+\item On/Off area: Integer from 1 to 18 corresponding to the district/county for boarding and alighting, correspondingly. See Figure \ref{fig:data/18areas} \selfnote{reference} \selfnote{include in preprocessing dictionary?} 
 %http://www.ebeijing.gov.cn/Government/Administration_region/}
-\item ID: number| time stamp of beginning of trip | card code
+\item ID: record identification number created by joining the following: hour | time stamp of beginning of trip | card code
 \item Transfer detail: Station name, line number, mode of transportation
 \end{itemize}
 
-\begin{figure}[H]
+The traffic zones (small, middle and big areas) are divided by the Planning and Designing Institute in Beijing\selfnote{reference}. They are specific in different degrees. In general, the division principles correspond to the geopolitical environment and administrative planning, for example roads, villages and others. The 6 ring road and 18 areas are divided by the Beijing Municipal Government \selfnote{reference}. The division is unique in Beijing. According to domain expert Liang Quan, these divisions are sufficiently informative for traffic analysis. \technicalDoubt{how to quote a person}
+
+\begin{figure}
   \centering
   \includegraphics[width=.8\linewidth]{./images/beijing_18areas.png}
   \caption{Beijing's Districts and its Counties}
-  \label{fig:beijing/18areas}
+  \label{fig:data/18areas}
 \end{figure}
 
-Every day, more than X records are collected. 50, 000 records are sampled every day for a month. 
-\selfnote{how much data can we handle}
+Every day, more than X records are collected. 50, 000 records are sampled every day for a month. \selfnote{how much data can we handle} In this case, the samples correspond to April, which does not overlap with holidays and has a relatively stable weather thus diminishing the variance between bike and bus/subway traveler preferences. \domainDoubt{request a proper month data}
 
-The month is April, which does not overlap with summer holidays. 
-
-\subsubsection{Training data}
-Since we perform supervised learning, we need training data for which we know if a record corresponds to a commuter or non-commuter. Such data is expensive and limited since it has only been obtained by asking the users directly if they are commuters or not. Other annotated data is not available, and labeling new records falls beyond the scope of this project. \selfnote{if data is not sufficient (although previous work shows it is) I might need to consider annotating some data myself}
+\subsubsection{Training data} \domainDoubt{do we have the correct classes?}
+Since we perform supervised learning we need training data for which we know if a record corresponds to a commuter or non-commuter. Such data is expensive and limited since it can  only been obtained by asking the users directly if they are commuters or not. Other annotated data is not available, and labeling new records falls beyond the scope of this project. \selfnote{if data is not sufficient (although previous work shows it is) I might need to consider annotating some data myself}
 
 The current training and validation set consists of data from 2015, collected and validated by Tu \cite{tu2016impact} \selfnote{make sure it was Tu}. The data is composed by:
 
@@ -244,20 +258,96 @@ For a total of 978 IC card IDs. \selfnote{I got these from Tu, check the paramet
 Testing data is from 2016. More detailed
 
 \subsection{Data preprocessing}
-A  afirst step for preprocessing the data, we perform a cleaning where we eliminate records that are faulty, for example: 
+\subsubsection{Cleaning}
+As first step for preprocessing the data, we perform a cleaning where we eliminate records that are faulty, for example: 
 
 \begin{enumerate}
-\item Eliminate records with missing data: ~11\% records eliminated
-\item Eliminate records with travel time <= 0: <1\% records eliminated
-\item Eliminate records with travel distance <= 0: ~10.5\% records eliminated \Liangdoubt{how do we interpret these?}
+\item Eliminate records with missing data: ~10.9\% records eliminated
+\item Eliminate records with travel time <= 0: <0.01\% records eliminated
+\item Eliminate records with travel distance <= 0: ~10.5\% records eliminated \domainDoubt{how do we interpret these?}
+\item Eliminate records linked to users with insufficient trips: ~ 25.8\% records eliminated when requiring at least 2 trips per day.
 \end{enumerate}
 
+This leaves ~52.6\% records available for usage. 
 
+Insufficient trips regulated by a user input \selfnote{plot percentage of records and min records needed. Tune parameter}
 
-Whitening vs standardization
+\subsubsection{Conversion}
+Parse route. Translate Chinese keywords. 
+
+Dictionary \selfnote{encode chinese in latex}
+
+Example in Chinese -< English -> clean route
+
+Hourly time bins is standard practice in the field \cite{langlois2016inferring} \cite{ma2017understanding}, 
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/start_hour_hist.png}
+  	\caption{Start hour}
+  \end{subfigure}
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/end_hour_hist.png}
+  	\caption{End hour}
+  \end{subfigure}
+  \caption{Distribution of start/end hours for trips.1000 records sample.}
+  	\label{fig:preprocessing/start_end_hour}
+\end{figure}
+
+Figure \ref{fig:preprocessing/start_end_hour} shows clear morning and evening peak hours. 
+
+\subsubsection{Standardization}
+Whitening vs standardization: 
+
+Figure \ref{fig:preprocessing/distance_time_correlation} shows a clear correlation between travel distance and travel time. \technicalDoubt{Correlation between time and distance to be preserved?}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.8\linewidth]{./images/distance_vs_time.png}
+  \caption{Travel distance vs travel time.1000 record sample.}
+  \label{fig:preprocessing/distance_time_correlation}
+\end{figure}
+
+Travel time and distance where standardized by subtracting the mean and forcing a standard deviation of 1 \selfnote{double check this} \selfnote{replace images once run with all data}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/time_hist.png}
+  	\caption{Original}
+  \end{subfigure}
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/time_standarized_hist.png}
+  	\caption{Standarized}
+  \end{subfigure}
+  \caption{Time distribution before and after preprocessing. 1000 records sample.}
+  	\label{fig:preprocessing/time}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/distance_hist.png}
+  	\caption{Original}
+  \end{subfigure}
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/distance_standarized_hist.png}
+  	\caption{Standarized}
+  \end{subfigure}
+  \caption{Distance distribution before and after preprocessing. 1000 records sample.}
+  	\label{fig:preprocessing/distance}
+\end{figure}
+ 
 
 \subsection{Data mining techniques}
-Coding using Python. Libraries and toolboxes such as pandas.
+Coding using Python. Libraries and toolboxes such as pandas, sklearn, theano.
 
 \subsubsection{Feature engineering}
 The temporal factors to be explored are represented by the start/end times, as well travel/transfer time.

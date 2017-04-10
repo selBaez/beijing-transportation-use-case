@@ -96,6 +96,7 @@ ENV/
 *.blg
 *.toc
 Report/*.log
+*.dvi
 
 #Confidential BJUT
 Code/Previous*

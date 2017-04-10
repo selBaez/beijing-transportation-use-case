@@ -77,8 +77,11 @@ Finally, commuters will be further clustered according to patterns in their beha
 
 Overall, the proposed project includes both supervised and unsupervised techniques for mining transportation data. Challenges on preprocessing massive amounts of IC card data will be faced. Furthermore, we anticipate possible drawbacks when clustering commuters behavior as detailed analysis of clusters must be done and interpreted by domain experts. 
 
+The project will be coded in Python, using libraries for data and numerical manipulation (\textit{Pandas}, \textit{numpy}), machine learning (\textit{sklearn}), neural networks(\textit{Theano}). The models will be evaluated based on their confusion matrices, which include its accuracy, precision, recall, as well as negative predictive value and specificity. Additional metrics such as cross entropy or hinge loss will also be reported. 
+
+
 \section{Plan}
-This project is part of a collaboration between Vrije Universiteit Amsterdam (VU) and Beijing University of Technology (BJUT). As part of an exchange program, I will spend three months in Beijing, working at The College of Metropolitan Transportation under the supervision of Professor Jiancheng Weng. 
+This project is part of a collaboration between Vrije Universiteit Amsterdam (VU) and Beijing University of Technology (BJUT). As part of an exchange program, I will spend three months in Beijing, working at The College of Metropolitan Transportation under the supervision of Professor Jiancheng Weng. His PhD student Liang Quan will serve as the domain expert for the project and will provide with guidance in understanding the data and the context of the problem. 
 
 The project started on March 1st, 2017 and is programmed to be finished by August 31st, 2017. The main VU supervisor is Professor Zhisheng Huang. 
 
@@ -90,7 +93,7 @@ The main steps to follow in this project are as follows:
 \item[Stage 1:] Classification of commuters vs non-commuters
 	\begin{enumerate}
 	\item Data exploration
-	\item Determine appropriate type of classifiers for the task \footnote{Most likely Random Forest and simple Multilayer Perceptron}
+	\item Determine appropriate type of classifiers for the task \footnote{Most likely Random Forest, Bayesian methods or simple Multilayer Perceptron}
 	\item Data preprocessing
 	\item Individual classifiers set up 
 	\item Ensemble model by bagging
@@ -105,7 +108,7 @@ The main steps to follow in this project are as follows:
 
 \item[Stage 3:] Clustering of commuters
 	\begin{enumerate}
-	\item Determine hyper-parameters for clustering: input variables, number of clusters, number and type of classifiers \footnote{Most likely Neural Networks or Bayesian methods}
+	\item Determine hyper-parameters for clustering: input variables, number of clusters, number and type of classifiers \footnote{Most likely Neural Networks}
 	\item Data preprocessing
 	\item Individual classifier set up
 	\item Preliminary results analysis: qualitative analysis by domain experts
