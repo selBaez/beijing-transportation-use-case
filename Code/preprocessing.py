@@ -11,6 +11,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 import matplotlib.pyplot as plt
 import random
 from sklearn.preprocessing import StandardScaler
+import cPickle
 
 ############ --- BEGIN default constants --- ############
 FILE_NAME_DEFAULT = '../Data/Travel chain sample data(50000).csv'
