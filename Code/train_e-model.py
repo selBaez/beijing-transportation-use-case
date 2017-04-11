@@ -13,6 +13,7 @@ import pandas
 from sklearn import cross_validation
 from sklearn import ensemble
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import average_precision_score
 
 ############ --- BEGIN default constants --- ############
 FILE_NAME_DEFAULT = './Previous work/commuting-classifier/dataset.mat'
@@ -30,7 +31,6 @@ def loadData(fileName):
 
     return data['train_data'], data['train_labels'], data['test_data'], data['test_labels']
 
-
 def _evaluate():
     """
     Confusion matrix and hinge loss
@@ -46,15 +46,20 @@ def train():
     #print("--------------------------- Create sets ---------------------------")
 
     print("--------------------------- Build model ---------------------------")
-    model = ensemble.RandomForestClassifier(n_estimators=FLAGS.num_trees, max_depth=FLAGS.depth_trees)
+    # Random Forest
+    model_rf = ensemble.RandomForestClassifier(n_estimators=FLAGS.num_trees, max_depth=FLAGS.depth_trees)
 
     print("---------------------- Forward pass  modules ----------------------")
-    model.fit(train_data, train_labels.ravel())
+    model_rf.fit(train_data, train_labels.ravel())
 
     #print("------------------------ Assemble  answers ------------------------")
 
-    #print("---------------------------- Evaluate -----------------------------")
+    print("---------------------------- Predict ------------------------------")
+    predictions_rf = model_rf.predict_proba(test_data)[:,1]
 
+    print("---------------------------- Evaluate -----------------------------")
+    accuracy_rf = average_precision_score(test_labels, predictions_rf)
+    print("accuracy : ", accuracy_rf)
 
 def print_flags():
     """

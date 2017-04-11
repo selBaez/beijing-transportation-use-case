@@ -21,7 +21,13 @@ MAJOR PROBLEM
 	validation info: on 908 mentioned on paper
 			K-fold with replacement
 
+TODO:
+vocabulary of stops
+eliminate records with null in travel detail
+recalculate transfer number
+reconsider the min_records approach
+standardize transfer time
 
-			#fig, ax = plt.subplots()
-	    #data[:100].plot(x='START_TIME', y='TRAVEL_TIME', ax=ax, kind='bar')
-	    #plt.show()
+
+
+distance calculation for bikes? dunno
