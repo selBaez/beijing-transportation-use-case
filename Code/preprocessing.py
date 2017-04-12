@@ -42,41 +42,71 @@ def _loadData(fileName):
     Load csv data on pandas
     """
     # Ignore column 2 'DATA_LINK'
-    fullData = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9])
-    print(len(fullData.index), " records loaded")
+    data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9])
+    print(len(data.index), " records loaded")
 
-    return fullData
+    return data
 
-def _clean(fullData, min_records):
+def _filter(data, condition, motivation):
+    """
+    Remove records from data due to motivation accordint to Boolean condition
+    """
+    recordsBefore = len(data.index)
+    data = condition
+    recordsLeft = len(data.index)
+    recordsRemoved = recordsBefore - recordsLeft
+    print(recordsRemoved, " records removed due to ", motivation, ", ", recordsLeft, " records left")
+
+    return data
+
+def _clean(data, min_records):
     """
     Remove rows with faulty data
     """
     # Remove rows containing NaN
-    noMissing = fullData.dropna()
-    missingRecords_num = len(fullData.index) - len(noMissing.index)
-    print(missingRecords_num, " records removed due to empty fields, ", len(noMissing.index), " records left")
+    #recordsBefore = len(data.index)
+    #data = data.dropna()
+    #recordsLeft = len(data.index)
+    #recordsRemoved = recordsBefore - recordsLeft
+    #print(recordsRemoved, " records removed due to empty fields, ", recordsLeft, " records left")
+    data = _filter(data, data.dropna(), "empty fields")
+
+    # Remove rows with travel detail containing null
+    #recordsBefore = len(data.index)
+    #data = data[~data['TRANSFER_DETAIL'].str.contains("null")]
+    #recordsLeft = len(data.index)
+    #recordsRemoved = recordsBefore - recordsLeft
+    #print(recordsRemoved, " records removed due to null in transfer description, ", recordsLeft, " records left")
+    data = _filter(data, data[~data['TRANSFER_DETAIL'].str.contains("null")], "null in transfer description")
 
     # Remove records with travel time <= 0
-    timeRelevant = noMissing[noMissing['TRAVEL_TIME'] > 0]
-    timeFaultyRecords_num = len(noMissing.index) - len(timeRelevant.index)
-    print(timeFaultyRecords_num, " records removed due to travel time <= 0, ", len(timeRelevant.index), " records left")
+    #recordsBefore = len(data.index)
+    #data = data[data['TRAVEL_TIME'] > 0]
+    #recordsLeft = len(data.index)
+    #recordsRemoved = recordsBefore - recordsLeft
+    #print(recordsRemoved, " records removed due to travel time <= 0, ", recordsLeft, " records left")
+    data = _filter(data, data[data['TRAVEL_TIME'] > 0], "travel time <= 0")
 
     # Remove records with travel distance <= 0
-    #some still make sense in terms of time and transfers
-    distanceRelevant = timeRelevant[timeRelevant['TRAVEL_DISTANCE'] > 0]
-    distanceFaultyRecords_num = len(timeRelevant.index) - len(distanceRelevant.index)
-    print(distanceFaultyRecords_num, " records removed due to travel distance <= 0, ", len(distanceRelevant.index), " records left")
+    #recordsBefore = len(data.index)
+    #data = data[data['TRAVEL_DISTANCE'] > 0]
+    #recordsLeft = len(data.index)
+    #recordsRemoved = recordsBefore - recordsLeft
+    #print(recordsRemoved, " records removed due to travel distance <= 0, ", recordsLeft, " records left")
+    data = _filter(data, data[data['TRAVEL_DISTANCE'] > 0], "travel distance <= 0")
 
     # TODO Remove rows with strange transfers
-    #print(distanceFaultyRecords_num, " records removed due to num of transfer >= 5, ", len(distanceRelevant.index), " records left")
 
     # Remove cards with less than min_records
-    distanceRelevant['NUM_TRIPS'] = distanceRelevant.groupby('CARD_CODE')['TRAVEL_DISTANCE'].transform('count')
-    cleanData = distanceRelevant[distanceRelevant['NUM_TRIPS'] >= min_records]
-    notEnoughRecords_num = len(distanceRelevant.index) - len(cleanData.index)
-    print(notEnoughRecords_num, " records removed due to insufficient users having associated records, ", len(cleanData.index), " records left")
+    data['NUM_TRIPS'] = data.groupby('CARD_CODE')['TRAVEL_DISTANCE'].transform('count')
+    #recordsBefore = len(data.index)
+    #data = data[data['NUM_TRIPS'] >= min_records]
+    #recordsLeft = len(data.index)
+    #recordsRemoved = recordsBefore - recordsLeft
+    #print(recordsRemoved, " records removed due to users having insufficient associated records, ", recordsLeft, " records left")
+    data = _filter(data, data[data['NUM_TRIPS'] >= min_records], "users having insufficient associated records")
 
-    return cleanData
+    return data
 
 def _parseRoute(data, chineseDict):
     """
