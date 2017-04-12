@@ -17,12 +17,12 @@ import cPickle
 FILE_NAME_DEFAULT = '../Data/Travel chain sample data(50000).csv'
 MIN_RECORDS_DEFAULT = 2
 PLOT_DISTR_DEFAULT = True
-TRANSLATE_DICT_DEFAULT = {  '轨道' : 'R',
-                            '公交' : 'B',
-                            '自行车' : 'Z',
+TRANSLATE_DICT_DEFAULT = {  '轨道' : 'R',      # subway
+                            '公交' : 'B',      # bus
+                            '自行车' : 'Z',    # bike
                             '线' : 'Line',
                             '号' : '',
-                            '夜' : 'Night ',
+                            '夜' : 'N',
                             '站' : 'Station ',
                             '小区' : 'District ',
                             '机场' : 'Airport ',
@@ -64,55 +64,44 @@ def _clean(data, min_records):
     Remove rows with faulty data
     """
     # Remove rows containing NaN
-    #recordsBefore = len(data.index)
-    #data = data.dropna()
-    #recordsLeft = len(data.index)
-    #recordsRemoved = recordsBefore - recordsLeft
-    #print(recordsRemoved, " records removed due to empty fields, ", recordsLeft, " records left")
     data = _filter(data, data.dropna(), "empty fields")
 
     # Remove rows with travel detail containing null
-    #recordsBefore = len(data.index)
-    #data = data[~data['TRANSFER_DETAIL'].str.contains("null")]
-    #recordsLeft = len(data.index)
-    #recordsRemoved = recordsBefore - recordsLeft
-    #print(recordsRemoved, " records removed due to null in transfer description, ", recordsLeft, " records left")
     data = _filter(data, data[~data['TRANSFER_DETAIL'].str.contains("null")], "null in transfer description")
 
     # Remove records with travel time <= 0
-    #recordsBefore = len(data.index)
-    #data = data[data['TRAVEL_TIME'] > 0]
-    #recordsLeft = len(data.index)
-    #recordsRemoved = recordsBefore - recordsLeft
-    #print(recordsRemoved, " records removed due to travel time <= 0, ", recordsLeft, " records left")
     data = _filter(data, data[data['TRAVEL_TIME'] > 0], "travel time <= 0")
 
     # Remove records with travel distance <= 0
-    #recordsBefore = len(data.index)
-    #data = data[data['TRAVEL_DISTANCE'] > 0]
-    #recordsLeft = len(data.index)
-    #recordsRemoved = recordsBefore - recordsLeft
-    #print(recordsRemoved, " records removed due to travel distance <= 0, ", recordsLeft, " records left")
     data = _filter(data, data[data['TRAVEL_DISTANCE'] > 0], "travel distance <= 0")
 
     # TODO Remove rows with strange transfers
 
     # Remove cards with less than min_records
     data['NUM_TRIPS'] = data.groupby('CARD_CODE')['TRAVEL_DISTANCE'].transform('count')
-    #recordsBefore = len(data.index)
-    #data = data[data['NUM_TRIPS'] >= min_records]
-    #recordsLeft = len(data.index)
-    #recordsRemoved = recordsBefore - recordsLeft
-    #print(recordsRemoved, " records removed due to users having insufficient associated records, ", recordsLeft, " records left")
     data = _filter(data, data[data['NUM_TRIPS'] >= min_records], "users having insufficient associated records")
 
     return data
 
 def _parseRoute(data, chineseDict):
     """
-    Parse 'TRANSFER_DETAIL' column to get line
+    Parse 'TRANSFER_DETAIL' column to get route
+    BIKE = (bike.STATION-STATION)
+    SUBWAY = (subway.LINE_NAME:STATION-LINE_NAME:STATION)
+    BUS = (bus.ROUTE_NAME:)
+
+    GENERAL = (MODE.[LINE_NAME:]? STATION-[LINE_NAME:]? STATION-)
+    # LINE_NAME example        5 number line or NAME line
+    # ROUTE_NAME example       944 or night 32 (DIRECTION - DIRECTION)
     """
-    #TODO find way to split by - (representing a transfer)
+
+    # TODO Create stops vocabulary
+
+    # TODO Parse with regular expressions
+    # for every record in data
+        # replace mode : dictionary
+        # replace line/route : dictionary
+        # replace stops : vocabulary
 
     # Translate basic keywords
     print("Replacing keywords from Chinese to English")
@@ -167,6 +156,8 @@ def _standarize(rawData, plot_distr, plot_dir):
         print("Plotting original travel time and distance distributions")
         _plotDistribution(sample, plot_dir, 'time', 'TRAVEL_TIME')
         _plotDistribution(sample, plot_dir, 'distance', 'TRAVEL_DISTANCE')
+        _plotDistribution(sample, plot_dir, 'transfer_time', 'TRANSFER_TIME_SUM')
+        _plotDistribution(sample, plot_dir, 'num_transfers', 'TRANSFER_NUM')
         _plotDistribution(sample, plot_dir, 'start_hour', 'START_HOUR')
         _plotDistribution(sample, plot_dir, 'end_hour', 'END_HOUR')
 

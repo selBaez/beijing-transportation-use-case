@@ -23,10 +23,11 @@ MAJOR PROBLEM
 
 TODO:
 vocabulary of stops
-eliminate records with null in travel detail
 recalculate transfer number
 reconsider the min_records approach
 standardize transfer time
+plot transfer time, num transfers
+parse route using regular expressions, translate dictionary and stops vocabulary
 
 
 
