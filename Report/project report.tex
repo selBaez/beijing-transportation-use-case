@@ -20,7 +20,7 @@
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
-\usepackage{xcolor, graphicx, subcaption, float}
+\usepackage{xcolor, graphicx, subcaption, float, enumitem, amsmath}
 
 \newcommand{\selfnote}[1]{\footnote{\textcolor{red}{#1}}}
 \newcommand{\domainDoubt}[1]{\footnote{\textcolor{teal}{#1}}}
@@ -162,18 +162,34 @@ The latest work on the field corresponds to Ma et Al. \cite{ma2017understanding}
 
 A common practice, as used by \cite{ma2017understanding} and \cite{langlois2016inferring} is to divide the day into -hourly or half-and-hour- time bins.
 
+\textbf{Volume of data:} \selfnote{turn to table}
+
+\cite{tu2016impact} 978 cards
+
+\cite{morency2007measuring} 2,233,300 boardings by 7,118 cards 
+
+\cite{langlois2016inferring} 3 million stages 33,026 users
+
+\cite{bhaskar2015passenger} 34.8 million transactions made by 1
+million cards
+
+\cite{ma2013mining} 3 million cards
+
+\cite{ortega2013classification} 65 million records on 5.7 million cards
+
+\cite{ma2017understanding} 364 million records 18 million cards
+
+
+
 \subsection{Classifying and clustering spatio-temporal data}
-Ensemble methods
+\textbf{Clustering algorithms:} 
 
-Classifiers in the transportation domain
-
-Clustering algorithms: 
-
-hierarchical clustering \cite{ortega2013classification}. 
+\begin{itemize}
+\item Hierarchical clustering: 
 
 Langlois use it for areas clustering. In order to infer the user-specific activities, all stops or stations visited by each user are clustered using an hierarchical clustering algorithm that considers the distance between stops and the frequency of travel between them. Therefore, different activities are likely to be associated with different areas.  \cite{langlois2016inferring}
 
-partitional clustering \cite{ortega2013classification}:
+\item Partitional clustering:
 
 
 Density based \cite{bhaskar2015passenger}
@@ -182,6 +198,8 @@ k-means \cite{morency2007measuring}. Langlois et al. tune the number of clusters
 
 k-nearest neighbor \cite{ortega2013classification}
 
+
+\end{itemize}
 
 \newpage
 \section{Research objective}
@@ -197,27 +215,25 @@ The min objective is further broken down into answering the following research q
 \end{enumerate}
 
 \subsubsection{Definition of terms}
-A commuter is a public transit user whose IC card data reveals repeatable patterns in time and space over a working week (5 days, Monday through Friday).
+A commuter is a public transit user whose IC card data reveals repeatable patterns in time and space \domainDoubt{over a working week (5 days, Monday through Friday).}
 
 A trip is a sequence of IC card transactions, including transfers, with an origin and destination. A trip is also represented as a record in the data, as it will be further explained in Section \ref{sec:data}
 
-A transfer is a change in transportation mode. Transportation modes include Bus, Subway, and Bike. Transfers can then be: bus-bus, bus-subway, bus-bike, subway-bus, subway-bike, bike-bus, bike-subway or bike-bike. Changes between subway lines are not recorded. \domainDoubt{transfer possible?} 
+A transfer is a change in transportation mode. Transportation modes include Bus, Subway, and Bike. 
 
-We make the assumption that IC card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. \domainDoubt{reasonable assumption?}
+We make the assumption that IC card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. As discussed with domain expert Quian Tu, although some people may own more than one card, this is a minority.
 
 \subsection{Scope and structure}
 \selfnote{revise this part}
 This project is divided three main stages: 
 
-\begin{itemize}
-\item[Part one]: classify commuters versus non-commuters. Ensemble model compared to SVM
+\begin{description}[align=right,labelwidth=2cm]
+\item[PART I] Classify commuters versus non-commuters. Ensemble model compared to SVM
 
-\item[Part two]: the set of features will be revised to disregard redundant information. A second comparison with Tu\cite{tu2016impact}'s SVM model will be made. 
+\item[PART II] The set of features will be revised to disregard redundant information.
 
-\item[Part three]: commuters will be further clustered according to patterns in their behaviors that will emerge from all variables of the IC card data. The clusters will be analyzed and interpreted to find distinctive characteristics that may be judged as useful by transportation specialists. 
-\end{itemize}
-
-\selfnote{better itemize bullets}
+\item[PART III] Commuters will be further clustered according to patterns in their behaviors that will emerge from all variables of the IC card data. The clusters will be analyzed and interpreted to find distinctive characteristics that may be judged as useful by transportation specialists. 
+\end{description}
 
 
 \newpage
@@ -229,11 +245,11 @@ Every record int he data represents a trip performed by a specific IC card. As s
 \begin{itemize}
 \item Data date: Year, month and day that the trip was made
 \item Card code: card identification number
-\item Path link: Mode of transportation. B for bus, R for subway, Y for bicycle. Transfers between modes are shown by a dash. \footnote{Example: B-B is Bus to Bus.} \domainDoubt{calculated column? there are some inconsistencies between this and transfer detail}
+\item Path link: Mode of transportation. B for bus, R for subway, Y for bicycle. Transfers between modes are shown by a dash. \footnote{Example: B-B is Bus to Bus.} 
 \item Travel time: Time spent in vehicles, measured in milliseconds
-\item Travel distance: Distance traveled, measured in meters \selfnote{as measured by route? or start-end stops}
+\item Travel distance: Distance traveled, measured in meters as measured by route. 
 \item Transfer number: Number of changes in travel mode during the trip. Regarding transfers between same travel mode, bus to bus, and bike to bike transfers are counted. Subway to subway transfers are ignored. 
-\item Transfer average time: Time spent in transfer, divided by number of transfers. , Measured in milliseconds \selfnote{calculated column?}
+\item Transfer average time: Time spent in transfer, divided by number of transfers. , Measured in milliseconds
 \item Transfer total time: Total time spent in transfer, measured in milliseconds
 \item Start/End time: Time stamp of when the trip started/ended. Date and time with milliseconds precision
 %Traffic zones
@@ -278,10 +294,21 @@ The traffic zones (small, middle and big areas) are divided by the Beijing Munic
   \label{fig:data/18areas}
 \end{figure}
 
-Every day, more than X records are collected. 50, 000 records are sampled every day for a month. \technicalDoubt{how much data can we handle} In this case, the samples correspond to April, which does not overlap with holidays and has a relatively stable weather thus diminishing the variance between bike and bus/subway traveler preferences. \domainDoubt{request a proper month data}
+Every day, more than X records are collected. 100, 000 records are sampled every day for a month. In this case, the samples correspond to April, which does not overlap with holidays and has a relatively stable weather thus diminishing the variance between bike and bus/subway traveler preferences.  \technicalDoubt{is 3 million records ok?}
+
+\subsubsection{Special considerations}
+\begin{description}%[align=right,labelwidth=2cm]
+\item[Travel distance by bike:] \domainDoubt{measure of bikes?}
+
+\item[Subway transfer:] \selfnote{A* algorithm for R-R} \domainDoubt{how to get transfer time in between railway?}
+
+\item[Transfer information:] Path link, Transfer number are calculated from Transfer detail. Transfer average time is calculated from transfer total time and transfer number. 
+
+\end{description}
+
 
 \subsubsection{Training data} \domainDoubt{do we have the correct classes?}
-Since we perform supervised learning we need training data for which we know if a record corresponds to a commuter or non-commuter. Such data is expensive and limited since it can  only been obtained by asking the users directly if they are commuters or not. Other annotated data is not available, and labeling new records falls beyond the scope of this project. \selfnote{if data is not sufficient (although previous work shows it is) I might need to consider annotating some data myself}
+Since we perform supervised learning we need training data for which we know if a record corresponds to a commuter or non-commuter. Such data is expensive and limited since it can  only been obtained by asking the users directly if they are commuters or not. Other annotated data is not available, and labeling new records falls beyond the scope of this project. \technicalDoubt{if data is not available, unsupervised or annotating some data myself or 'transfer learning'}
 
 The current training and validation set consists of data from 2015, collected and validated by Tu \cite{tu2016impact} \selfnote{make sure it was Tu}. The data is composed by:
 
@@ -290,7 +317,7 @@ The current training and validation set consists of data from 2015, collected an
 \item 1628 records of 497 non-commuters
 \end{itemize}
 
-For a total of 978 IC card IDs. \selfnote{I got these from Tu, check the parameters are the same as the ones given by Liang or search for IDs in current data}
+For a total of 978 IC card IDs. \selfnote{I got these from Tu, check the inputs are the same as the ones given by Liang or search for IDs in current data}
 
 \subsubsection{Testing data}
 Testing data is from 2016. More detailed
@@ -302,7 +329,7 @@ As first step for preprocessing the data, we perform a cleaning where we elimina
 \begin{enumerate}
 \item Eliminate records with missing data: ~10.9\% records eliminated
 \item Eliminate records with travel time <= 0: <0.01\% records eliminated
-\item Eliminate records with travel distance <= 0: ~10.5\% records eliminated \domainDoubt{how do we interpret these?}
+\item Eliminate records with travel distance <= 0: ~10.5\% records eliminated
 \item Eliminate records linked to users with insufficient trips: ~ 25.8\% records eliminated when requiring at least 2 trips per day.
 \end{enumerate}
 
@@ -310,37 +337,41 @@ This leaves ~52.6\% records available for usage.
 
 Insufficient trips regulated by a user input \selfnote{plot percentage of records and min records needed. Tune parameter}
 
-\subsubsection{Conversion}
-Parse route. Translate Chinese keywords. 
+\subsubsection{Route parsing} 
+We parse the routes using a combination of two techniques: regular expressions and simple character translation. 
+
+\begin{description}
+\item [Regular expression]
+    \begin{align*}
+    BIKE &= (bike.STATION-STATION) \\
+    SUBWAY &= (subway.LINE_{NAME}:STATION-LINE_{NAME}:STATION) \\
+    BUS &= (bus.ROUTE_{NAME}:) \\ \\
+    GENERAL &= (MODE.[LINE_{NAME}:]? STATION-[LINE_{NAME}:]? STATION-) 
+	\end{align*}    
+    
+    \begin{align*}
+    LINE_{NAME} &=      5 number line or NAME line \\
+    ROUTE_{NAME} &=      944 or night 32 (DIRECTION - DIRECTION)
+    \end{align*}
+
+\item [Chinese to English translation]
+\selfnote{how is this called in NLP?}
 
 Dictionary \selfnote{encode chinese in latex}
 
+\end{description}
+
 Example in Chinese -> English -> clean route
 
-Hourly time bins is standard practice in the field \cite{langlois2016inferring} \cite{ma2017understanding}, 
 
-\begin{figure}[H]
-  \centering
-  \begin{subfigure}[b]{.45\textwidth}
-  	\centering
-  	\includegraphics[width=\linewidth]{./images/start_hour_hist.png}
-  	\caption{Start hour}
-  \end{subfigure}
-  \begin{subfigure}[b]{.45\textwidth}
-  	\centering
-  	\includegraphics[width=\linewidth]{./images/end_hour_hist.png}
-  	\caption{End hour}
-  \end{subfigure}
-  \caption{Distribution of start/end hours for trips.1000 records sample.}
-  	\label{fig:preprocessing/start_end_hour}
-\end{figure}
 
-Figure \ref{fig:preprocessing/start_end_hour} shows clear morning and evening peak hours. 
+\subsubsection{Data patching}
+We note that num of transfers and path link are faulty, According to expert Quian Tu, this must be recalculated. \technicalDoubt{how to quote a person}
+\selfnote{recalculate num of transfers, and path link.}
 
-\subsubsection{Standardization}
-Whitening vs standardization: 
 
-Figure \ref{fig:preprocessing/distance_time_correlation} shows a clear correlation between travel distance and travel time. \technicalDoubt{Correlation between time and distance to be preserved?}
+\subsubsection{Transformation and Standardization}
+Whitening vs standardization: whitening eliminates correlations between the data. In our case those are relevant and we ant to keep them. \technicalDoubt{Correlation between time and distance to be preserved?}Figure \ref{fig:preprocessing/distance_time_correlation} shows a clear correlation between travel distance and travel time. 
 
 \begin{figure}
   \centering
@@ -349,7 +380,7 @@ Figure \ref{fig:preprocessing/distance_time_correlation} shows a clear correlati
   \label{fig:preprocessing/distance_time_correlation}
 \end{figure}
 
-Travel time and distance where standardized by subtracting the mean and forcing a standard deviation of 1 \selfnote{double check this} \selfnote{replace images once run with all data}
+Travel time and distance where standardized by subtracting the mean and forcing a unit standard deviation. \selfnote{double check this} \selfnote{replace images once run with all data}
 
 \begin{figure}[H]
   \centering
@@ -384,6 +415,26 @@ Travel time and distance where standardized by subtracting the mean and forcing 
 \end{figure}
  
 
+Hourly time bins is standard practice in the field \cite{langlois2016inferring} \cite{ma2017understanding}, 
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/start_hour_hist.png}
+  	\caption{Start hour}
+  \end{subfigure}
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/end_hour_hist.png}
+  	\caption{End hour}
+  \end{subfigure}
+  \caption{Distribution of start/end hours for trips.1000 records sample.}
+  	\label{fig:preprocessing/start_end_hour}
+\end{figure}
+
+Figure \ref{fig:preprocessing/start_end_hour} shows clear morning and evening peak hours. 
+
 \subsection{Data mining techniques}
 Coding using Python. Libraries and toolboxes such as pandas, sklearn, theano.
 
@@ -392,12 +443,18 @@ The temporal factors to be explored are represented by the start/end times, as w
 
 The spatial factors to be explored are represented by On/Off areas. \selfnote{and route lines?}. 
 
+\technicalDoubt{hierarchical features? data structure for this?}
+
 \subsubsection{Ensemble models}
 Ensemble models are chosen because of its robustness and modularity. Starting from two simple classifiers, assembled via bagging, the model can grow larger or more complex as needed and it may be extended beyond the scope of this Thesis Project. 
+
+\technicalDoubt{ensemble models for supervised learning, consensus clustering for unsupervised}
 
 \subsubsection{Decision trees and random forests}
 
 \subsubsection{Neural networks}
+
+
 
 \subsection{Correlation analysis}
 chi-test
