@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import random
 from sklearn.preprocessing import StandardScaler
 import cPickle
+import re
 
 ############ --- BEGIN default constants --- ############
 FILE_NAME_DEFAULT = '../Data/Travel chain sample data(50000).csv'
@@ -22,15 +23,15 @@ TRANSLATE_DICT_DEFAULT = {  '轨道' : 'R',      # subway
                             '自行车' : 'Z',    # bike
                             '线' : 'Line',
                             '号' : '',
-                            '夜' : 'N',
-                            '站' : 'Station ',
-                            '小区' : 'District ',
-                            '机场' : 'Airport ',
-                            '公交场' : 'Bus loop ',
-                            '北' : 'North ',
-                            '南' : 'South ',
-                            '东' : 'East ',
-                            '西' : 'West '}
+                            '夜' : 'N'}#,       # Night bus
+                            #'站' : 'Station ',
+                            #'小区' : 'District ',
+                            #'机场' : 'Airport ',
+                            #'公交场' : 'Bus loop ',
+                            #'北' : 'North ',
+                            #'南' : 'South ',
+                            #'东' : 'East ',
+                            #'西' : 'West '}
 ############ --- END default constants--- ############
 
 ############ --- BEGIN default directories --- ############
@@ -49,7 +50,7 @@ def _loadData(fileName):
 
 def _filter(data, condition, motivation):
     """
-    Remove records from data due to motivation accordint to Boolean condition
+    Remove records from data due to motivation according to Boolean condition
     """
     recordsBefore = len(data.index)
     data = condition
@@ -83,16 +84,34 @@ def _clean(data, min_records):
 
     return data
 
+def _testRegex():
+    regexstr_bus = "(公交.夜32(东湖-北官厅):东湖-夜32(东湖-北官厅):东直门北)"
+    regexstr_bike = "(自行车.阳光乐府南站-阳光乐府南站)"
+    regexstr_rail = "(轨道.123号线:古城-5号线:天通苑)"
+
+    mode = r'(?P<mode>轨道|公交|自行车)'
+    line = r'(?P<line>[[0-9]+号线|.线])'
+    route = r'(?P<route>[\d+|夜\d+])'
+
+    pattern = re.compile(mode+r'\.'+route)
+
+    matcher = pattern.search(regexstr_bus)
+
+    print(matcher.group('mode'))
+    print(u(matcher.group('route')))
+    #print(matcher.groups())
+
 def _parseRoute(data, chineseDict):
     """
     Parse 'TRANSFER_DETAIL' column to get route
     BIKE = (bike.STATION-STATION)
-    SUBWAY = (subway.LINE_NAME:STATION-LINE_NAME:STATION)
-    BUS = (bus.ROUTE_NAME:)
+    SUBWAY = (subway.LINE_NAME:STATION-LINE_NAME:STATION)   S.8:12424-8:536
+    BUS = (bus.ROUTE_NAME(DIRECTION-DIRECTION):STATION-ROUTE_NAME(DIRECTION-DIRECTION):STATION)
 
-    GENERAL = (MODE.[LINE_NAME:]? STATION-[LINE_NAME:]? STATION-)
-    # LINE_NAME example        5 number line or NAME line
-    # ROUTE_NAME example       944 or night 32 (DIRECTION - DIRECTION)
+    GENERAL = (MODE.[X_NAME:]? STATION-[X_NAME:]? STATION)[->stuff]?
+    # MODE              轨道|公交|自行车
+    # LINE_NAME         5 number line | NAME line
+    # ROUTE_NAME        944 | night 32
     """
 
     # TODO Create stops vocabulary
@@ -137,11 +156,6 @@ def _plotDistribution(sample, plot_dir, variable_name, column_name):
     fig, ax = plt.subplots()
     sample[column_name].plot.hist(ax=ax, bins=20)
     plt.savefig(plot_dir+variable_name+'_hist.png', format='png')
-
-    # Plot variable box
-    fig, ax = plt.subplots()
-    sample[column_name].plot.box(ax=ax)
-    plt.savefig(plot_dir+variable_name+'_box.png', format='png')
 
 def _standarize(rawData, plot_distr, plot_dir):
     """
@@ -214,7 +228,7 @@ def preprocess():
     #print("------------------------ Extract weekdays -------------------------")
     # TODO http://nbviewer.jupyter.org/github/jvns/pandas-cookbook/blob/v0.1/cookbook/Chapter%204%20-%20Find%20out%20on%20which%20weekday%20people%20bike%20the%20most%20with%20groupby%20and%20aggregate.ipynb
 
-    print("-------------------------- Standarizing ---------------------------")
+    print("-------------------------- Standardizing --------------------------")
     preprocessedData = _standarize(withBinsData, FLAGS.plot_distr, FLAGS.plot_dir)
 
     #print("--------------------------- Store  data ---------------------------")
@@ -232,7 +246,8 @@ def main(_):
     """
     print_flags()
     #TODO Make directories if they do not exists yet
-    preprocess()
+    _testRegex()
+    #preprocess()
 
 if __name__ == '__main__':
     # Command line arguments
