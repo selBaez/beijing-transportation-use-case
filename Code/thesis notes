@@ -8,7 +8,7 @@ one file per model				save model type
 	mlp					train or error correct (backward pass)
 	bayesian
 
-one file for trainning (ensemble)		save assembled model
+one file for training (ensemble)		save assembled model
 
 
 one file for testing 				metrics for accuracy
@@ -32,3 +32,4 @@ parse route using regular expressions, translate dictionary and stops vocabulary
 
 
 distance calculation for bikes? dunno
+How much data to handle? 100,000 per day * month = 3,000,000 ~ 33% kept

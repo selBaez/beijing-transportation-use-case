@@ -98,7 +98,7 @@ def _testRegex():
     matcher = pattern.search(regexstr_bus)
 
     print(matcher.group('mode'))
-    print(u(matcher.group('route')))
+    print(matcher.group('route'))
     #print(matcher.groups())
 
 def _parseRoute(data, chineseDict):

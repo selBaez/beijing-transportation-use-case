@@ -61,7 +61,7 @@
 \section{Introduction}
 
 \subsection{Transportation domain}
-Urban public transportation includes systems that are available for use by anyone in urban areas. Its facilities are commonly composed by buses, subway/metro lines, light rails, tramways, trains and others. As a network, they provide service for the majority of citizens in urban areas.\citep{vuchic1900urban}
+Urban public transportation includes systems that are available for use by anyone in urban areas. Its facilities are commonly composed by buses, subway/metro lines, light rails, tramways, trains, taxis and others. As a network, they provide service for the majority of citizens in urban areas.\citep{vuchic1900urban}
 
 Figure \ref{fig:transportation/passenger} shows the passsenger transport usage, as million passengers per kilometer. This represents the transport of a passenger for one kilometer. From the top image we note that United Stated, China, Germany, France, Italy, and United Kingdom contitute the six countries with the most passenger transport, according to their reported data from 2015 or later.\cite{OECD2017passenger} 
 
@@ -69,12 +69,12 @@ Furthermore, historical data in the bottom image reveals the 15 years behavior f
 
 \begin{figure}[H]
   \centering
-  \begin{subfigure}[b]{.8\textwidth}
+  \begin{subfigure}[b]{.85\textwidth}
   	\centering
   	\includegraphics[width=\linewidth]{./images/OECD_passengers_absolute.png}
   	\caption{Passenger transport data, per country.}
   \end{subfigure}
-  \begin{subfigure}[b]{.8\textwidth}
+  \begin{subfigure}[b]{.85\textwidth}
   	\centering
   	\includegraphics[width=\linewidth]{./images/OECD_passengers_increase.png}
   	\caption{Historical data for the top six countries with most passenger transport usage.}
@@ -88,36 +88,40 @@ Though it is a more sustainable alternative compared to private car usage, publi
 Consequently, public transportation directly relates to energetic demand, since its facilities are mostly petroleum or electrical based. In terms of global energy consumption, passenger transportation accounts for about 25\% of the total world energy consumption. Furthermore, the tarnsportation sector consupmtion increases at an annual average rate of 1.4.\% \cite{eia2016energy} This may bring further economical implications for countries with high public transportation demand.
 
 \subsubsection{Who are the commuters?}
-A major proportion of public transport users is represented by commuters. These are regular users of public transit, with consistent spatio-temporal patterns in their travels. Driven by a routine, commuters travel back and forth from specific places, commonly represented by their home, work, school, or other similar locations.\selfnote{Find proper commuter definition in the domain}
+A major proportion of public transport users is represented by commuters. These are regular users of public transit, with consistent spatio-temporal patterns in their travels. Driven by a routine, commuters travel back and forth from specific places, commonly represented by their home, work, school, or other similar locations.
 
-As commuters are frequent users of public transit, the  conditions of the public network directly influence commuter's personal life and generally impacts their quality of life. Intuitively, if the commuting experience is unpleasant, daily travel can bring distress to commuters and even repel them from using the public transport at all. Several studies have looked into public transit evaluation. The most common aspects of it include travel time, average speed, delays, accessibility, service coverage, crowded level, facilities quality, and fare rate. Weng et al \cite{weng2013bus} identified five categories (Convenience, rapid, Reliability and Comfort) that summarize commuters needs.
+As commuters are frequent users of public transit, the  conditions of the public network directly influence commuters' personal well being and generally impacts their quality of life. Intuitively, if the commuting experience is unpleasant, daily travel can bring distress to commuters and even repel them from using the public transport at all. Several studies have looked into public transit evaluation from different perspectives, including commuters' needs. The most common aspects of it include: travel time, average speed, delays, accessibility, service coverage, crowded level, facilities quality, and fare rate. Weng et al \cite{weng2013bus} identified five categories (Convenience, rapid, Reliability and Comfort) that summarize commuters priorities when choosing to travel by public transport.
  
 From both of the above, the large presence of commuters and their known needs, it follows that identifying commuters can help in creating a sustainable public transportation network. Long term planning and policies for improving the overall experience and aid urban areas on a large scale.
 
-Transportation follows swarm behavior. Based on individual travels and routines, on a larger scale travelers exhibit peculiar characteristics. Both levels of understanding are crucial.   
+Transportation follows swarm behavior. Based on individual travels and routines, on a larger scale travelers exhibit peculiar characteristics. Both levels of understanding are crucial.  \selfnote{expand on this} 
 
 \subsection{The city of Beijing}
-The city of Beijing presents with a special case of urbanization and rapid industralization. With more than 21.5 million people, it faces challenges that smaller cities do not. \selfnote{reference}
+The city of Beijing presents a special case of urbanization and rapid industrialization. This is reflected in a sudden population growth of 20\% per decade since 1960, with the largest increase of 44\% in the last ten years. The latest official census in 2010 reported that the Urban agglomeration of Beijing (including Beijing itself and its adjacent suburban areas) had population of 19,612,368. The UN World Urbanization Prospects estimates the 2017 population at over 22 million inhabitants. \cite{world2016beijing}
 
 Air pollution in Beijing has become an environmental issue due to its pollutant emissions. \cite{zhang2016air}
 
-Beijing has more than 1000 bus routes and 18 subway lines, and it continues to expand every year. This results in more than 28,000 stops combined. \selfnote{reference Beijing transportation center}. 
-The Beijing subway has 19 lines with 319 stations in operation. On average around five million people ride the subway daily.
-There are more than 882 bus lines with 28,000 buses in operation. It carries over 13.39 people a day.
+Beijing public transport is composed of buses, subway and bicycles. It is continuously expanding. 
 
-Additionally, Beijing has implemented several Bike sharing systems, with specific dropping stations. \domainDoubt{where to get this info}.
+\begin{description}
+\item[Bus:] In 2015, there were 876 bus lines with 23,287 buses in operation. The bus network is the most extensive mode of transportation, expanding over 20,186 km. It observes an average daily traffic volume of 10.98 million passengers, with the highest daily volume reaching 13.07 million on one day. \cite{beijing2016annual}
 
-By the usage of smart transit cards, collection of payment and transaction monitoring is possible. Buses, subways, bikes and taxis are monitored. Real time and historical data is available. Over 90\% of public transit users are smart card holders. \selfnote{reference}.
+\item[Subway:] The Beijing subway has 18 lines with 334 stations, of which 53 are transfer stations. In 2015 it had an operating length of 554 km, with 5,024 vehicles running. \cite{beijing2016annual} Its network is is split by two operators: the state-owned Beijing Mass Transit Railway Operation Corp (operating 15 lines), and the joint Hong Kong venture Beijing MTR Corp (operating 3 lines).
 
-Incentive for using Yikatong card since bus is half the price. 
+Beijing's subway has an average daily traffic volume of 9.11 million passengers, with a maximum recorded volume of 11.66 million passengers. As such, it is the second busiest metro system in the world, providing 3,410 million annual journeys. Compared to the service provided in 2012, the system observed a 39\% increase in usage by 2014. It is also the second longest metro network, surpassed by Shanghai by only 21 km.  \cite{uitp2015world} 
+
+\item[Bicycles:] Beijing first implemented public bicycle systems in 2012. As of 2015, in total, 67,000 bikes are available for rental with 2,700 pick up/drop off points spread across the city. \cite{beijing2016annual}
+\end{description}
 
 \subsection{Motivation}
 Interdisciplinary study between Artificial Intelligence and Metropolitan Transportation. Introduce data mining techniques to a data rich domain. 
 
+Many prediction algorithms available. Constant refinement, state of the art must be applied to real life and large impact situations. Domain experts must focus on analyzing insights and using them, not on techniques for curating and making sense out of raw data. 
+
 Relevance of project on both areas. 
 
 \subsubsection{Societal context}
-Commuters use the public transport network regularly to go to work, school or other follow other routines. They need reliable means of transportation. \selfnote{reference: what do commuters care about}.
+A survey conducted in 2009 showed that 80\% of the public transport passengers' complaints in Beijing were related to the network being slow and time-consuming, inconvenient to transfer, unpunctual and unreliable. Commuters use the public transport network regularly to perform their routines, and thus need efficient and reliable means of transportation. Flaws and failures in the network reduce the attraction of public transport. \cite{beijing2009research}
 
 The city of Beijing faces a large imbalance between residential and working areas. \selfnote{reference}. Targeting this group brings the largest benefits to the public.  
 
@@ -130,11 +134,12 @@ Surveys are costly and based on self-report, which by itself has bias problems. 
 
 Aggregated methods miss the interactions between individuals that cause the collective behavior. 
 
-Technology has reached the data collection point, but has yet to reach the analysis part. Transit cards are capable of recording spatio-temporal information at an individual level over long periods of time. This generates large amounts of data. 
+\textbf{Big Data}
+In the last years, smart card systems have become more popular, making it possible to monitor travelers transactions and facilitating fare collection. Several cities have implemented such systems, for example the Octopus card in Hong Kong\cite{chau2003octopus}, Oyster card in London \cite{blythe2004improving}, OV-chipkaart in The Netherlands \cite{de2008analysis}, and Yikatong card in Beijing \cite{chan2010tactical}, to name a few.
 
-In the last years, smart cards systems appeared, making it possible to track travelers and facilitating the fare collection. Examples are Octopus card in Hong Kong, Oyster card in London, OV-chipcard in The Netherlands and IC (Yikatong) \domainDoubt{real name of card} card in Beijing, to name a few.
+Incentive for using Yikatong card since bus is half the price. Over 90\% of public transit users are smart card holders. \cite{ma2017understanding}
 
-Many prediction algorithms available. Constant refinement, state of the art must be applied to real life and large impact situations. Domain experts must focus on analyzing insights and using them, not on techniques for curating and making sense out of raw data. 
+Technology has reached the data collection point, but has yet to reach the analysis part. Transit cards are capable of recording spatio-temporal information at an individual level over long periods of time. This generates large amounts of historical data that can be mined.
 
 \subsection{Thesis organization}
 This Thesis is organized as follows:
@@ -162,23 +167,27 @@ The latest work on the field corresponds to Ma et Al. \cite{ma2017understanding}
 
 A common practice, as used by \cite{ma2017understanding} and \cite{langlois2016inferring} is to divide the day into -hourly or half-and-hour- time bins.
 
-\textbf{Volume of data:} \selfnote{turn to table}
-
-\cite{tu2016impact} 978 cards
-
-\cite{morency2007measuring} 2,233,300 boardings by 7,118 cards 
-
-\cite{langlois2016inferring} 3 million stages 33,026 users
-
-\cite{bhaskar2015passenger} 34.8 million transactions made by 1
-million cards
-
-\cite{ma2013mining} 3 million cards
-
-\cite{ortega2013classification} 65 million records on 5.7 million cards
-
-\cite{ma2017understanding} 364 million records 18 million cards
-
+\textbf{Volume of data:}
+The volume of data analyzed by previous work ranges from hundreds of smart cards to tens of millions of smart cards, leading to up to hundreds of millions of individual smart card transactions. The details are summarized in Table \ref{table:volumeData}.
+ 
+\begin{table}[h!]
+\centering
+\begin{tabular}{||c c c c||} 
+ \hline
+ Authors & Year of publication & Records & Unique smart cards \\ [0.5ex] 
+ \hline\hline
+ Tu et al. \cite{tu2016impact} & 2016 & Unknown & 978 \\ 
+ Morency et al. \cite{morency2007measuring} & 2007 & 2.2 million & 7,118 \\
+ Langlois et al. \cite{langlois2016inferring} & 2016 & 3 million & 33,026 \\
+ Bhaskar et al. \cite{bhaskar2015passenger} & 2015 & 34.8 million & 1 million\\
+ Ma et al. \cite{ma2013mining} & 2013 & Unknown & 3 million \\
+ Ortega \cite{ortega2013classification} & 2013 & 65 million & 5.7 million\\
+ Ma et e. \cite{ma2017understanding} & 2017 & 364 million & 18 million \\ [1ex] 
+ \hline
+\end{tabular}
+\caption{Volume of data analyzed by different authors}
+\label{table:volumeData}
+\end{table}
 
 
 \subsection{Classifying and clustering spatio-temporal data}
@@ -203,36 +212,35 @@ k-nearest neighbor \cite{ortega2013classification}
 
 \newpage
 \section{Research objective}
-The objective of this project is to identify and characterize commuters in the city of Beijing by using IC card data. As such, the underlying goal is to find patterns in the spatio-temporal data of public transport travelers, and interpret the results using domain knowledge by experts in the Transportation domain.  
+The objective of this project is to identify and characterize commuters in the city of Beijing by using smart card data. As such, the underlying goal is to find patterns in the spatio-temporal data of public transport travelers, and interpret the results using domain knowledge by experts in the Transportation domain.  
 
 \subsection{Research questions}
 The min objective is further broken down into answering the following research questions: 
 
 \begin{enumerate}
 \item How accurately can commuters and non-commuters be identified using an ensemble model? How does this compare to the previous SVM model?
-\item What is the minimal set of information needed from IC card data to reach an acceptable accuracy in classification?
+\item What is the minimal set of information needed from smart card data to reach an acceptable accuracy in classification?
 \item To what extent is clustering commuters by its behavior informative to transportation specialists? 
 \end{enumerate}
 
 \subsubsection{Definition of terms}
-A commuter is a public transit user whose IC card data reveals repeatable patterns in time and space \domainDoubt{over a working week (5 days, Monday through Friday).}
+A commuter is a public transit user whose smart card data reveals repeatable patterns in time and space.
 
-A trip is a sequence of IC card transactions, including transfers, with an origin and destination. A trip is also represented as a record in the data, as it will be further explained in Section \ref{sec:data}
+A trip is a sequence of smart card transactions, including transfers, with an origin and destination. A trip is also represented as a record in the data, as it will be further explained in Section \ref{sec:data}
 
 A transfer is a change in transportation mode. Transportation modes include Bus, Subway, and Bike. 
 
-We make the assumption that IC card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. As discussed with domain expert Quian Tu, although some people may own more than one card, this is a minority.
+We make the assumption that smart card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. As discussed with domain expert Quian Tu, although some people may own more than one card, this is a minority.
 
 \subsection{Scope and structure}
-\selfnote{revise this part}
 This project is divided three main stages: 
 
 \begin{description}[align=right,labelwidth=2cm]
-\item[PART I] Classify commuters versus non-commuters. Ensemble model compared to SVM
+\item[PART I] Classify commuters versus non-commuters by using an ensemble model. We examine the performance of our model and make a comparison with Tu's SVM model \cite{tu2016impact}.
 
-\item[PART II] The set of features will be revised to disregard redundant information.
+\item[PART II] Revise features used in previous model in order to identify the most informative features and disregard redundant information. An extensive analysis of spatio-temporal properties will be done, combining transportation domain knowledge and statistical tools.
 
-\item[PART III] Commuters will be further clustered according to patterns in their behaviors that will emerge from all variables of the IC card data. The clusters will be analyzed and interpreted to find distinctive characteristics that may be judged as useful by transportation specialists. 
+\item[PART III] Commuters will be further clustered according to patterns in their travel behaviors. The clusters will be analyzed and interpreted to find distinctive characteristics that may be deemed as informative for transportation specialists. 
 \end{description}
 
 
@@ -240,7 +248,7 @@ This project is divided three main stages:
 \section{Methodology}
 \subsection{The data}
 \label{sec:data}
-Every record int he data represents a trip performed by a specific IC card. As such, it contains the following data fields:
+Every record int he data represents a trip performed by a specific smart card. As such, it contains the following data fields:
 
 \begin{itemize}
 \item Data date: Year, month and day that the trip was made
@@ -248,7 +256,7 @@ Every record int he data represents a trip performed by a specific IC card. As s
 \item Path link: Mode of transportation. B for bus, R for subway, Y for bicycle. Transfers between modes are shown by a dash. \footnote{Example: B-B is Bus to Bus.} 
 \item Travel time: Time spent in vehicles, measured in milliseconds
 \item Travel distance: Distance traveled, measured in meters as measured by route. 
-\item Transfer number: Number of changes in travel mode during the trip. Regarding transfers between same travel mode, bus to bus, and bike to bike transfers are counted. Subway to subway transfers are ignored. 
+\item Transfer number: Number of changes in travel mode during the trip. Regarding transfers between same travel mode, bus to bus, and bicycle to bicycle transfers are counted. Subway to subway transfers are ignored. 
 \item Transfer average time: Time spent in transfer, divided by number of transfers. , Measured in milliseconds
 \item Transfer total time: Total time spent in transfer, measured in milliseconds
 \item Start/End time: Time stamp of when the trip started/ended. Date and time with milliseconds precision
@@ -258,13 +266,12 @@ Every record int he data represents a trip performed by a specific IC card. As s
 \item On/Off big traffic area: Integer from 1 to 60
 %Municipal zones
 \item On/Off ring road: Integer 1 to 6
-\item On/Off area: Integer from 1 to 18 See Figure \ref{fig:data/18areas}
-%http://www.ebeijing.gov.cn/Government/Administration_region/}
+\item On/Off area: Integer from 1 to 18
 \item ID: record identification number created by joining the following: hour | time stamp of beginning of trip | card code
-\item Transfer detail: Station name, line number, mode of transportation
+\item Transfer detail: Mode of transportation, as well as line/route number and stations for boarding and alighting. More detail provided in Section \ref{sec:route}
 \end{itemize}
 
-The traffic zones (small, middle and big areas) are divided by the Beijing Municipal Institute of City Planning and Design (BICP) \selfnote{reference}. They are specific in different degrees, as shown in Figure \ref{fig:data/traffic_zones}. In general, the division principles correspond to the geopolitical environment and administrative planning, for example roads, villages and others. The 6 ring road and 18 areas districts are divided by the Beijing Municipal Government \selfnote{reference}. The division is unique in Beijing. The 18 districts and counties are shown in Figure \ref{fig:data/18areas}. According to domain expert Liang Quan, these divisions are sufficiently informative for traffic analysis. \technicalDoubt{how to quote a person}
+The traffic zones (small, middle and big areas) are divided by the Beijing Municipal Institute of City Planning and Design (BICP) \selfnote{reference}. They are specific in different degrees, as shown in Figure \ref{fig:data/traffic_zones}. In general, the division principles correspond to the geopolitical environment and administrative planning, for example roads, villages and others. The 6 ring road and 18 areas districts are divided by the Beijing Municipal Government \selfnote{reference}. The division is unique in Beijing. The 18 districts and counties are shown in Figure \ref{fig:data/18areas}. According to domain expert PhD. Liang Quan, these divisions are sufficiently informative for traffic analysis \cite{liang}.
 
 \begin{figure}[H]
   \centering
@@ -294,21 +301,22 @@ The traffic zones (small, middle and big areas) are divided by the Beijing Munic
   \label{fig:data/18areas}
 \end{figure}
 
-Every day, more than X records are collected. 100, 000 records are sampled every day for a month. In this case, the samples correspond to April, which does not overlap with holidays and has a relatively stable weather thus diminishing the variance between bike and bus/subway traveler preferences.  \technicalDoubt{is 3 million records ok?}
+Every day, more than 13 million records are collected, with approximately 5 million corresponding to subway trips, 8 million corresponding to bus trips and 100,000 corresponding to bicycle trips. For this project, 100, 000 records are sampled every day for a month. In this case, the samples correspond to November 2014, which does not overlap with holidays and has a relatively stable weather thus diminishing the variance between bicycle and bus/subway traveler preferences.
 
 \subsubsection{Special considerations}
 \begin{description}%[align=right,labelwidth=2cm]
-\item[Travel distance by bike:] \domainDoubt{measure of bikes?}
+\item[Travel distance by bike:] Since bicycles do not have predefined routes, the distance cannot be directly recorded. However, it is inferred by using the travel time and a static average speed for cyclist. 
 
-\item[Subway transfer:] \selfnote{A* algorithm for R-R} \domainDoubt{how to get transfer time in between railway?}
+\item[Subway transfer:] Transfers between subways lines cannot be tracked since a single check-in gives access to the traveler to all the subway network. In order to infer the transfer detail, the A* algorithm is used to calculate the most likely transfer sequence, given the boarding and alighting stations. 
+Similarly to the bicycle missing information, the transfer time cannot be directly recorded. Using a static average walking speed and the known distance in transfer stations, the transfer time is calculated. 
 
 \item[Transfer information:] Path link, Transfer number are calculated from Transfer detail. Transfer average time is calculated from transfer total time and transfer number. 
 
 \end{description}
 
 
-\subsubsection{Training data} \domainDoubt{do we have the correct classes?}
-Since we perform supervised learning we need training data for which we know if a record corresponds to a commuter or non-commuter. Such data is expensive and limited since it can  only been obtained by asking the users directly if they are commuters or not. Other annotated data is not available, and labeling new records falls beyond the scope of this project. \technicalDoubt{if data is not available, unsupervised or annotating some data myself or 'transfer learning'}
+\subsubsection{Training data}
+Since we perform supervised learning we need training data for which we know if a record corresponds to a commuter or non-commuter. Such data is expensive and limited since it can  only been obtained by asking the users directly if they are commuters or not. Other annotated data is not available, and labeling new records falls beyond the scope of this project.
 
 The current training and validation set consists of data from 2015, collected and validated by Tu \cite{tu2016impact} \selfnote{make sure it was Tu}. The data is composed by:
 
@@ -317,7 +325,7 @@ The current training and validation set consists of data from 2015, collected an
 \item 1628 records of 497 non-commuters
 \end{itemize}
 
-For a total of 978 IC card IDs. \selfnote{I got these from Tu, check the inputs are the same as the ones given by Liang or search for IDs in current data}
+For a total of 978 smart card IDs. \selfnote{search for IDs in current data}
 
 \subsubsection{Testing data}
 Testing data is from 2016. More detailed
@@ -338,6 +346,7 @@ This leaves ~52.6\% records available for usage.
 Insufficient trips regulated by a user input \selfnote{plot percentage of records and min records needed. Tune parameter}
 
 \subsubsection{Route parsing} 
+\label{sec:route}
 We parse the routes using a combination of two techniques: regular expressions and simple character translation. 
 
 \begin{description}
@@ -366,7 +375,7 @@ Example in Chinese -> English -> clean route
 
 
 \subsubsection{Data patching}
-We note that num of transfers and path link are faulty, According to expert Quian Tu, this must be recalculated. \technicalDoubt{how to quote a person}
+We note that num of transfers and path link are faulty, According to expert PhD. Tu Qiang, this must be recalculated \cite{tommy}.
 \selfnote{recalculate num of transfers, and path link.}
 
 
