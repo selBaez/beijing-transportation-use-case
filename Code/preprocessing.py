@@ -17,7 +17,6 @@ import re
 ############ --- BEGIN default constants --- ############
 FILE_NAME_DEFAULT = '../Data/Travel chain sample data(50000).csv'
 MIN_RECORDS_DEFAULT = 2
-PLOT_DISTR_DEFAULT = True
 TRANSLATE_DICT_DEFAULT = {  '轨道' : 'R',      # subway
                             '公交' : 'B',      # bus
                             '自行车' : 'Z',    # bike
@@ -84,28 +83,83 @@ def _clean(data, min_records):
 
     return data
 
-def _testRegex():
+def _gatherStations(data):
+    pattern = re.compile(r'[:](.+?)[-|)]')
+    station = pattern.findall(data)
+    print('\nStations:')
+    print(station[0])
+    print(station[1],'\n')
+
+def _extractTripComponents(trip):
     regexstr_bus = "(公交.夜32(东湖-北官厅):东湖-夜32(东湖-北官厅):东直门北)"
+    regexstr_bus2 = "(公交.运通205(地铁上地站-史各庄):东北旺西路北口-运通205(地铁上地站-史各庄):史各庄)"
     regexstr_bike = "(自行车.阳光乐府南站-阳光乐府南站)"
-    regexstr_rail = "(轨道.123号线:古城-5号线:天通苑)"
+    regexstr_rail = "(轨道.5号线:古城-5号线:天通苑)"
+    regexstr_rail2 = "(轨道.机场线:东直门-机场线:2号航站楼)"
+
+    print('Trip details: ',trip)
 
     mode = r'(?P<mode>轨道|公交|自行车)'
-    line = r'(?P<line>[[0-9]+号线|.线])'
-    route = r'(?P<route>[\d+|夜\d+])'
 
-    pattern = re.compile(mode+r'\.'+route)
+    pattern = re.compile(mode)
+    matcher = pattern.search(trip)
 
-    matcher = pattern.search(regexstr_bus)
+    if matcher.group('mode') == '轨道':
+        print('\nParsing a metro trip')
 
-    print(matcher.group('mode'))
-    print(matcher.group('route'))
-    #print(matcher.groups())
+        line_b = r'(?P<line_b>[0-9]+号线|.+?线)'
+        station_b = r'(?P<station_b>.+?)'
+        line_a = r'(?P<line_a>[0-9]+号线|.+?线)'
+        station_a = r'(?P<station_a>.+?)'
+
+        pattern = re.compile(r'\('+mode+r'[.]'+line_b+r'[:]'+station_b+r'[-]'+line_a+r'[:]'+station_a+r'[)]')
+        matcher = pattern.search(trip)
+
+        print('Mode:                  ',matcher.group('mode'))
+        print('Boarding Line:         ',matcher.group('line_b'))
+        print('Boarding Station:      ',matcher.group('station_b'))
+        print('Alighting Line:        ',matcher.group('line_a'))
+        print('Alighting Station:     ',matcher.group('station_a'))
+
+    elif matcher.group('mode') == '公交':
+        print('\nParsing a bus trip')
+
+        route_b = r'(?P<route_b>[0-9]+|.+?[0-9]+)'
+        direction_b = r'(?P<direction_b>[(].+?[)])'
+        station_b = r'(?P<station_b>.+?)'
+        route_a = r'(?P<route_a>[0-9]+|.+?[0-9]+)'
+        direction_a = r'(?P<direction_a>[(].+?[)])'
+        station_a = r'(?P<station_a>.+?)'
+
+        pattern = re.compile(r'\('+mode+r'[.]'+route_b+direction_b+r'[:]'+station_b+r'[-]'+route_a+direction_a+r'[:]'+station_a+r'[)]')
+        matcher = pattern.search(trip)
+
+        print('Mode:                  ',matcher.group('mode'))
+        print('Boarding Route:        ',matcher.group('route_b'))
+        print('Boarding Direction     ',matcher.group('direction_b'))
+        print('Boarding Station:      ',matcher.group('station_b'))
+        print('Alighting Route:       ',matcher.group('route_a'))
+        print('Alighting Direction    ',matcher.group('direction_a'))
+        print('Alighting Station:     ',matcher.group('station_a'))
+
+    elif matcher.group('mode') == '自行车':
+        print('Parsing a bike trip')
+
+        station_b = r'(?P<station_b>.+?)'
+        station_a = r'(?P<station_a>.+?)'
+
+        pattern = re.compile(r'\('+mode+r'[.]'+station_b+r'[-]'+station_a+r'[)]')
+        matcher = pattern.search(trip)
+
+        print('Mode:                  ',matcher.group('mode'))
+        print('Boarding Station:      ',matcher.group('station_b'))
+        print('Alighting Station:     ',matcher.group('station_a'))
 
 def _parseRoute(data, chineseDict):
     """
     Parse 'TRANSFER_DETAIL' column to get route
     BIKE = (bike.STATION-STATION)
-    SUBWAY = (subway.LINE_NAME:STATION-LINE_NAME:STATION)   S.8:12424-8:536
+    SUBWAY = (subway.LINE_NAME:STATION-LINE_NAME:STATION)
     BUS = (bus.ROUTE_NAME(DIRECTION-DIRECTION):STATION-ROUTE_NAME(DIRECTION-DIRECTION):STATION)
 
     GENERAL = (MODE.[X_NAME:]? STATION-[X_NAME:]? STATION)[->stuff]?
@@ -115,9 +169,11 @@ def _parseRoute(data, chineseDict):
     """
 
     # TODO Create stops vocabulary
+    _gatherStations(data['TRANSFER_DETAIL'][0])
 
     # TODO Parse with regular expressions
     # for every record in data
+    _extractTripComponents(data['TRANSFER_DETAIL'][0])
         # replace mode : dictionary
         # replace line/route : dictionary
         # replace stops : vocabulary
@@ -157,12 +213,12 @@ def _plotDistribution(sample, plot_dir, variable_name, column_name):
     sample[column_name].plot.hist(ax=ax, bins=20)
     plt.savefig(plot_dir+variable_name+'_hist.png', format='png')
 
-def _standarize(rawData, plot_distr, plot_dir):
+def _standardize(rawData, plot_distr, plot_dir):
     """
     Rescale features to have mean 0 and std 1
     """
 
-    if plot_distr:
+    if plot_distr == 'True':
         # Sample 1000 random points
         indices = random.sample(rawData.index, 1000)
         sample = rawData.ix[indices]
@@ -185,19 +241,19 @@ def _standarize(rawData, plot_distr, plot_dir):
     scaler = StandardScaler()
     rawData[['TRAVEL_TIME', 'TRAVEL_DISTANCE']] = scaler.fit_transform(rawData[['TRAVEL_TIME', 'TRAVEL_DISTANCE']])
 
-    if plot_distr:
+    if plot_distr == 'True':
         # Sample 1000 random points
         indices = random.sample(rawData.index, 1000)
         sample = rawData.ix[indices]
 
         print("Plotting standarized travel time and distance distributions")
-        _plotDistribution(sample, plot_dir, 'time_standarized', 'TRAVEL_TIME')
-        _plotDistribution(sample, plot_dir, 'distance_standarized', 'TRAVEL_DISTANCE')
+        _plotDistribution(sample, plot_dir, 'time_standardized', 'TRAVEL_TIME')
+        _plotDistribution(sample, plot_dir, 'distance_standardized', 'TRAVEL_DISTANCE')
 
         # Plot time vs distance
         fig, ax = plt.subplots()
         sample.plot(x='TRAVEL_DISTANCE',y='TRAVEL_TIME', ax=ax, kind='scatter')
-        plt.savefig(plot_dir+'distance_vs_time_standarized.png', format='png')
+        plt.savefig(plot_dir+'distance_vs_time_standardized.png', format='png')
 
     return rawData
 
@@ -212,24 +268,27 @@ def preprocess():
     Read raw data, clean it and store preprocessed data
     """
     print("---------------------------- Load data ----------------------------")
-    fullData = _loadData(FLAGS.file_name)
+    data = _loadData(FLAGS.file_name)
 
     print("---------------------------- Cleaning -----------------------------")
-    cleanData = _clean(fullData, FLAGS.min_records)
+    data = _clean(data, FLAGS.min_records)
 
     ########################### Feature  engineering ###########################
 
     print("-------------------------- Parse  route ---------------------------")
-    withRouteData = _parseRoute(cleanData, TRANSLATE_DICT_DEFAULT)
+    data = _parseRoute(data, TRANSLATE_DICT_DEFAULT)
+
+    print("------------------- Calculate  transfer number --------------------")
+    #data = _parseRoute(data, TRANSLATE_DICT_DEFAULT)
 
     print("-------------------- Creating time stamp bins ---------------------")
-    withBinsData = _to_time_bins(withRouteData)
+    data = _to_time_bins(data)
 
     #print("------------------------ Extract weekdays -------------------------")
     # TODO http://nbviewer.jupyter.org/github/jvns/pandas-cookbook/blob/v0.1/cookbook/Chapter%204%20-%20Find%20out%20on%20which%20weekday%20people%20bike%20the%20most%20with%20groupby%20and%20aggregate.ipynb
 
     print("-------------------------- Standardizing --------------------------")
-    preprocessedData = _standarize(withBinsData, FLAGS.plot_distr, FLAGS.plot_dir)
+    preprocessedData = _standardize(data, FLAGS.plot_distr, FLAGS.plot_dir)
 
     #print("--------------------------- Store  data ---------------------------")
 
@@ -246,8 +305,7 @@ def main(_):
     """
     print_flags()
     #TODO Make directories if they do not exists yet
-    _testRegex()
-    #preprocess()
+    preprocess()
 
 if __name__ == '__main__':
     # Command line arguments
@@ -256,7 +314,7 @@ if __name__ == '__main__':
                         help='Data file to load.')
     parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
                         help='Traveler is required to have at least this number of records.')
-    parser.add_argument('--plot_distr', type = bool, default = PLOT_DISTR_DEFAULT,
+    parser.add_argument('--plot_distr', type = str, default = True,
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--plot_dir', type = str, default = PLOT_DIR_DEFAULT,
                         help='Directory to which save plots.')
