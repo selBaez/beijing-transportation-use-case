@@ -151,13 +151,12 @@ First we do a literature review for previous work on mining transit data and for
 \section{Literature review}
 
 \subsection{Data mining on transit card data}
-Preprocess data by Wang in BJUT lab. \cite{wang2014research}
-
-Data mining to identify transit use cycles in Canadian smart card data \cite{morency2007measuring}
+%Preprocess data by Wang in BJUT lab. \cite{wang2014research}
+Morency et al. looked at spatio-temporal information in Canadian smart card data. On the one hand, they examine spatial variability by measuring the number of distinct stops a smart card user visits, and the frequency of each stop. On the other hand, they examine temporal variability by clustering the boarding times of each smart card into fours clusters using the k-means algorithm. \cite{morency2007measuring} \selfnote{revise}
 
 Density Based Scanning Algorithm with Noise to classify travelers according to their travel patterns.  \cite{ma2013mining}
 
-Passenger segmentation by K-means clustering \cite{bhaskar2015passenger}
+Bhaskar et al. did passenger segmentation using only smart card data. They use a two level DBSCAN algorithm for investigating spatial features, such as frequency in Origin-Destination pairs. Separately, they applied DBSCAN to temporal features to determine most frequent boarding times.   \cite{bhaskar2015passenger} \selfnote{revise}
 
 Machine learning for commuters identification. SVM with 94\% accuracy. \cite{tu2016impact}
 
@@ -165,24 +164,24 @@ Langlois et al. \cite{langlois2016inferring} present an innovative representatio
 
 The latest work on the field corresponds to Ma et Al. \cite{ma2017understanding} The objective of their work is to determine a scoring function for travelers that can correctly identify them as commuters, or non-commuters. In their work, they cluster stops using an improved DBSCAN algorithm. They engineer features for representing the frequency in which travelers follow spatio-temporal patterns. Travelers are then clustered according to these features following the ISODATA algorithm. As an output of the clustering, optimal cutoff levels in the scoring function were determined. As a result, evaluating a traveler does not depend on clustering centroids, but only on calculating the commuting score. This, as expressed by the authors, reduces computing time and treats each traveler independently from the others, which is not true for clustering algorithms.
 
-A common practice, as used by \cite{ma2017understanding} and \cite{langlois2016inferring} is to divide the day into -hourly or half-and-hour- time bins.
+A common practice, as used by \cite{ma2017understanding}, \cite{langlois2016inferring}, and \cite{morency2007measuring} is to divide the day into -hourly or half-and-hour- time bins.
 
 \textbf{Volume of data:}
 The volume of data analyzed by previous work ranges from hundreds of smart cards to tens of millions of smart cards, leading to up to hundreds of millions of individual smart card transactions. The details are summarized in Table \ref{table:volumeData}.
  
 \begin{table}[h!]
 \centering
-\begin{tabular}{||c c c c||} 
+\begin{tabular}{||c c c c c||} 
  \hline
- Authors & Year of publication & Records & Unique smart cards \\ [0.5ex] 
+ Authors & Year of publication & Records & Unique smart cards & Time span \\ [0.5ex] 
  \hline\hline
- Tu et al. \cite{tu2016impact} & 2016 & Unknown & 978 \\ 
- Morency et al. \cite{morency2007measuring} & 2007 & 2.2 million & 7,118 \\
- Langlois et al. \cite{langlois2016inferring} & 2016 & 3 million & 33,026 \\
- Bhaskar et al. \cite{bhaskar2015passenger} & 2015 & 34.8 million & 1 million\\
- Ma et al. \cite{ma2013mining} & 2013 & Unknown & 3 million \\
- Ortega \cite{ortega2013classification} & 2013 & 65 million & 5.7 million\\
- Ma et e. \cite{ma2017understanding} & 2017 & 364 million & 18 million \\ [1ex] 
+ Tu et al. \cite{tu2016impact} & 2016 & Unknown & 978 & one week \\ 
+ Morency et al. \cite{morency2007measuring} & 2007 & 2.2 million & 7,118 & 277 days \\
+ Langlois et al. \cite{langlois2016inferring} & 2016 & 3 million & 33,026 & four weeks \\
+ Bhaskar et al. \cite{bhaskar2015passenger} & 2015 & 34.8 million & 1 million & 4 months \\
+ Ma et al. \cite{ma2013mining} & 2013 & Unknown & 3 million & one week \\
+ Ortega \cite{ortega2013classification} & 2013 & 65 million & 5.7 million & one week \\
+ Ma et e. \cite{ma2017understanding} & 2017 & 364 million & 18 million & one month\\ [1ex] 
  \hline
 \end{tabular}
 \caption{Volume of data analyzed by different authors}
@@ -236,11 +235,11 @@ We make the assumption that smart card IDs and users have a one to one relations
 This project is divided three main stages: 
 
 \begin{description}[align=right,labelwidth=2cm]
-\item[PART I] Classify commuters versus non-commuters by using an ensemble model. We examine the performance of our model and make a comparison with Tu's SVM model \cite{tu2016impact}.
+\item[PART I] Classify commuters versus non-commuters by using an ensemble model. We examine the performance of our model and make a comparison with Tu's SVM model \cite{tu2016impact}. This is explored in Section \ref{sec:partI}.
 
-\item[PART II] Revise features used in previous model in order to identify the most informative features and disregard redundant information. An extensive analysis of spatio-temporal properties will be done, combining transportation domain knowledge and statistical tools.
+\item[PART II] Revise features used in previous model in order to identify the most informative features and disregard redundant information. An extensive analysis of spatio-temporal properties will be done, combining transportation domain knowledge and statistical tools. This is explored in Section \ref{sec:partII}
 
-\item[PART III] Commuters will be further clustered according to patterns in their travel behaviors. The clusters will be analyzed and interpreted to find distinctive characteristics that may be deemed as informative for transportation specialists. 
+\item[PART III] Commuters will be further clustered according to patterns in their travel behaviors. The clusters will be analyzed and interpreted to find distinctive characteristics that may be deemed as informative for transportation specialists. This is explored in Section \ref{sec:partIII}
 \end{description}
 
 
@@ -268,10 +267,10 @@ Every record int he data represents a trip performed by a specific smart card. A
 \item On/Off ring road: Integer 1 to 6
 \item On/Off area: Integer from 1 to 18
 \item ID: record identification number created by joining the following: hour | time stamp of beginning of trip | card code
-\item Transfer detail: Mode of transportation, as well as line/route number and stations for boarding and alighting. More detail provided in Section \ref{sec:route}
+\item Transfer detail: Mode of transportation, as well as line/route number and stations for boarding and alighting. More detail provided in Section \ref{sec:tripParsing}
 \end{itemize}
 
-The traffic zones (small, middle and big areas) are divided by the Beijing Municipal Institute of City Planning and Design (BICP) \selfnote{reference}. They are specific in different degrees, as shown in Figure \ref{fig:data/traffic_zones}. In general, the division principles correspond to the geopolitical environment and administrative planning, for example roads, villages and others. The 6 ring road and 18 areas districts are divided by the Beijing Municipal Government \selfnote{reference}. The division is unique in Beijing. The 18 districts and counties are shown in Figure \ref{fig:data/18areas}. According to domain expert PhD. Liang Quan, these divisions are sufficiently informative for traffic analysis \cite{liang}.
+The traffic zones (small, middle and big areas) are divided by the Beijing Municipal Institute of City Planning and Design (BICP). They are specific in different degrees, as shown in Figure \ref{fig:data/traffic_zones}. In general, the division principles correspond to the geopolitical environment and administrative planning, for example roads, villages and others. The 6 ring road and 18 areas districts are divided by the Beijing Municipal Government. The division is unique in Beijing. The 18 districts and counties are shown in Figure \ref{fig:data/18areas}. According to domain expert PhD. Liang Quan, these divisions are sufficiently informative for traffic analysis \cite{liang}.
 
 \begin{figure}[H]
   \centering
@@ -301,36 +300,43 @@ The traffic zones (small, middle and big areas) are divided by the Beijing Munic
   \label{fig:data/18areas}
 \end{figure}
 
-Every day, more than 13 million records are collected, with approximately 5 million corresponding to subway trips, 8 million corresponding to bus trips and 100,000 corresponding to bicycle trips. For this project, 100, 000 records are sampled every day for a month. In this case, the samples correspond to November 2014, which does not overlap with holidays and has a relatively stable weather thus diminishing the variance between bicycle and bus/subway traveler preferences.
+Every day, more than 13 million records are collected, with approximately 5 million corresponding to subway trips, 8 million corresponding to bus trips and 100,000 corresponding to bicycle trips.
 
 \subsubsection{Special considerations}
+The previous description corresponds to the data as delivered by the Beijing Transportation Research Centre. As such, it has undergone some processing from the raw collecting phase. Some special considerations are explained below:
+
+
 \begin{description}%[align=right,labelwidth=2cm]
 \item[Travel distance by bike:] Since bicycles do not have predefined routes, the distance cannot be directly recorded. However, it is inferred by using the travel time and a static average speed for cyclist. 
 
 \item[Subway transfer:] Transfers between subways lines cannot be tracked since a single check-in gives access to the traveler to all the subway network. In order to infer the transfer detail, the A* algorithm is used to calculate the most likely transfer sequence, given the boarding and alighting stations. 
 Similarly to the bicycle missing information, the transfer time cannot be directly recorded. Using a static average walking speed and the known distance in transfer stations, the transfer time is calculated. 
 
-\item[Transfer information:] Path link, Transfer number are calculated from Transfer detail. Transfer average time is calculated from transfer total time and transfer number. 
-
+\item[Transfer information:] The path link and transfer number fields are extracted from the transfer detail field. Similarly, the transfer average time is calculated from the transfer total time and transfer number fields. 
 \end{description}
 
 
-\subsubsection{Training data}
-Since we perform supervised learning we need training data for which we know if a record corresponds to a commuter or non-commuter. Such data is expensive and limited since it can  only been obtained by asking the users directly if they are commuters or not. Other annotated data is not available, and labeling new records falls beyond the scope of this project.
+\subsubsection{Labeled and unlabeled data}
+\begin{description}%[align=right,labelwidth=2cm]
+\item[Commuter classification:]
+Classification is a supervised learning task, where every training data sample requires an associated label determining its true class. In case of commuter classification, this translates to having smart card codes associated with either a "commuter" or "non-commuter" label. Such data is expensive and limited since it can only be obtained by asking the users directly if they are commuters or not. Thus, in general, annotated data is not available, and labeling new records falls beyond the scope of this project. 
 
-The current training and validation set consists of data from 2015, collected and validated by Tu \cite{tu2016impact} \selfnote{make sure it was Tu}. The data is composed by:
+As a solution for the above, we take advantage of the dataset used by Tu\cite{tu2016impact}. This dataset corresponds to trip records performed during a week in January 2015, and it contains labels for 978 smart cards, collected and validated via surveys. The original dataset distribution is composed by:
 
 \begin{itemize}
 \item 6439 records of 481 commuters
 \item 1628 records of 497 non-commuters
 \end{itemize}
 
-For a total of 978 smart card IDs. \selfnote{search for IDs in current data}
+For this project, the Beijing Transportation Research Centre has provided us with one month worth of data, corresponding to January 2015. In order to construct an extended labeled dataset, we take these 978 labeled smart card IDs and search for their corresponding records in the one month sample. This dataset is used for Part I (Section \ref{sec:partI}) and Part II (Section \ref{sec:partII}) of this project. 
 
-\subsubsection{Testing data}
-Testing data is from 2016. More detailed
+\item[Commuter clustering:]
+For this project, 100, 000 records are sampled every day for a month. In this case, the samples correspond to November 2014, which does not overlap with holidays and has a relatively stable weather thus diminishing the variance between bicycle and bus/subway traveler preferences.
+
+\end{description}
 
 \subsection{Data preprocessing}
+
 \subsubsection{Cleaning}
 As first step for preprocessing the data, we perform a cleaning where we eliminate records that are faulty, for example: 
 
@@ -338,19 +344,21 @@ As first step for preprocessing the data, we perform a cleaning where we elimina
 \item Eliminate records with missing data: ~10.9\% records eliminated
 \item Eliminate records with travel time <= 0: <0.01\% records eliminated
 \item Eliminate records with travel distance <= 0: ~10.5\% records eliminated
-\item Eliminate records linked to users with insufficient trips: ~ 25.8\% records eliminated when requiring at least 2 trips per day.
+\item Eliminate records linked to users with insufficient trips: ~ 25.8\% records eliminated when requiring at least 2 trips.
 \end{enumerate}
 
 This leaves ~52.6\% records available for usage. 
 
 Insufficient trips regulated by a user input \selfnote{plot percentage of records and min records needed. Tune parameter}
 
-\subsubsection{Route parsing} 
-\label{sec:route}
-We parse the routes using a combination of two techniques: regular expressions and simple character translation. 
+\subsubsection{Trip parsing} 
+\label{sec:tripParsing}
+We parse the trip details using a combination of two techniques: regular expressions and tokenization. 
 
 \begin{description}
 \item [Regular expression]
+In order to obtain the elements of the trip 
+
     \begin{align*}
     BIKE &= (bike.STATION-STATION) \\
     SUBWAY &= (subway.LINE_{NAME}:STATION-LINE_{NAME}:STATION) \\
@@ -363,14 +371,13 @@ We parse the routes using a combination of two techniques: regular expressions a
     ROUTE_{NAME} &=      944 or night 32 (DIRECTION - DIRECTION)
     \end{align*}
 
-\item [Chinese to English translation]
-\selfnote{how is this called in NLP?}
+\item [Tokenization]
 
 Dictionary \selfnote{encode chinese in latex}
 
 \end{description}
 
-Example in Chinese -> English -> clean route
+Example in Chinese -> English -> clean trip
 
 
 
@@ -444,8 +451,10 @@ Hourly time bins is standard practice in the field \cite{langlois2016inferring} 
 
 Figure \ref{fig:preprocessing/start_end_hour} shows clear morning and evening peak hours. 
 
+Furthermore, we create a marker to determine if the record was conducted over a weekday or not. \selfnote{TODO: implement in code}
+
 \subsection{Data mining techniques}
-Coding using Python. Libraries and toolboxes such as pandas, sklearn, theano.
+The work for this project is coded in Python, using libraries for data and numerical manipulation (\textit{Pandas}, \textit{numpy}), regular expressions (\textit{re}), machine learning (\textit{sklearn}), neural networks(\textit{Theano}).
 
 \subsubsection{Feature engineering}
 The temporal factors to be explored are represented by the start/end times, as well travel/transfer time.
@@ -454,15 +463,12 @@ The spatial factors to be explored are represented by On/Off areas. \selfnote{an
 
 \technicalDoubt{hierarchical features? data structure for this?}
 
+Feature engineering by deep learning
+
 \subsubsection{Ensemble models}
 Ensemble models are chosen because of its robustness and modularity. Starting from two simple classifiers, assembled via bagging, the model can grow larger or more complex as needed and it may be extended beyond the scope of this Thesis Project. 
 
 \technicalDoubt{ensemble models for supervised learning, consensus clustering for unsupervised}
-
-\subsubsection{Decision trees and random forests}
-
-\subsubsection{Neural networks}
-
 
 
 \subsection{Correlation analysis}
@@ -471,6 +477,7 @@ chi-test
 
 \newpage
 \section{Commuters identification}
+\label{sec:partI}
 \subsection{Hypothesis}
 As suggested by Tu \cite{tu2016impact} results, the data is almost linearly separable thus simple classifiers such as decision trees may suffice. 
 
@@ -491,10 +498,11 @@ Confusion matrix
 
 \newpage
 \section{Variable evaluation}
+\label{sec:partII}
 \subsection{Hypothesis}
 One of the main focuses of the second phase of this thesis is to determine the appropriate level of detail in the area to be taken into account. 
 
-Middle area, big area and (small) area overlap. Middle and small divisions have more precision but maybe not needed. On the other hand, big area divisions might not capture the changes for people who live and work/study in the same bis district. 
+Small, middle and bug area overlap. Middle and small divisions have more precision but maybe are not needed. On the other hand, big area divisions might not capture the changes for people who live and work/study in the same district. 
 
 \subsection{Qualitative}
 Exploration: Experts opinion
@@ -514,7 +522,23 @@ Analysis: Correlation
 
 \newpage
 \section{Commuters clustering}
+\label{sec:partIII}
+\subsection{Feature engineering}
+\subsubsection{Convolutional filters}
+Image like structure. Inspired by \cite{langlois2016inferring}
+
+x, y dimension are temporal -> day time
+z dimension is spatial -> areas 
+
+Matrix of 30 x 24 x 15 (for all features or 10 for only spatial)
+
+\subsection{Neural networks}
+Reduce dimensionality from 10,800 to ~200
+
+\selfnote{visualize features}
+
 \subsection{Model}
+consensus clustering
 
 \subsection{Experiments}
 

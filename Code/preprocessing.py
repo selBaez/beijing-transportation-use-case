@@ -75,8 +75,6 @@ def _clean(data, min_records):
     # Remove records with travel distance <= 0
     data = _filter(data, data[data['TRAVEL_DISTANCE'] > 0], "travel distance <= 0")
 
-    # TODO Remove rows with strange transfers
-
     # Remove cards with less than min_records
     data['NUM_TRIPS'] = data.groupby('CARD_CODE')['TRAVEL_DISTANCE'].transform('count')
     data = _filter(data, data[data['NUM_TRIPS'] >= min_records], "users having insufficient associated records")
@@ -84,6 +82,9 @@ def _clean(data, min_records):
     return data
 
 def _gatherStations(data):
+    """
+    Match STATION pattern and create vocabulary
+    """
     pattern = re.compile(r'[:](.+?)[-|)]')
     station = pattern.findall(data)
     print('\nStations:')
@@ -91,12 +92,9 @@ def _gatherStations(data):
     print(station[1],'\n')
 
 def _extractTripComponents(trip):
-    regexstr_bus = "(公交.夜32(东湖-北官厅):东湖-夜32(东湖-北官厅):东直门北)"
-    regexstr_bus2 = "(公交.运通205(地铁上地站-史各庄):东北旺西路北口-运通205(地铁上地站-史各庄):史各庄)"
-    regexstr_bike = "(自行车.阳光乐府南站-阳光乐府南站)"
-    regexstr_rail = "(轨道.5号线:古城-5号线:天通苑)"
-    regexstr_rail2 = "(轨道.机场线:东直门-机场线:2号航站楼)"
-
+    """
+    Get MODE, STATIONS and other mode-specific components
+    """
     print('Trip details: ',trip)
 
     mode = r'(?P<mode>轨道|公交|自行车)'
@@ -188,6 +186,14 @@ def _parseRoute(data, chineseDict):
 
     return data
 
+def _countTransfers(data):
+    """
+    Re calculate number of transfers
+    """
+    print("Recalculating transfer number")
+    data['TRANSFER_NUM'] = data['TRANSFER_DETAIL'].str.count("->")
+    return data
+
 def _to_time_bins(data):
     """
     Start and end time stamps into time bins
@@ -273,13 +279,11 @@ def preprocess():
     print("---------------------------- Cleaning -----------------------------")
     data = _clean(data, FLAGS.min_records)
 
-    ########################### Feature  engineering ###########################
-
     print("-------------------------- Parse  route ---------------------------")
     data = _parseRoute(data, TRANSLATE_DICT_DEFAULT)
 
-    print("------------------- Calculate  transfer number --------------------")
-    #data = _parseRoute(data, TRANSLATE_DICT_DEFAULT)
+    print("---------------------- Count transfer number ----------------------")
+    data = _countTransfers(data)
 
     print("-------------------- Creating time stamp bins ---------------------")
     data = _to_time_bins(data)
