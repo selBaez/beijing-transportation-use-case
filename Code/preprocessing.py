@@ -15,14 +15,13 @@ import cPickle
 import re
 
 ############ --- BEGIN default constants --- ############
-FILE_NAME_DEFAULT = '../Data/Travel chain sample data(50000).csv'
 MIN_RECORDS_DEFAULT = 2
-TRANSLATE_DICT_DEFAULT = {  '轨道' : 'R',      # subway
-                            '公交' : 'B',      # bus
-                            '自行车' : 'Z',    # bike
-                            '线' : 'Line',
-                            '号' : '',
-                            '夜' : 'N'}#,       # Night bus
+TRANSLATE_DICT_DEFAULT = {  '轨道' : 'R',        # subway
+                            '公交' : 'B',        # bus
+                            '自行车' : 'Z'}#,    # bike
+                            #'线' : 'Line',
+                            #'号' : '',
+                            #'夜' : 'N',       # Night bus
                             #'站' : 'Station ',
                             #'小区' : 'District ',
                             #'机场' : 'Airport ',
@@ -34,7 +33,9 @@ TRANSLATE_DICT_DEFAULT = {  '轨道' : 'R',      # subway
 ############ --- END default constants--- ############
 
 ############ --- BEGIN default directories --- ############
+LOAD_FILE_DEFAULT = '../Data/Travel chain sample data(50000).csv'
 PLOT_DIR_DEFAULT = './Plots/'
+SAVE_TO_FILE_DEFAULT = '../Data/preprocessed sample data(50000).pkl'
 ############ --- END default directories--- ############
 
 def _loadData(fileName):
@@ -81,108 +82,141 @@ def _clean(data, min_records):
 
     return data
 
-def _gatherStations(data):
+def _createVocabularies(trips):
     """
-    Match STATION pattern and create vocabulary
+    Create LINE, ROUTE and STATIONS vocabulary
+    Note that lines already have an numerical ID, so we only need to include non numerical ones
     """
-    pattern = re.compile(r'[:](.+?)[-|)]')
-    station = pattern.findall(data)
-    print('\nStations:')
-    print(station[0])
-    print(station[1],'\n')
+    lines = set()
+    routes = set()
+    sttaions = set()
+    for index, trip in trips.iteritems():
+        # if FLAGS.verbose == 'True': print('Trip: ',trip)
+        rides = re.split('->', trip)
+        for ride in rides:
+            lines, routes, stations = _extractRideComponents(ride, lines, routes)
 
-def _extractTripComponents(trip):
+    print('Subway lines found:       ',len(lines))
+    print('Bus routes found:         ',len(routes))
+    print('Combined stations found:  ',len(stations))
+
+    #TODO: save in file or structure for latter use
+    return sorted(lines), sorted(routes), sorted(stations)
+
+def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
     """
     Get MODE, STATIONS and other mode-specific components
-    """
-    print('Trip details: ',trip)
 
-    mode = r'(?P<mode>轨道|公交|自行车)'
-
-    pattern = re.compile(mode)
-    matcher = pattern.search(trip)
-
-    if matcher.group('mode') == '轨道':
-        print('\nParsing a metro trip')
-
-        line_b = r'(?P<line_b>[0-9]+号线|.+?线)'
-        station_b = r'(?P<station_b>.+?)'
-        line_a = r'(?P<line_a>[0-9]+号线|.+?线)'
-        station_a = r'(?P<station_a>.+?)'
-
-        pattern = re.compile(r'\('+mode+r'[.]'+line_b+r'[:]'+station_b+r'[-]'+line_a+r'[:]'+station_a+r'[)]')
-        matcher = pattern.search(trip)
-
-        print('Mode:                  ',matcher.group('mode'))
-        print('Boarding Line:         ',matcher.group('line_b'))
-        print('Boarding Station:      ',matcher.group('station_b'))
-        print('Alighting Line:        ',matcher.group('line_a'))
-        print('Alighting Station:     ',matcher.group('station_a'))
-
-    elif matcher.group('mode') == '公交':
-        print('\nParsing a bus trip')
-
-        route_b = r'(?P<route_b>[0-9]+|.+?[0-9]+)'
-        direction_b = r'(?P<direction_b>[(].+?[)])'
-        station_b = r'(?P<station_b>.+?)'
-        route_a = r'(?P<route_a>[0-9]+|.+?[0-9]+)'
-        direction_a = r'(?P<direction_a>[(].+?[)])'
-        station_a = r'(?P<station_a>.+?)'
-
-        pattern = re.compile(r'\('+mode+r'[.]'+route_b+direction_b+r'[:]'+station_b+r'[-]'+route_a+direction_a+r'[:]'+station_a+r'[)]')
-        matcher = pattern.search(trip)
-
-        print('Mode:                  ',matcher.group('mode'))
-        print('Boarding Route:        ',matcher.group('route_b'))
-        print('Boarding Direction     ',matcher.group('direction_b'))
-        print('Boarding Station:      ',matcher.group('station_b'))
-        print('Alighting Route:       ',matcher.group('route_a'))
-        print('Alighting Direction    ',matcher.group('direction_a'))
-        print('Alighting Station:     ',matcher.group('station_a'))
-
-    elif matcher.group('mode') == '自行车':
-        print('Parsing a bike trip')
-
-        station_b = r'(?P<station_b>.+?)'
-        station_a = r'(?P<station_a>.+?)'
-
-        pattern = re.compile(r'\('+mode+r'[.]'+station_b+r'[-]'+station_a+r'[)]')
-        matcher = pattern.search(trip)
-
-        print('Mode:                  ',matcher.group('mode'))
-        print('Boarding Station:      ',matcher.group('station_b'))
-        print('Alighting Station:     ',matcher.group('station_a'))
-
-def _parseRoute(data, chineseDict):
-    """
-    Parse 'TRANSFER_DETAIL' column to get route
     BIKE = (bike.STATION-STATION)
     SUBWAY = (subway.LINE_NAME:STATION-LINE_NAME:STATION)
     BUS = (bus.ROUTE_NAME(DIRECTION-DIRECTION):STATION-ROUTE_NAME(DIRECTION-DIRECTION):STATION)
 
-    GENERAL = (MODE.[X_NAME:]? STATION-[X_NAME:]? STATION)[->stuff]?
-    # MODE              轨道|公交|自行车
-    # LINE_NAME         5 number line | NAME line
-    # ROUTE_NAME        944 | night 32
+    GENERAL = (MODE.[LINE/ROUTE_NAME:]?STATION-[LINE/ROUTE_NAME:]?STATION)[->PATTERN]?
+    # MODE              轨道|公交|自行车        ------ equivalent to ------       subway | bus | bike
+    # LINE_NAME         5 号线 | NAME 线       ------ equivalent to ------       5 number line | NAME line
+    # ROUTE_NAME        944 | 夜 32           ------ equivalent to ------       944 | night 32
+
     """
+    # if FLAGS.verbose == 'True': print('Ride details: ',ride)
 
-    # TODO Create stops vocabulary
-    _gatherStations(data['TRANSFER_DETAIL'][0])
+    # Shared fields across modes
+    mode = r'(?P<mode>轨道|公交|自行车)'
+    station_b = r'(?P<station_b>.+?)'
+    station_a = r'(?P<station_a>.+?)'
 
-    # TODO Parse with regular expressions
-    # for every record in data
-    _extractTripComponents(data['TRANSFER_DETAIL'][0])
-        # replace mode : dictionary
-        # replace line/route : dictionary
-        # replace stops : vocabulary
+    # Match and classify by mode
+    pattern = re.compile(mode)
+    matcher = pattern.search(ride)
+
+    # Parse metro
+    if matcher.group('mode') == '轨道':
+        line_b = r'(?P<line_b>.+?)'
+        line_a = r'(?P<line_a>.+?)'
+
+        pattern = re.compile(r'\('+mode+r'[.]'+line_b+r'[:]'+station_b+r'[-]'+line_a+r'[:]'+station_a+r'[)]')
+        matcher = pattern.search(ride)
+
+        if matcher and FLAGS.verbose == 'True':
+            # print('Parsing a metro ride')
+            # print('Mode:                  ',matcher.group('mode'))
+            # print('Boarding Line:         ',matcher.group('line_b'))
+            # print('Boarding Station:      ',matcher.group('station_b'))
+            # print('Alighting Line:        ',matcher.group('line_a'))
+            # print('Alighting Station:     ',matcher.group('station_a'))
+            #TODO: replace according to dictionary and stops and lines vocabularies
+
+            lines.add(matcher.group('line_b'))
+            lines.add(matcher.group('line_a'))
+            stations.add(matcher.group('station_b'))
+            stations.add(matcher.group('station_a'))
+        else:
+            print('Failed at parsing metro ride:', ride)
+
+    # Parse bus
+    elif matcher.group('mode') == '公交':
+        route_b = r'(?P<route_b>.+?)'
+        route_a = r'(?P<route_a>.+?)'
+
+        pattern = re.compile(r'\('+mode+r'[.]'+route_b+r'[:]'+station_b+r'[-]'+route_a+r'[:]'+station_a+r'[)]')
+        matcher = pattern.search(ride)
+
+        if matcher and FLAGS.verbose == 'True':
+            # print('\nParsing a bus ride')
+            # print('Mode:                  ',matcher.group('mode'))
+            # print('Boarding Route:        ',matcher.group('route_b'))
+            # print('Boarding Station:      ',matcher.group('station_b'))
+            # print('Alighting Route:       ',matcher.group('route_a'))
+            # print('Alighting Station:     ',matcher.group('station_a'))
+
+            routes.add(matcher.group('route_b'))
+            routes.add(matcher.group('route_a'))
+            stations.add(matcher.group('station_b'))
+            stations.add(matcher.group('station_a'))
+        else:
+            print('Failed at parsing bus ride:', ride)
+
+    # Parse bike
+    elif matcher.group('mode') == '自行车':
+        pattern = re.compile(r'\('+mode+r'[.]'+station_b+r'[-]'+station_a+r'[)]')
+        matcher = pattern.search(ride)
+
+        if matcher and FLAGS.verbose == 'True':
+            # print('Parsing a bike ride')
+            # print('Mode:                  ',matcher.group('mode'))
+            # print('Boarding Station:      ',matcher.group('station_b'))
+            # print('Alighting Station:     ',matcher.group('station_a'))
+
+            stations.add(matcher.group('station_b'))
+            stations.add(matcher.group('station_a'))
+        else:
+            print('Failed at parsing bike ride:', ride)
+
+    return lines, routes, stations
+
+def _parseRoute(data, chineseDict):
+    """
+    Parse 'TRANSFER_DETAIL' column to get route
+    """
+    # Create vocabularies
+    print('Creating lines, routes and stations vocabularies')
+    lines, routes, stations = _createVocabularies(data['TRANSFER_DETAIL'])
+    #for line in lines: print(line)
+
+    print(data['TRANSFER_DETAIL'][:5])
+
+    # TODO Replace for clean format
+    print('Re formating route')
+    #for index, trip in trips.iteritems():
+        # Replace mode : dictionary
+        #data['TRANSFER_DETAIL'] = data['TRANSFER_DETAIL'].str.replace(key,chineseDict[key])
+        # replace line/route and stops/stations : vocabularies
 
     # Translate basic keywords
-    print("Replacing keywords from Chinese to English")
-    for key in reversed(sorted(chineseDict.keys())):
-        data['TRANSFER_DETAIL'] = data['TRANSFER_DETAIL'].str.replace(key,chineseDict[key])
+    #print("Replacing keywords from Chinese to English")
+    #for key in reversed(sorted(chineseDict.keys())):
+    #    data['TRANSFER_DETAIL'] = data['TRANSFER_DETAIL'].str.replace(key,chineseDict[key])
 
-    # TODO: Extract stop number (if available) and line route as S3->B56
-    #print("Simplifying route")
+    print(data['TRANSFER_DETAIL'][:5])
 
     return data
 
@@ -274,7 +308,7 @@ def preprocess():
     Read raw data, clean it and store preprocessed data
     """
     print("---------------------------- Load data ----------------------------")
-    data = _loadData(FLAGS.file_name)
+    data = _loadData(FLAGS.load_file)
 
     print("---------------------------- Cleaning -----------------------------")
     data = _clean(data, FLAGS.min_records)
@@ -283,18 +317,24 @@ def preprocess():
     data = _parseRoute(data, TRANSLATE_DICT_DEFAULT)
 
     print("---------------------- Count transfer number ----------------------")
-    data = _countTransfers(data)
+    #data = _countTransfers(data)
 
     print("-------------------- Creating time stamp bins ---------------------")
-    data = _to_time_bins(data)
+    #data = _to_time_bins(data)
 
     #print("------------------------ Extract weekdays -------------------------")
     # TODO http://nbviewer.jupyter.org/github/jvns/pandas-cookbook/blob/v0.1/cookbook/Chapter%204%20-%20Find%20out%20on%20which%20weekday%20people%20bike%20the%20most%20with%20groupby%20and%20aggregate.ipynb
 
-    print("-------------------------- Standardizing --------------------------")
-    preprocessedData = _standardize(data, FLAGS.plot_distr, FLAGS.plot_dir)
+    #print("------------------- Create train  and test sets -------------------")
+    #TODO divide and add labels?
 
-    #print("--------------------------- Store  data ---------------------------")
+
+    print("-------------------------- Standardizing --------------------------")
+    #data = _standardize(data, FLAGS.plot_distr, FLAGS.plot_dir)
+
+    print("--------------------------- Store  data ---------------------------")
+    #data.to_pickle(FLAGS.save_to_file)
+    #TODO store test and train separately
 
 def print_flags():
     """
@@ -314,14 +354,20 @@ def main(_):
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file_name', type = str, default = FILE_NAME_DEFAULT,
+    parser.add_argument('--verbose', type = str, default = 'True',
+                        help='Display parse route details.')
+    parser.add_argument('--load_file', type = str, default = LOAD_FILE_DEFAULT,
                         help='Data file to load.')
     parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
                         help='Traveler is required to have at least this number of records.')
-    parser.add_argument('--plot_distr', type = str, default = True,
+    parser.add_argument('--plot_distr', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--plot_dir', type = str, default = PLOT_DIR_DEFAULT,
                         help='Directory to which save plots.')
+    parser.add_argument('--save_to_file', type = str, default = SAVE_TO_FILE_DEFAULT,
+                        help='Data file to save data in.')
+    #TODO: use vocabulary file or create new
+    #TODO: labeled or unlabeled? (labeled includes searching for codes)
 
     FLAGS, unparsed = parser.parse_known_args()
     main(None)
