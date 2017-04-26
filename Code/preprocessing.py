@@ -16,9 +16,9 @@ import re
 
 ############ --- BEGIN default constants --- ############
 MIN_RECORDS_DEFAULT = 2
-TRANSLATE_DICT_DEFAULT = {  '轨道' : 'R',        # subway
-                            '公交' : 'B',        # bus
-                            '自行车' : 'Z'}#,    # bike
+TRANSLATE_DICT_DEFAULT = {  '\(轨道.' : '(R.',        # subway
+                            '\(公交.' : '(B.',        # bus
+                            '\(自行车.' : '(Z.'}#,    # bike
                             #'线' : 'Line',
                             #'号' : '',
                             #'夜' : 'N',       # Night bus
@@ -84,8 +84,7 @@ def _clean(data, min_records):
 
 def _createVocabularies(trips):
     """
-    Create LINE, ROUTE and STATIONS vocabulary
-    Note that lines already have an numerical ID, so we only need to include non numerical ones
+    Create LINE, ROUTE and STATIONS vocabularies
     """
     lines = set()
     routes = set()
@@ -96,12 +95,25 @@ def _createVocabularies(trips):
         for ride in rides:
             lines, routes, stations = _extractRideComponents(ride, lines, routes)
 
+    # TODO: smarter way to save direction, for now we just ignore it
     print('Subway lines found:       ',len(lines))
     print('Bus routes found:         ',len(routes))
     print('Combined stations found:  ',len(stations))
 
+    # Deal with parenthesis
+    # for station in stations:
+    #     print(route)
+    #     route = route.replace('(', '\(')
+    #     route = route.replace(')', '\)')
+    #     print(route)
+
+    # Turn into dictionaries
+    lines =  dict(zip(lines, map(str,range(len(lines)))))
+    routes = dict(zip(routes, map(str,range(len(routes)))))
+    stations = dict(zip(stations, map(str,range(len(stations)))))
+
     #TODO: save in file or structure for latter use
-    return sorted(lines), sorted(routes), sorted(stations)
+    return lines, routes, stations
 
 def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
     """
@@ -143,7 +155,6 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
             # print('Boarding Station:      ',matcher.group('station_b'))
             # print('Alighting Line:        ',matcher.group('line_a'))
             # print('Alighting Station:     ',matcher.group('station_a'))
-            #TODO: replace according to dictionary and stops and lines vocabularies
 
             lines.add(matcher.group('line_b'))
             lines.add(matcher.group('line_a'))
@@ -155,9 +166,11 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
     # Parse bus
     elif matcher.group('mode') == '公交':
         route_b = r'(?P<route_b>.+?)'
+        direction_b = r'(?P<direction_b>[(].+?[)])'
         route_a = r'(?P<route_a>.+?)'
+        direction_a = r'(?P<direction_a>[(].+?[)])'
 
-        pattern = re.compile(r'\('+mode+r'[.]'+route_b+r'[:]'+station_b+r'[-]'+route_a+r'[:]'+station_a+r'[)]')
+        pattern = re.compile(r'\('+mode+r'[.]'+route_b+direction_b+r'[:]'+station_b+r'[-]'+route_a+direction_a+r'[:]'+station_a+r'[)]')
         matcher = pattern.search(ride)
 
         if matcher and FLAGS.verbose == 'True':
@@ -197,26 +210,26 @@ def _parseRoute(data, chineseDict):
     """
     Parse 'TRANSFER_DETAIL' column to get route
     """
+    indices = random.sample(data.index, 10)
+    sample = data.ix[indices]
+
     # Create vocabularies
     print('Creating lines, routes and stations vocabularies')
-    lines, routes, stations = _createVocabularies(data['TRANSFER_DETAIL'])
-    #for line in lines: print(line)
+    lines, routes, stations = _createVocabularies(sample['TRANSFER_DETAIL'])
 
-    print(data['TRANSFER_DETAIL'][:5])
+    # for route in routes: print(route, ':', routes[route])
+    # for line in lines: print(line, ':', lines[line])
+    # for station in stations: print(station, ':', stations[station])
 
-    # TODO Replace for clean format
-    print('Re formating route')
-    #for index, trip in trips.iteritems():
-        # Replace mode : dictionary
-        #data['TRANSFER_DETAIL'] = data['TRANSFER_DETAIL'].str.replace(key,chineseDict[key])
-        # replace line/route and stops/stations : vocabularies
-
-    # Translate basic keywords
-    #print("Replacing keywords from Chinese to English")
-    #for key in reversed(sorted(chineseDict.keys())):
-    #    data['TRANSFER_DETAIL'] = data['TRANSFER_DETAIL'].str.replace(key,chineseDict[key])
-
-    print(data['TRANSFER_DETAIL'][:5])
+    # Replace for clean format
+    print('Formating route')
+    # Replace mode : dictionary
+    sample['TRANSFER_DETAIL'].replace(to_replace=chineseDict, inplace=True, regex=True)
+    # Replace line/route and stops/stations : vocabularies
+    sample['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True)
+    sample['TRANSFER_DETAIL'].replace(to_replace=routes, inplace=True, regex=True)
+    sample['TRANSFER_DETAIL'].replace(to_replace='[(][^.]+?[)]:', value=':', inplace=True, regex=True) # Strip bus directions away
+    sample['TRANSFER_DETAIL'].replace(to_replace=stations, inplace=True, regex=True)
 
     return data
 
