@@ -13,12 +13,13 @@ import random
 from sklearn.preprocessing import StandardScaler
 import cPickle
 import re
+import json
 
 ############ --- BEGIN default constants --- ############
 MIN_RECORDS_DEFAULT = 2
-TRANSLATE_DICT_DEFAULT = {  '\(轨道.' : '(R.',        # subway
-                            '\(公交.' : '(B.',        # bus
-                            '\(自行车.' : '(Z.'}#,    # bike
+MODE_DICT_DEFAULT = {       '[(]轨道.' : '(R.',        # subway
+                            '[(]公交.' : '(B.',        # bus
+                            '[(]自行车.' : '(Z.'}#,    # bike
                             #'线' : 'Line',
                             #'号' : '',
                             #'夜' : 'N',       # Night bus
@@ -34,8 +35,11 @@ TRANSLATE_DICT_DEFAULT = {  '\(轨道.' : '(R.',        # subway
 
 ############ --- BEGIN default directories --- ############
 LOAD_FILE_DEFAULT = '../Data/Travel chain sample data(50000).csv'
+LINES_VOC_FILE_DEFAULT = '../Data/lines vocabulary.json'
+ROUTES_VOC_FILE_DEFAULT = '../Data/routes vocabulary.json'
+STATIONS_VOC_FILE_DEFAULT = '../Data/stations vocabulary.json'
 PLOT_DIR_DEFAULT = './Plots/'
-SAVE_TO_FILE_DEFAULT = '../Data/preprocessed sample data(50000).pkl'
+SAVE_TO_FILE_DEFAULT = '../Data/preprocessed sample data(50000)'
 ############ --- END default directories--- ############
 
 def _loadData(fileName):
@@ -82,7 +86,7 @@ def _clean(data, min_records):
 
     return data
 
-def _createVocabularies(trips):
+def _createVocabularies(trips, lines_voc=LINES_VOC_FILE_DEFAULT, routes_voc=ROUTES_VOC_FILE_DEFAULT, stations_voc=STATIONS_VOC_FILE_DEFAULT):
     """
     Create LINE, ROUTE and STATIONS vocabularies
     """
@@ -108,11 +112,16 @@ def _createVocabularies(trips):
     #     print(route)
 
     # Turn into dictionaries
-    lines =  dict(zip(lines, map(str,range(len(lines)))))
-    routes = dict(zip(routes, map(str,range(len(routes)))))
+    # TODO: fix . or - cases
+    lines =  dict(zip(lines, map(lambda x: '-'+str(x)+':',range(len(lines)))))
+    routes = dict(zip(routes, map(lambda x: '-'+str(x)+':',range(len(routes)))))
     stations = dict(zip(stations, map(str,range(len(stations)))))
 
-    #TODO: save in file or structure for latter use
+    # Save as JSON later use
+    with open(lines_voc, 'w') as fp: json.dump(lines, fp, indent=4, ensure_ascii=False)
+    with open(routes_voc, 'w') as fp: json.dump(routes, fp, indent=4, ensure_ascii=False)
+    with open(stations_voc, 'w') as fp: json.dump(stations, fp, indent=4, ensure_ascii=False)
+
     return lines, routes, stations
 
 def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
@@ -145,7 +154,7 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
         line_b = r'(?P<line_b>.+?)'
         line_a = r'(?P<line_a>.+?)'
 
-        pattern = re.compile(r'\('+mode+r'[.]'+line_b+r'[:]'+station_b+r'[-]'+line_a+r'[:]'+station_a+r'[)]')
+        pattern = re.compile(r'\('+mode+r'[.]'+line_b+r'[:]'+station_b+r'[-]'+line_a+r'[:]'+station_a+r'[)]$')
         matcher = pattern.search(ride)
 
         if matcher and FLAGS.verbose == 'True':
@@ -156,8 +165,8 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
             # print('Alighting Line:        ',matcher.group('line_a'))
             # print('Alighting Station:     ',matcher.group('station_a'))
 
-            lines.add(matcher.group('line_b'))
-            lines.add(matcher.group('line_a'))
+            lines.add('([.]|[-])'+matcher.group('line_b')+'[:]')
+            lines.add('([.]|[-])'+matcher.group('line_a')+'[:]')
             stations.add(matcher.group('station_b'))
             stations.add(matcher.group('station_a'))
         else:
@@ -170,7 +179,7 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
         route_a = r'(?P<route_a>.+?)'
         direction_a = r'(?P<direction_a>[(].+?[)])'
 
-        pattern = re.compile(r'\('+mode+r'[.]'+route_b+direction_b+r'[:]'+station_b+r'[-]'+route_a+direction_a+r'[:]'+station_a+r'[)]')
+        pattern = re.compile(r'\('+mode+r'[.]'+route_b+direction_b+r'[:]'+station_b+r'[-]'+route_a+direction_a+r'[:]'+station_a+r'[)]$')
         matcher = pattern.search(ride)
 
         if matcher and FLAGS.verbose == 'True':
@@ -181,8 +190,8 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
             # print('Alighting Route:       ',matcher.group('route_a'))
             # print('Alighting Station:     ',matcher.group('station_a'))
 
-            routes.add(matcher.group('route_b'))
-            routes.add(matcher.group('route_a'))
+            routes.add('([.]|[-])'+matcher.group('route_b')+'[:]')
+            routes.add('([.]|[-])'+matcher.group('route_a')+'[:]')
             stations.add(matcher.group('station_b'))
             stations.add(matcher.group('station_a'))
         else:
@@ -190,7 +199,7 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
 
     # Parse bike
     elif matcher.group('mode') == '自行车':
-        pattern = re.compile(r'\('+mode+r'[.]'+station_b+r'[-]'+station_a+r'[)]')
+        pattern = re.compile(r'\('+mode+r'[.]'+station_b+r'[-]'+station_a+r'[)]$')
         matcher = pattern.search(ride)
 
         if matcher and FLAGS.verbose == 'True':
@@ -206,30 +215,42 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
 
     return lines, routes, stations
 
-def _parseRoute(data, chineseDict):
+def _parseRoute(data, modes, createVoc):
     """
     Parse 'TRANSFER_DETAIL' column to get route
     """
-    indices = random.sample(data.index, 10)
-    sample = data.ix[indices]
+    indices = random.sample(data.index, 1000)
+    data = data.ix[indices]
 
-    # Create vocabularies
-    print('Creating lines, routes and stations vocabularies')
-    lines, routes, stations = _createVocabularies(sample['TRANSFER_DETAIL'])
-
-    # for route in routes: print(route, ':', routes[route])
-    # for line in lines: print(line, ':', lines[line])
-    # for station in stations: print(station, ':', stations[station])
+    if createVoc == 'True':
+        # Create vocabularies
+        print('Creating lines, routes and stations vocabularies')
+        lines, routes, stations = _createVocabularies(data['TRANSFER_DETAIL'])
+    else:
+        # Load existing vocabularies
+        with open(LINES_VOC_FILE_DEFAULT, 'r') as fp: lines = json.load(fp, encoding="utf-8")
+        with open(ROUTES_VOC_FILE_DEFAULT, 'r') as fp: routes = json.load(fp, encoding="utf-8")
+        with open(STATIONS_VOC_FILE_DEFAULT, 'r') as fp: stations = json.load(fp, encoding="utf-8")
 
     # Replace for clean format
     print('Formating route')
     # Replace mode : dictionary
-    sample['TRANSFER_DETAIL'].replace(to_replace=chineseDict, inplace=True, regex=True)
+    data['TRANSFER_DETAIL'].replace(to_replace=modes, inplace=True, regex=True)
+
+    #print(data['TRANSFER_DETAIL'][:5])
+    data['TRANSFER_DETAIL'].replace(to_replace='[(][^.]+?[)]:', value=':', inplace=True, regex=True)              # Strip bus directions away
+
     # Replace line/route and stops/stations : vocabularies
-    sample['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True)
-    sample['TRANSFER_DETAIL'].replace(to_replace=routes, inplace=True, regex=True)
-    sample['TRANSFER_DETAIL'].replace(to_replace='[(][^.]+?[)]:', value=':', inplace=True, regex=True) # Strip bus directions away
-    sample['TRANSFER_DETAIL'].replace(to_replace=stations, inplace=True, regex=True)
+    print('\nOriginal without direction\n',data['TRANSFER_DETAIL'][:5])
+    data['TRANSFER_DETAIL'].replace(to_replace=routes, inplace=True, regex=True, limit=1)
+
+    print('\nRoutes replaced\n',data['TRANSFER_DETAIL'][:5])
+    data['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True, limit=1)
+
+    #print(data['TRANSFER_DETAIL'][:5])
+    data['TRANSFER_DETAIL'].replace(to_replace=stations, inplace=True, regex=True) #TODO: fix replacement of best fit
+
+    print(data['TRANSFER_DETAIL'][:5])
 
     return data
 
@@ -245,6 +266,7 @@ def _to_time_bins(data):
     """
     Start and end time stamps into time bins
     """
+    #TODO: check why columns are not created
     print("Extracting start/end hours")
     data['START_HOUR'] = data['START_TIME'].apply(lambda x : x.hour)
     data['END_HOUR'] = data['END_TIME'].apply(lambda x : x.hour)
@@ -266,15 +288,15 @@ def _plotDistribution(sample, plot_dir, variable_name, column_name):
     sample[column_name].plot.hist(ax=ax, bins=20)
     plt.savefig(plot_dir+variable_name+'_hist.png', format='png')
 
-def _standardize(rawData, plot_distr, plot_dir):
+def _standardize(data, plot_distr, plot_dir):
     """
     Rescale features to have mean 0 and std 1
     """
 
     if plot_distr == 'True':
         # Sample 1000 random points
-        indices = random.sample(rawData.index, 1000)
-        sample = rawData.ix[indices]
+        indices = random.sample(data.index, 1000)
+        sample = data.ix[indices]
 
         print("Plotting original travel time and distance distributions")
         _plotDistribution(sample, plot_dir, 'time', 'TRAVEL_TIME')
@@ -290,14 +312,15 @@ def _standardize(rawData, plot_distr, plot_dir):
         plt.savefig(plot_dir+'distance_vs_time.png', format='png')
 
     # TODO: only fit and transform to train data, and transform test data
+    # TODO: scale transfer time too?
     print("Standarize travel time and distance")
     scaler = StandardScaler()
-    rawData[['TRAVEL_TIME', 'TRAVEL_DISTANCE']] = scaler.fit_transform(rawData[['TRAVEL_TIME', 'TRAVEL_DISTANCE']])
+    data[['TRAVEL_TIME', 'TRAVEL_DISTANCE']] = scaler.fit_transform(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE']])
 
     if plot_distr == 'True':
         # Sample 1000 random points
-        indices = random.sample(rawData.index, 1000)
-        sample = rawData.ix[indices]
+        indices = random.sample(data.index, 1000)
+        sample = data.ix[indices]
 
         print("Plotting standarized travel time and distance distributions")
         _plotDistribution(sample, plot_dir, 'time_standardized', 'TRAVEL_TIME')
@@ -308,13 +331,15 @@ def _standardize(rawData, plot_distr, plot_dir):
         sample.plot(x='TRAVEL_DISTANCE',y='TRAVEL_TIME', ax=ax, kind='scatter')
         plt.savefig(plot_dir+'distance_vs_time_standardized.png', format='png')
 
-    return rawData
+    return data
 
-def _store(preprocessedData):
+def _store(data):
     """
     Store data for use in model
     """
-    pass
+    #TODO store test and train separately
+    data.to_pickle(FLAGS.save_to_file+'.pkl')
+    data.to_csv(FLAGS.save_to_file+'.csv')
 
 def preprocess():
     """
@@ -326,10 +351,10 @@ def preprocess():
     print("---------------------------- Cleaning -----------------------------")
     data = _clean(data, FLAGS.min_records)
 
-    print("-------------------------- Parse  route ---------------------------")
-    data = _parseRoute(data, TRANSLATE_DICT_DEFAULT)
+    print("-------------------------- Parsing route --------------------------")
+    data = _parseRoute(data, MODE_DICT_DEFAULT, FLAGS.create_voc)
 
-    print("---------------------- Count transfer number ----------------------")
+    print("------------------ Recalculating transfer number ------------------")
     #data = _countTransfers(data)
 
     print("-------------------- Creating time stamp bins ---------------------")
@@ -341,13 +366,11 @@ def preprocess():
     #print("------------------- Create train  and test sets -------------------")
     #TODO divide and add labels?
 
-
     print("-------------------------- Standardizing --------------------------")
     #data = _standardize(data, FLAGS.plot_distr, FLAGS.plot_dir)
 
-    print("--------------------------- Store  data ---------------------------")
-    #data.to_pickle(FLAGS.save_to_file)
-    #TODO store test and train separately
+    print("-------------------------- Storing  data --------------------------")
+    _store(data)
 
 def print_flags():
     """
@@ -373,13 +396,15 @@ if __name__ == '__main__':
                         help='Data file to load.')
     parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
                         help='Traveler is required to have at least this number of records.')
+    parser.add_argument('--create_voc', type = str, default = 'True',
+                        help='Create lines/routes/stations vocabularies from given data. If False, previously saved vocabularies will be used')
     parser.add_argument('--plot_distr', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--plot_dir', type = str, default = PLOT_DIR_DEFAULT,
                         help='Directory to which save plots.')
     parser.add_argument('--save_to_file', type = str, default = SAVE_TO_FILE_DEFAULT,
                         help='Data file to save data in.')
-    #TODO: use vocabulary file or create new
+    #TODO: overwrite voc
     #TODO: labeled or unlabeled? (labeled includes searching for codes)
 
     FLAGS, unparsed = parser.parse_known_args()
