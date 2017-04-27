@@ -14,32 +14,22 @@ from sklearn.preprocessing import StandardScaler
 import cPickle
 import re
 import json
+from collections import OrderedDict
 
 ############ --- BEGIN default constants --- ############
 MIN_RECORDS_DEFAULT = 2
 MODE_DICT_DEFAULT = {       '[(]轨道.' : '(R.',        # subway
                             '[(]公交.' : '(B.',        # bus
-                            '[(]自行车.' : '(Z.'}#,    # bike
-                            #'线' : 'Line',
-                            #'号' : '',
-                            #'夜' : 'N',       # Night bus
-                            #'站' : 'Station ',
-                            #'小区' : 'District ',
-                            #'机场' : 'Airport ',
-                            #'公交场' : 'Bus loop ',
-                            #'北' : 'North ',
-                            #'南' : 'South ',
-                            #'东' : 'East ',
-                            #'西' : 'West '}
+                            '[(]自行车.' : '(Z.'}      # bike
 ############ --- END default constants--- ############
 
 ############ --- BEGIN default directories --- ############
-LOAD_FILE_DEFAULT = '../Data/Travel chain sample data(50000).csv'
-LINES_VOC_FILE_DEFAULT = '../Data/lines vocabulary.json'
-ROUTES_VOC_FILE_DEFAULT = '../Data/routes vocabulary.json'
-STATIONS_VOC_FILE_DEFAULT = '../Data/stations vocabulary.json'
+LOAD_FILE_DEFAULT = '../Data/sets/Travel chain sample data(50000).csv'
+LINES_VOC_FILE_DEFAULT = '../Data/vocabularies/lines vocabulary.json'
+ROUTES_VOC_FILE_DEFAULT = '../Data/vocabularies/routes vocabulary.json'
+STATIONS_VOC_FILE_DEFAULT = '../Data/vocabularies/stations vocabulary.json'
 PLOT_DIR_DEFAULT = './Plots/'
-SAVE_TO_FILE_DEFAULT = '../Data/preprocessed sample data(50000)'
+SAVE_TO_FILE_DEFAULT = '../Data/sets/preprocessed sample data(50000)'
 ############ --- END default directories--- ############
 
 def _loadData(fileName):
@@ -104,18 +94,15 @@ def _createVocabularies(trips, lines_voc=LINES_VOC_FILE_DEFAULT, routes_voc=ROUT
     print('Bus routes found:         ',len(routes))
     print('Combined stations found:  ',len(stations))
 
-    # Deal with parenthesis
-    # for station in stations:
-    #     print(route)
-    #     route = route.replace('(', '\(')
-    #     route = route.replace(')', '\)')
-    #     print(route)
-
     # Turn into dictionaries
-    # TODO: fix . or - cases
-    lines =  dict(zip(lines, map(lambda x: '-'+str(x)+':',range(len(lines)))))
-    routes = dict(zip(routes, map(lambda x: '-'+str(x)+':',range(len(routes)))))
+    lines =  dict(zip(lines, map(lambda x: ' '+str(x)+':',range(len(lines)))))               # TODO: fix . or - cases, for now we replace with a space
+    routes = dict(zip(routes, map(lambda x: ' '+str(x)+':',range(len(routes)))))
     stations = dict(zip(stations, map(str,range(len(stations)))))
+
+    # Sort them to have longest patterns replaced first
+    lines = OrderedDict(sorted(lines.items(), key=lambda t: len(t[0]), reverse=True))
+    routes = OrderedDict(sorted(routes.items(), key=lambda t: len(t[0]), reverse=True))
+    stations = OrderedDict(sorted(stations.items(), key=lambda t: len(t[0]), reverse=True))
 
     # Save as JSON later use
     with open(lines_voc, 'w') as fp: json.dump(lines, fp, indent=4, ensure_ascii=False)
@@ -167,6 +154,8 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
 
             lines.add('([.]|[-])'+matcher.group('line_b')+'[:]')
             lines.add('([.]|[-])'+matcher.group('line_a')+'[:]')
+            # lines.add(matcher.group('line_b')+'[:]')
+            # lines.add(matcher.group('line_a')+'[:]')
             stations.add(matcher.group('station_b'))
             stations.add(matcher.group('station_a'))
         else:
@@ -192,6 +181,8 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
 
             routes.add('([.]|[-])'+matcher.group('route_b')+'[:]')
             routes.add('([.]|[-])'+matcher.group('route_a')+'[:]')
+            # routes.add(matcher.group('route_b')+'[:]')
+            # routes.add(matcher.group('route_a')+'[:]')
             stations.add(matcher.group('station_b'))
             stations.add(matcher.group('station_a'))
         else:
@@ -219,38 +210,36 @@ def _parseRoute(data, modes, createVoc):
     """
     Parse 'TRANSFER_DETAIL' column to get route
     """
-    indices = random.sample(data.index, 1000)
-    data = data.ix[indices]
-
+    # Determine which vocabulary to use
     if createVoc == 'True':
         # Create vocabularies
         print('Creating lines, routes and stations vocabularies')
         lines, routes, stations = _createVocabularies(data['TRANSFER_DETAIL'])
     else:
-        # Load existing vocabularies
+        # Load existing vocabularies TODO: not working atm
         with open(LINES_VOC_FILE_DEFAULT, 'r') as fp: lines = json.load(fp, encoding="utf-8")
         with open(ROUTES_VOC_FILE_DEFAULT, 'r') as fp: routes = json.load(fp, encoding="utf-8")
         with open(STATIONS_VOC_FILE_DEFAULT, 'r') as fp: stations = json.load(fp, encoding="utf-8")
 
     # Replace for clean format
     print('Formating route')
+
     # Replace mode : dictionary
     data['TRANSFER_DETAIL'].replace(to_replace=modes, inplace=True, regex=True)
 
-    #print(data['TRANSFER_DETAIL'][:5])
-    data['TRANSFER_DETAIL'].replace(to_replace='[(][^.]+?[)]:', value=':', inplace=True, regex=True)              # Strip bus directions away
+    # Strip bus directions away
+    data['TRANSFER_DETAIL'].replace(to_replace='[(][^.]+?[)]:', value=':', inplace=True, regex=True)
 
     # Replace line/route and stops/stations : vocabularies
-    print('\nOriginal without direction\n',data['TRANSFER_DETAIL'][:5])
-    data['TRANSFER_DETAIL'].replace(to_replace=routes, inplace=True, regex=True, limit=1)
+    data['TRANSFER_DETAIL'].replace(to_replace=routes, inplace=True, regex=True)
+    data['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True)
+    data['TRANSFER_DETAIL'].replace(to_replace=stations, inplace=True, regex=True)
 
-    print('\nRoutes replaced\n',data['TRANSFER_DETAIL'][:5])
-    data['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True, limit=1)
+    # Look for records that still contain chinese characters
+    # pattern = re.compile(ur'[\u4e00-\u9fff]+')
+    # wrong = _filter(data, data[pattern.search(data['TRANSFER_DETAIL'])], "good parse")
+    # print(wrong['TRANSFER_DETAIL'][0])
 
-    #print(data['TRANSFER_DETAIL'][:5])
-    data['TRANSFER_DETAIL'].replace(to_replace=stations, inplace=True, regex=True) #TODO: fix replacement of best fit
-
-    print(data['TRANSFER_DETAIL'][:5])
 
     return data
 
@@ -354,10 +343,10 @@ def preprocess():
     print("-------------------------- Parsing route --------------------------")
     data = _parseRoute(data, MODE_DICT_DEFAULT, FLAGS.create_voc)
 
-    print("------------------ Recalculating transfer number ------------------")
+    #print("------------------ Recalculating transfer number ------------------")
     #data = _countTransfers(data)
 
-    print("-------------------- Creating time stamp bins ---------------------")
+    #print("-------------------- Creating time stamp bins ---------------------")
     #data = _to_time_bins(data)
 
     #print("------------------------ Extract weekdays -------------------------")
@@ -366,7 +355,7 @@ def preprocess():
     #print("------------------- Create train  and test sets -------------------")
     #TODO divide and add labels?
 
-    print("-------------------------- Standardizing --------------------------")
+    #print("-------------------------- Standardizing --------------------------")
     #data = _standardize(data, FLAGS.plot_distr, FLAGS.plot_dir)
 
     print("-------------------------- Storing  data --------------------------")

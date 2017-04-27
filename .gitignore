@@ -100,4 +100,4 @@ Report/*.log
 
 #Confidential BJUT
 Code/Previous*
-Data/*
+Data/sets/*
