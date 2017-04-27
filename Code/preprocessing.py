@@ -18,16 +18,16 @@ from collections import OrderedDict
 
 ############ --- BEGIN default constants --- ############
 MIN_RECORDS_DEFAULT = 2
-MODE_DICT_DEFAULT = {       '[(]轨道.' : '(R.',        # subway
-                            '[(]公交.' : '(B.',        # bus
-                            '[(]自行车.' : '(Z.'}      # bike
+MODE_DICT_DEFAULT = {       '[(]轨道[.]' : '(R.',        # subway
+                            '[(]公交[.]' : '(B.',        # bus
+                            '[(]自行车[.]' : '(Z.'}      # bike
 ############ --- END default constants--- ############
 
 ############ --- BEGIN default directories --- ############
 LOAD_FILE_DEFAULT = '../Data/sets/Travel chain sample data(50000).csv'
-LINES_VOC_FILE_DEFAULT = '../Data/vocabularies/lines vocabulary.json'
-ROUTES_VOC_FILE_DEFAULT = '../Data/vocabularies/routes vocabulary.json'
-STATIONS_VOC_FILE_DEFAULT = '../Data/vocabularies/stations vocabulary.json'
+LINES_VOC_FILE_DEFAULT = '../Data/vocabularies/full_lines vocabulary.json'
+ROUTES_VOC_FILE_DEFAULT = '../Data/vocabularies/full_routes vocabulary.json'
+STATIONS_VOC_FILE_DEFAULT = '../Data/vocabularies/full_stations vocabulary.json'
 PLOT_DIR_DEFAULT = './Plots/'
 SAVE_TO_FILE_DEFAULT = '../Data/sets/preprocessed sample data(50000)'
 ############ --- END default directories--- ############
@@ -95,9 +95,9 @@ def _createVocabularies(trips, lines_voc=LINES_VOC_FILE_DEFAULT, routes_voc=ROUT
     print('Combined stations found:  ',len(stations))
 
     # Turn into dictionaries
-    lines =  dict(zip(lines, map(lambda x: ' '+str(x)+':',range(len(lines)))))               # TODO: fix . or - cases, for now we replace with a space
+    lines =  dict(zip(lines, map(lambda x: ' '+str(x)+':',range(len(lines)))))               # TODO: fix . or - cases, for now we replace both with a space
     routes = dict(zip(routes, map(lambda x: ' '+str(x)+':',range(len(routes)))))
-    stations = dict(zip(stations, map(str,range(len(stations)))))
+    stations = dict(zip(map(lambda x: x.replace('(', '[(]').replace(')', '[)]'), stations), map(str,range(len(stations)))))
 
     # Sort them to have longest patterns replaced first
     lines = OrderedDict(sorted(lines.items(), key=lambda t: len(t[0]), reverse=True))
@@ -154,8 +154,6 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
 
             lines.add('([.]|[-])'+matcher.group('line_b')+'[:]')
             lines.add('([.]|[-])'+matcher.group('line_a')+'[:]')
-            # lines.add(matcher.group('line_b')+'[:]')
-            # lines.add(matcher.group('line_a')+'[:]')
             stations.add(matcher.group('station_b'))
             stations.add(matcher.group('station_a'))
         else:
@@ -181,8 +179,6 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
 
             routes.add('([.]|[-])'+matcher.group('route_b')+'[:]')
             routes.add('([.]|[-])'+matcher.group('route_a')+'[:]')
-            # routes.add(matcher.group('route_b')+'[:]')
-            # routes.add(matcher.group('route_a')+'[:]')
             stations.add(matcher.group('station_b'))
             stations.add(matcher.group('station_a'))
         else:
@@ -224,22 +220,20 @@ def _parseRoute(data, modes, createVoc):
     # Replace for clean format
     print('Formating route')
 
+    # TODO: remove when run over whole dataset
+    indices = random.sample(data.index, 100)
+    data = data.ix[indices]
+
     # Replace mode : dictionary
     data['TRANSFER_DETAIL'].replace(to_replace=modes, inplace=True, regex=True)
 
     # Strip bus directions away
-    data['TRANSFER_DETAIL'].replace(to_replace='[(][^.]+?[)]:', value=':', inplace=True, regex=True)
+    data['TRANSFER_DETAIL'].replace(to_replace='[(][^.-]+?[-][^.-]+?[)]:', value=':', inplace=True, regex=True)
 
     # Replace line/route and stops/stations : vocabularies
     data['TRANSFER_DETAIL'].replace(to_replace=routes, inplace=True, regex=True)
     data['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True)
     data['TRANSFER_DETAIL'].replace(to_replace=stations, inplace=True, regex=True)
-
-    # Look for records that still contain chinese characters
-    # pattern = re.compile(ur'[\u4e00-\u9fff]+')
-    # wrong = _filter(data, data[pattern.search(data['TRANSFER_DETAIL'])], "good parse")
-    # print(wrong['TRANSFER_DETAIL'][0])
-
 
     return data
 
@@ -255,7 +249,6 @@ def _to_time_bins(data):
     """
     Start and end time stamps into time bins
     """
-    #TODO: check why columns are not created
     print("Extracting start/end hours")
     data['START_HOUR'] = data['START_TIME'].apply(lambda x : x.hour)
     data['END_HOUR'] = data['END_TIME'].apply(lambda x : x.hour)
@@ -266,11 +259,6 @@ def _plotDistribution(sample, plot_dir, variable_name, column_name):
     Plot variables distribution
     """
     #TODO make plots nice with titles, etc
-
-    # Plot card code vs (sorted) variable
-    #fig, ax = plt.subplots()
-    #sample.sort_values(by=column_name).plot.bar(x='CARD_CODE', y=column_name, ax=ax)
-    #plt.savefig(plot_dir+variable_name+'.png', format='png')
 
     # Plot variable frequency histogram
     fig, ax = plt.subplots()
@@ -315,6 +303,8 @@ def _standardize(data, plot_distr, plot_dir):
         _plotDistribution(sample, plot_dir, 'time_standardized', 'TRAVEL_TIME')
         _plotDistribution(sample, plot_dir, 'distance_standardized', 'TRAVEL_DISTANCE')
 
+        # Box plot of all standarized features
+
         # Plot time vs distance
         fig, ax = plt.subplots()
         sample.plot(x='TRAVEL_DISTANCE',y='TRAVEL_TIME', ax=ax, kind='scatter')
@@ -343,11 +333,11 @@ def preprocess():
     print("-------------------------- Parsing route --------------------------")
     data = _parseRoute(data, MODE_DICT_DEFAULT, FLAGS.create_voc)
 
-    #print("------------------ Recalculating transfer number ------------------")
-    #data = _countTransfers(data)
+    print("------------------ Recalculating transfer number ------------------")
+    data = _countTransfers(data)
 
-    #print("-------------------- Creating time stamp bins ---------------------")
-    #data = _to_time_bins(data)
+    print("-------------------- Creating time stamp bins ---------------------")
+    data = _to_time_bins(data)
 
     #print("------------------------ Extract weekdays -------------------------")
     # TODO http://nbviewer.jupyter.org/github/jvns/pandas-cookbook/blob/v0.1/cookbook/Chapter%204%20-%20Find%20out%20on%20which%20weekday%20people%20bike%20the%20most%20with%20groupby%20and%20aggregate.ipynb

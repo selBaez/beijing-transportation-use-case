@@ -7,3 +7,4 @@
 
 Notes:
 - vocabularies under "clean_*" names are the recollection of all lines/routes/stations seen. Their keys do not necessarily match their final IDs
+- vocabularies under "full_*" names are the regex matches and their literal replacements. Still unsure if these will be the final vocabularies 
