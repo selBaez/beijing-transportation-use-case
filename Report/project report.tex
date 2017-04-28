@@ -92,14 +92,14 @@ A major proportion of public transport users is represented by commuters. These 
 
 As commuters are frequent users of public transit, the  conditions of the public network directly influence their personal well being and generally impacts their quality of life. Intuitively, if the commuting experience is unpleasant, daily travel can bring distress to commuters and even repel them from using the public transport at all. Several studies have looked into public transit evaluation from different perspectives, including commuters' needs \cite{mao2016commuting}. The most common aspects of it include: travel time, average speed, delays, accessibility, service coverage, crowded level, facilities quality, and fare rate. Weng et al \cite{weng2013bus} identified five categories (Convenience, rapid, Reliability and Comfort) that summarize commuters priorities when choosing to travel by public transport.
  
-From both of the above, the large presence of commuters and their known needs, it follows that identifying commuters can help in creating a sustainable public transportation network. Long term planning and policies for improving the overall experience can come as a consequence to aid urban areas on a large scale.
+From both of the above, the large presence of commuters and their known needs and preferences, it follows that identifying commuters can help in creating a sustainable public transportation network. Public transit stakeholders should be able to understand the commuters' demands and its dynamics, consequently bringing long term planning and policies for improving the overall commuting experience.
 
 \subsection{The city of Beijing}
 The city of Beijing presents a special case of urbanization and rapid industrialization. This is reflected in a sudden population growth of 20\% per decade since 1960, with the largest increase of 44\% in the last ten years. The latest official census in 2010 reported the urban agglomeration of Beijing (including Beijing itself and its adjacent suburban areas) having a population of 19,612,368 people. The UN World Urbanization Prospects estimates the 2017 population at over 22 million inhabitants. \cite{world2016beijing}
 
 As a result of the population explosion, many environmental and social resources are under pressure. From the environmental side, one of the most notable issues is related to air pollution, due to the significantly high pollutant emissions in the city \cite{zhang2016air}. Similarly, the city's downstream river pollution is serious, with most regions of the Yellow river being unable to comply with the lowest water quality standards. \cite{wang2015studies} 
 
-In the aspect of social resources, one of the main complications is the one of mobility. In Beijing, public transport is the dominant mode of transportation, accounted for 44.0\% of all trips compared to 32.6\% attributed to private cars \cite{mao2016commuting}. Though it is continually expanding, it is a fact that public transport is overcrowded, constantly reaching over 100\% capacity. \selfnote{reference}
+In the aspect of social resources, one of the main complications is the one of mobility. In Beijing, public transport is the dominant mode of transportation, accounted for 44.0\% of all trips compared to 32.6\% attributed to private cars \cite{mao2016commuting}. In 2008, the total ridership was 6.5 billion travels. Though it is continually expanding, it is a fact that public transport is overcrowded, constantly reaching over 100\% capacity \cite{beijing2009research}.
 
 Beijing public transport is composed of buses, subway and bicycles. The three types can be accessed by using a single smart card. 
 
@@ -119,7 +119,7 @@ This project performs an interdisciplinary study between the areas of Artificial
 The area of Artificial Intelligence is able to provide dozens of prediction algorithms. Though constantly under refinement, it is time for state-of-the-art techniques to be applied to real and large impact situations to test their ability to deal with noisy streams. Comparably, given the ever growing complexity of urban mobility, domain experts must focus on analyzing trends and insights instead of curating and making sense out of raw data. Therefore, both areas benefit from this project.
 
 \subsubsection{Societal context}
-Looking at the social context of Beijing, there are several reasons justifying the study of commuters. 
+Looking at the social context of Beijing, there are several reasons justifying an in depth study of commuters. 
 
 First, a survey conducted in 2009 showed that 80\% of the public transport passengers' complaints in Beijing were related to the network being slow and time-consuming, inconvenient to transfer, unpunctual and unreliable. Commuters use the public transport network regularly to perform their routines, and thus need efficient and reliable means of transportation. Flaws and failures in the network reduce the attraction of public transport. \cite{beijing2009research}
 
@@ -128,37 +128,39 @@ Second, the city of Beijing faces a large imbalance between residential and work
 Third, government, transport management and operators can gain invaluable spatial and temporal insights regarding commuters' behaviors. This insight can lead to tangible results, including policies for increasing the efficiency of the public transit network, adjustable travel fares tailored to most relevant commuters' patterns, incentives to relieve peak hours and thus traffic congestion, urban planning for residential and industrial land use, and others.
 
 \subsubsection{Scientific context}
-Mobility in metropolitan areas follows swarm behaviors. Based on individual travels and routines, travelers exhibit distinguishable characteristics on a larger scale. Both levels of understanding are crucial for Transportation experts.
+From a scientific point of view, mobility patterns in metropolitan areas follow swarm behaviors. Based on individual travels and routines, travelers exhibit distinguishable characteristics on a larger scale. Both levels of understanding are crucial for Transportation experts. 
 
-Surveys are widely used in metropolitan transportation studies in order to reach travelers on an individual level, while aggregated measurements are used to analyze their collective behavior. The analysis is usually done with statistical methodology. 
+Surveys are the most widely used research method in metropolitan transportation studies. They are targeted to reach travelers on an individual level, while aggregated measurements are taken to investigate their collective behavior. The analysis is usually based on statistical methodology. 
 
-Surveys are costly and based on self-report, which by itself has bias problems. Other problems are small population and non-representative samples. 
-
-Aggregated methods miss the interactions between individuals that cause the collective behavior. 
+These methods have several disadvantages. On the one hand, surveys are costly to implement, and in general have problems related to small populations and non-representative samples. Even when the latter problems are escaped, the typical quality versus quantity trade off is present, reducing the confidence of the collected information. Furthermore, surveys are based on self-report, which by itself has bias problems. On the other hand, aggregated measurements miss the interactions between individuals that cause the collective behavior. 
 
 \textbf{Big Data}
 In the last years, smart card systems have become more popular, making it possible to monitor travelers transactions and facilitating fare collection. Several cities have implemented such systems, for example the Octopus card in Hong Kong\cite{chau2003octopus}, Oyster card in London \cite{blythe2004improving}, OV-chipkaart in The Netherlands \cite{de2008analysis}, and Yikatong card in Beijing \cite{chan2010tactical}, to name a few.
 
-Incentive for using Yikatong card since bus is half the price. Over 90\% of public transit users are smart card holders. \cite{ma2017understanding}
+In Beijing, over 90\% of public transit users are smart card holders. There is a significant incentive for using the Yikatong smart card since bus rides are heavily subsidized (the user has only to pay 50\% of the full price)\cite{ma2017understanding}. Moreover, the Yikatong smart card system is also integrated with taxi, electricity and sewage payments. 
 
-Technology has reached the data collection point, but has yet to reach the analysis part. Transit cards are capable of recording spatio-temporal information at an individual level over long periods of time. This generates large amounts of historical data that can be mined.
+Clearly, technology for transit data collection is broadly spread around the world. Transit smart cards are capable of recording spatio-temporal information at an individual level over long periods of time. This generates a large volume of historical data that only big data techniques can deal with. Furthermore, machine learning and other mining methods specialize in analyzing disaggregated complex information. As such, bringing state-of-the-art techniques into the Metropolitan Transportation domain can aid to unravel massive human behaviors and reveal patterns and trends in mobility.
 
 \subsection{Thesis organization}
 This Thesis is organized as follows:
 
-First we do a literature review for previous work on mining transit data and for specific state-of-the art methodologies. Consequently, we establish the scope and objectives of this project. We continue to describe the methodology thoroughly, including the data and the approach. Following this description, we identify three distinct stages of the project and report their corresponding experimentation. Then, we discuss the findings and gather conclusions. Finally, future work opportunities are explored. 
+First we perform a literature review to look for previous work on mining smart card transit data and for specific state-of-the art methodologies for classification and clustering complex spatio-temporal data. Subsequently, we establish the scope and research objectives of this project. We continue to describe the methodology thoroughly, including the data and the approach to mine it. Following this description, we identify three distinct stages of the project (Commuters classification, Variables evaluation, and Commuters clustering) and report their corresponding experimentation. Next, we discuss the findings and gather conclusions. Finally, future work opportunities are explored. 
 
 
 \newpage
 \section{Literature review}
 
 \subsection{Data mining on transit card data}
+With the introduction of smart card systems in large cities, several studies have been performed in the last decade using basic data mining techniques. Yet, there is not a standardize way to represent the spatio-temporal features resulting from smart cards. 
+
 %Preprocess data by Wang in BJUT lab. \cite{wang2014research}
-Morency et al. looked at spatio-temporal information in Canadian smart card data. On the one hand, they examine spatial variability by measuring the number of distinct stops a smart card user visits, and the frequency of each stop. On the other hand, they examine temporal variability by clustering the boarding times of each smart card into fours clusters using the k-means algorithm. \cite{morency2007measuring} \selfnote{revise}
 
-Density Based Scanning Algorithm with Noise to classify travelers according to their travel patterns.  \cite{ma2013mining}
+Morency et al. study spatio-temporal variability in Canadian smart card data. On the one hand, they examine spatial variability by measuring the number of distinct stops a smart card user visits, and the frequency of each stop. On the other hand, they examine temporal variability by clustering the boarding times of each smart card. Using these features, they observe the week to week variability for each of the five types of transit card available (Adult-interzone, Adult-express, Adult-regular, Elderly and Student). Their findings show that commuter type of cards visit a smaller range of bus stops compared to non-commuter types. Therefore, a small number of stops account for a high proportion of commuter's boardings. Additionally, commuters have the highest proportion of zero-boarding days on weekends \cite{morency2007measuring}.
 
-Bhaskar et al. did passenger segmentation using only smart card data. They use a two level DBSCAN algorithm for investigating spatial features, such as frequency in Origin-Destination pairs. Separately, they applied DBSCAN to temporal features to determine most frequent boarding times.   \cite{bhaskar2015passenger} \selfnote{revise}
+%Density Based Scanning Algorithm with Noise to classify travelers according to their travel patterns.  \cite{ma2013mining}
+
+Bhaskar et al. are concerned with passenger segmentation using only smart card data. 
+First, they use a two level DBSCAN algorithm for investigating spatial patterns, where the first level clusters Destination stops and the second level clusters Origin stops.  From this they extract frequent Origin-Destination pairs. Separately, they applied DBSCAN to temporal features to determine most frequent boarding times.   \cite{bhaskar2015passenger}
 
 Machine learning for commuters identification. SVM with 94\% accuracy. \cite{tu2016impact}
 
@@ -166,12 +168,12 @@ Langlois et al. \cite{langlois2016inferring} present an innovative representatio
 
 The latest work on the field corresponds to Ma et Al. \cite{ma2017understanding} The objective of their work is to determine a scoring function for travelers that can correctly identify them as commuters, or non-commuters. In their work, they cluster stops using an improved DBSCAN algorithm. They engineer features for representing the frequency in which travelers follow spatio-temporal patterns. Travelers are then clustered according to these features following the ISODATA algorithm. As an output of the clustering, optimal cutoff levels in the scoring function were determined. As a result, evaluating a traveler does not depend on clustering centroids, but only on calculating the commuting score. This, as expressed by the authors, reduces computing time and treats each traveler independently from the others, which is not true for clustering algorithms.
 
-A common practice, as used by \cite{ma2017understanding}, \cite{langlois2016inferring}, and \cite{morency2007measuring} is to divide the day into -hourly or half-and-hour- time bins.
+A common practice, as used by \cite{ma2017understanding}, \cite{langlois2016inferring}, and \cite{morency2007measuring} is to divide the day into -hourly or half-and-hour- time bins. Bhaskar et al. recognize this as a problem in the field, by pointing out that this segregates journeys from 9:59 AM and 10:01 AM even though they intuitively belong to the same behavior. 
 
-\textbf{Volume of data:}
-The volume of data analyzed by previous work ranges from hundreds of smart cards to tens of millions of smart cards, leading to up to hundreds of millions of individual smart card transactions. The details are summarized in Table \ref{table:volumeData}.
+\subsubsection{Volume of data}
+The volume of data collected by smart card systems is massive and is usually impossible to analyze all of it at once. The volume of the samples analyzed by previous work ranges from hundreds of smart cards to tens of millions of smart cards, leading to up to hundreds of millions of individual smart card transactions. The details are summarized in Table \ref{table:volumeData}.
  
-\begin{table}[h!]
+\begin{table}[H]
 \centering
 \begin{tabular}{||c c c c c||} 
  \hline
@@ -180,7 +182,7 @@ The volume of data analyzed by previous work ranges from hundreds of smart cards
  Tu et al. \cite{tu2016impact} & 2016 & Unknown & 978 & one week \\ 
  Morency et al. \cite{morency2007measuring} & 2007 & 2.2 million & 7,118 & 277 days \\
  Langlois et al. \cite{langlois2016inferring} & 2016 & 3 million & 33,026 & four weeks \\
- Bhaskar et al. \cite{bhaskar2015passenger} & 2015 & 34.8 million & 1 million & 4 months \\
+ Bhaskar et al. \cite{bhaskar2015passenger} & 2015 & 34.8 million & 1 million & 4 months \\ %, working days only
  Ma et al. \cite{ma2013mining} & 2013 & Unknown & 3 million & one week \\
  Ortega \cite{ortega2013classification} & 2013 & 65 million & 5.7 million & one week \\
  Ma et e. \cite{ma2017understanding} & 2017 & 364 million & 18 million & one month\\ [1ex] 
@@ -192,24 +194,34 @@ The volume of data analyzed by previous work ranges from hundreds of smart cards
 
 
 \subsection{Classifying and clustering spatio-temporal data}
-\textbf{Clustering algorithms:} 
-
-\begin{itemize}
-\item Hierarchical clustering: 
-
-Langlois use it for areas clustering. In order to infer the user-specific activities, all stops or stations visited by each user are clustered using an hierarchical clustering algorithm that considers the distance between stops and the frequency of travel between them. Therefore, different activities are likely to be associated with different areas.  \cite{langlois2016inferring}
-
-\item Partitional clustering:
+Spatio-temporal data is usually analyzed by separating spatial features from temporal ones.
 
 
-Density based \cite{bhaskar2015passenger}
+\subsubsection{Clustering algorithms} 
 
-k-means \cite{morency2007measuring}. Langlois et al. tune the number of clusters k using the DB-index \cite{langlois2016inferring}. 
+\textbf{Hierarchical clustering}
 
-k-nearest neighbor \cite{ortega2013classification}
+Langlois use this technique for areas clustering. In order to infer the user-specific activities, all stops or stations visited by each user are clustered using an hierarchical clustering algorithm that considers the distance between stops and the frequency of travel between them. Therefore, different activities are likely to be associated with different areas \cite{langlois2016inferring}.
+
+\textbf{Partitional clustering}
+
+\begin{description}
+\item[K-means:]
+K mean algorithm is the most widely used method for partitional clustering. It requires having a predefined number of clusters to fit the data to. 
+
+Morency et al. use K-means for clustering hourly boarding times according to card type. They apply Hamming distance (representing the percentage of data between two elements) and a combination of batch and online updates. Through empirical trials, they select to find four clusters per card type.It is worth noting that by using a card-day unit, they allow a card to belong to a different cluster according to the day of travel. As every card type is composed of four boarding patterns, travelers are not restricted to follow a routine everyday, but can exhibit different behaviors on different days. For example, the Adult-regular card type contains a 9:00AM-and-5:00PM-boarding cluster and a no-boarding clyster. then, a user of this card could belong to the first cluster on weekdays and to the second cluster on weekends \cite{morency2007measuring}. 
+
+There are a few techniques for tuning the number of clusters. For example, Langlois et al. use the DB-index to find two optimal number of clusters, out of which they select the largest to provide the most detailed segmentation \cite{langlois2016inferring}. 
+
+%k-nearest neighbor \cite{ortega2013classification}
+
+\item[DBSCAN:]
+Density based algorithms excel at dealing with anomalies, since they ignore low density areas and interpret them as noise. They do not required a redefined number of clusters and adapt to find clusters of any size. The required parameters for DBSCAN are a maximum reach distance $\epsilon$ and the minimum number of points per cluster 
+
+Bhaskar et al. use DBSCAN to cluster Stops and boarding times \cite{bhaskar2015passenger}
 
 
-\end{itemize}
+\end{description}
 
 \newpage
 \section{Research objective}
@@ -225,13 +237,13 @@ The min objective is further broken down into answering the following research q
 \end{enumerate}
 
 \subsubsection{Definition of terms}
-A commuter is a public transit user whose smart card data reveals repeatable patterns in time and space.
+A commuter is a public transit user whose smart card data reveals repeatable patterns in time and space. Though commuters are usually associated with Monday to Friday 9:00am to 5:00pm schedules, in this work we extend the definition to any routine travel pattern. 
 
 A trip is a sequence of smart card transactions, including transfers, with an origin and destination. A trip is also represented as a record in the data, as it will be further explained in Section \ref{sec:data}
 
 A transfer is a change in transportation mode. Transportation modes include Bus, Subway, and Bike. 
 
-We make the assumption that smart card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. As discussed with domain expert Quian Tu, although some people may own more than one card, this is a minority.
+We make the assumption that smart card IDs and users have a one to one relationship, meaning each user has exactly one card and each card is used by exactly one user. As discussed with domain expert Quian Tu, although some people may own more than one card, this is a minority. Thus, the assumption holds for the majority of travelers. 
 
 \subsection{Scope and structure}
 This project is divided three main stages: 
@@ -249,28 +261,29 @@ This project is divided three main stages:
 \section{Methodology}
 \subsection{The data}
 \label{sec:data}
-Every record int he data represents a trip performed by a specific smart card. As such, it contains the following data fields:
+Every record int the data represents a trip performed by a specific smart card. As such, it contains the following data fields:
 
 \begin{itemize}
 \item Data date: Year, month and day that the trip was made
-\item Card code: card identification number
-\item Path link: Mode of transportation. B for bus, R for subway, Y for bicycle. Transfers between modes are shown by a dash. \footnote{Example: B-B is Bus to Bus.} 
+\item Card code: Card identification number
+\item Path link: Mode of transportation. B stands for bus, R for subway, Y for bicycle. Transfers between modes are shown by a dash. \footnote{Example: B-B represents a Bus to Bus transfer.} 
 \item Travel time: Time spent in vehicles, measured in milliseconds
-\item Travel distance: Distance traveled, measured in meters as measured by route. 
-\item Transfer number: Number of changes in travel mode during the trip. Regarding transfers between same travel mode, bus to bus, and bicycle to bicycle transfers are counted. Subway to subway transfers are ignored. 
-\item Transfer average time: Time spent in transfer, divided by number of transfers. , Measured in milliseconds
-\item Transfer total time: Total time spent in transfer, measured in milliseconds
-\item Start/End time: Time stamp of when the trip started/ended. Date and time with milliseconds precision
+\item Travel distance: Distance traveled, measured in meters as performed by route. 
+\item Transfer number: Number of changes in travel mode during the trip. 
+\item Transfer total time: Total time spent in transfer, measured in milliseconds\item Transfer average time: Time spent in transfer, divided by number of transfers. Measured in milliseconds
+\item Start/End time: Time stamp of when the trip started/ended. Date and time up to milliseconds precision
 %Traffic zones
-\item On/Off small traffic area: Integer from 1 to 1911
-\item On/Off middle traffic area: Integer from 1 to 389
-\item On/Off big traffic area: Integer from 1 to 60
+\item On/Off small traffic area: Integer ranging from 1 to 1911
+\item On/Off middle traffic area: Integer ranging from 1 to 389
+\item On/Off big traffic area: Integer ranging from 1 to 60
 %Municipal zones
-\item On/Off ring road: Integer 1 to 6
-\item On/Off area: Integer from 1 to 18
-\item ID: record identification number created by joining the following: hour | time stamp of beginning of trip | card code
+\item On/Off ring road: Integer ranging from 1 to 6
+\item On/Off area: Integer ranging from 1 to 18
+\item ID: record identification number created by joining the following: hour of the beginning of the trip | time stamp of beginning of the trip | card code performing the trip
 \item Transfer detail: Mode of transportation, as well as line/route number and stations for boarding and alighting. More detail provided in Section \ref{sec:tripParsing}
 \end{itemize}
+
+Full privacy of card users is ensured, as there is no personal data linking card codes to specific individuals. 
 
 The traffic zones (small, middle and big areas) are divided by the Beijing Municipal Institute of City Planning and Design (BICP). They are specific in different degrees, as shown in Figure \ref{fig:data/traffic_zones}. In general, the division principles correspond to the geopolitical environment and administrative planning, for example roads, villages and others. The 6 ring road and 18 areas districts are divided by the Beijing Municipal Government. The division is unique in Beijing. The 18 districts and counties are shown in Figure \ref{fig:data/18areas}. According to domain expert PhD. Liang Quan, these divisions are sufficiently informative for traffic analysis \cite{liang}.
 
@@ -468,6 +481,9 @@ The spatial factors to be explored are represented by On/Off areas. \selfnote{an
 Feature engineering by deep learning
 
 \subsubsection{Ensemble models}
+Ensemble models benefit from combining non-correlated methods. Classifiers might correct each other in specific hard cases. 
+
+
 Ensemble models are chosen because of its robustness and modularity. Starting from two simple classifiers, assembled via bagging, the model can grow larger or more complex as needed and it may be extended beyond the scope of this Thesis Project. 
 
 \technicalDoubt{ensemble models for supervised learning, consensus clustering for unsupervised}
