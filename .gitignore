@@ -97,6 +97,7 @@ ENV/
 *.toc
 Report/*.log
 *.dvi
+Report/nips_2016.*
 
 #Confidential BJUT
 Code/Previous*
