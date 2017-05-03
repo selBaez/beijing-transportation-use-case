@@ -160,7 +160,7 @@ Morency et al. study spatio-temporal variability in Canadian smart card data. On
 %Density Based Scanning Algorithm with Noise to classify travelers according to their travel patterns.  \cite{ma2013mining}
 
 Bhaskar et al. are concerned with passenger segmentation using only smart card data. 
-First, they use a two level DBSCAN algorithm for investigating spatial patterns, where the first level clusters Destination stops and the second level clusters Origin stops.  From this they extract frequent Origin-Destination pairs. Separately, they applied DBSCAN to temporal features to determine most frequent boarding times.   \cite{bhaskar2015passenger}
+First, they use a two level DBSCAN algorithm for investigating spatial patterns, where the first level clusters Destination stops and the second level clusters Origin stops.  From this they extract frequent Origin-Destination (O-D) pairs. Separately, they applied DBSCAN to temporal features to determine most frequent boarding times.  As such, they characterize each user by the percentage of journeys they perform between the regular O-D, and the percentage of journeys they perform during their habitual times. \cite{bhaskar2015passenger}
 
 Machine learning for commuters identification. SVM with 94\% accuracy. \cite{tu2016impact}
 
@@ -194,7 +194,7 @@ The volume of data collected by smart card systems is massive and is usually imp
 
 
 \subsection{Classifying and clustering spatio-temporal data}
-Spatio-temporal data is usually analyzed by separating spatial features from temporal ones.
+Spatio-temporal data is usually analyzed by separating spatial features from temporal features.
 
 
 \subsubsection{Clustering algorithms} 
@@ -216,12 +216,18 @@ There are a few techniques for tuning the number of clusters. For example, Langl
 %k-nearest neighbor \cite{ortega2013classification}
 
 \item[DBSCAN:]
-Density based algorithms excel at dealing with anomalies, since they ignore low density areas and interpret them as noise. They do not required a redefined number of clusters and adapt to find clusters of any size. The required parameters for DBSCAN are a maximum reach distance $\epsilon$ and the minimum number of points per cluster 
+Density based algorithms excel at dealing with anomalies, since they ignore low density areas and interpret them as noise. They do not required a redefined number of clusters and adapt to find clusters of any size. The required parameters for DBSCAN are a maximum reach distance $\epsilon$ and the minimum number of points per cluster.
 
-Bhaskar et al. use DBSCAN to cluster Stops and boarding times \cite{bhaskar2015passenger}
+Bhaskar et al. use three DBSCAN algorithms to cluster Origin stops, Destination stops, and boarding times. For each of the previous, they tune the algorithm parameters by fixing a domain reasonable $\epsilon$ (1000 m walking distance or 5 min variance in boarding time), and selecting the minimum points by comparing the percentage of data considered to belong to any cluster as opposed to data considered to be noise given the par-specific parameters \cite{bhaskar2015passenger}. 
 
 
 \end{description}
+
+\subsubsection{Features}
+Though clustering algorithms are common in the field, they are mostly used for feature engineering. 
+
+Bhaskar et al. use clustering for feature engineering (percentage of regular trips), however, the classification of users is rule-based according to which frequency feature (spatial or temporal) is stronger in each user \cite{bhaskar2015passenger}.
+
 
 \newpage
 \section{Research objective}
@@ -356,13 +362,14 @@ For this project, 100, 000 records are sampled every day for a month. In this ca
 As first step for preprocessing the data, we perform a cleaning where we eliminate records that are faulty, for example: 
 
 \begin{enumerate}
-\item Eliminate records with missing data: ~10.9\% records eliminated
+\item Eliminate records with missing data: ~10.93\% records eliminated
+\item Eliminate records with missing travel details: ~1.58\% records eliminated
 \item Eliminate records with travel time <= 0: <0.01\% records eliminated
-\item Eliminate records with travel distance <= 0: ~10.5\% records eliminated
-\item Eliminate records linked to users with insufficient trips: ~ 25.8\% records eliminated when requiring at least 2 trips.
+\item Eliminate records with travel distance <= 0: ~9.82\% records eliminated
+\item Eliminate records linked to users with insufficient trips: ~ 25.89\% records eliminated when requiring at least 2 trips.
 \end{enumerate}
 
-This leaves ~52.6\% records available for usage. 
+This leaves ~51.76\% records available for usage. 
 
 Insufficient trips regulated by a user input \selfnote{plot percentage of records and min records needed. Tune parameter}
 
@@ -370,48 +377,67 @@ Insufficient trips regulated by a user input \selfnote{plot percentage of record
 \label{sec:tripParsing}
 We parse the trip details using a combination of two techniques: regular expressions and tokenization. 
 
-\begin{description}
-\item [Regular expression]
-In order to obtain the elements of the trip 
+\textbf{Regular expression}
+Since a trip may include transfers, we define a trip to be composed of one or many "rides"
+
+In order to obtain the elements of each ride we look at the patters per travel mode.
 
     \begin{align*}
     BIKE &= (bike.STATION-STATION) \\
-    SUBWAY &= (subway.LINE_{NAME}:STATION-LINE_{NAME}:STATION) \\
-    BUS &= (bus.ROUTE_{NAME}:) \\ \\
-    GENERAL &= (MODE.[LINE_{NAME}:]? STATION-[LINE_{NAME}:]? STATION-) 
+    SUBWAY &= (subway.LINE:STATION-LINE:STATION) \\
+    BUS &= (bus.ROUTE(DIRECTION-DIRECTION):STATION \\
+    &-ROUTE(DIRECTION-DIRECTION):STATION) \\ \\
+    RIDE &= (MODE.[LINE/ROUTE:]?STATION-[LINE/ROUTE:]?STATION) \\
+    TRIP &= RIDE [-> RIDE]? 
 	\end{align*}    
-    
-    \begin{align*}
-    LINE_{NAME} &=      5 number line or NAME line \\
-    ROUTE_{NAME} &=      944 or night 32 (DIRECTION - DIRECTION)
-    \end{align*}
 
-\item [Tokenization]
+\selfnote{change parenthesis to [(] or explain that they refer to literal parenthesis and not groups in regex}	
+	
+Subway lines and bus routes have number and letters as description. 
 
-Dictionary \selfnote{encode chinese in latex}
+For bus routes, night, express and special routes are follow different paths, even if they are described with the same number. However, the direction in which they go is stable. 
 
-\end{description}
+For this reason we create a vocabulary with all unique parsed routes (without their directions)
+
+\textbf{Tokenization}
+Mode dictionary \selfnote{encode chinese in latex}
+
+
 
 Example in Chinese -> English -> clean trip
 
 
 
 \subsubsection{Data patching}
-We note that num of transfers and path link are faulty, According to expert PhD. Tu Qiang, this must be recalculated \cite{tommy}.
-\selfnote{recalculate num of transfers, and path link.}
+We note that the number of transfers and the path link are faulty. According to domain expert PhD. Tu Qiang, this must be recalculated \cite{tommy}.
 
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/num_transfers_hist.png}
+  	\caption{Original}
+  \end{subfigure}
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{./images/num_transfers_recalculated_hist.png}
+  	\caption{Recalculated}
+  \end{subfigure}
+  \caption{Transfer number distribution before and after recalculation.}
+  	\label{fig:preprocessing/num_transfers}
+\end{figure}
 
-\subsubsection{Transformation and Standardization}
+\subsubsection{Transformation and Standardization} \selfnote{replace images once run with all data}
 Whitening vs standardization: whitening eliminates correlations between the data. In our case those are relevant and we ant to keep them. \technicalDoubt{Correlation between time and distance to be preserved?}Figure \ref{fig:preprocessing/distance_time_correlation} shows a clear correlation between travel distance and travel time. 
 
-\begin{figure}
+\begin{figure}[H]
   \centering
   \includegraphics[width=.8\linewidth]{./images/distance_vs_time.png}
   \caption{Travel distance vs travel time.1000 record sample.}
   \label{fig:preprocessing/distance_time_correlation}
 \end{figure}
 
-Travel time and distance where standardized by subtracting the mean and forcing a unit standard deviation. \selfnote{double check this} \selfnote{replace images once run with all data}
+Travel time and distance where standardized by subtracting the mean and forcing a unit standard deviation. As a result we observe a truncated Gaussian distribution $\mathcal{N}(\mu = 1, \sigma^2 = 1)$.
 
 \begin{figure}[H]
   \centering
@@ -422,7 +448,7 @@ Travel time and distance where standardized by subtracting the mean and forcing 
   \end{subfigure}
   \begin{subfigure}[b]{.45\textwidth}
   	\centering
-  	\includegraphics[width=\linewidth]{./images/time_standarized_hist.png}
+  	\includegraphics[width=\linewidth]{./images/time_standardized_hist.png}
   	\caption{Standarized}
   \end{subfigure}
   \caption{Time distribution before and after preprocessing. 1000 records sample.}
@@ -438,7 +464,7 @@ Travel time and distance where standardized by subtracting the mean and forcing 
   \end{subfigure}
   \begin{subfigure}[b]{.45\textwidth}
   	\centering
-  	\includegraphics[width=\linewidth]{./images/distance_standarized_hist.png}
+  	\includegraphics[width=\linewidth]{./images/distance_standardized_hist.png}
   	\caption{Standarized}
   \end{subfigure}
   \caption{Distance distribution before and after preprocessing. 1000 records sample.}
@@ -446,7 +472,7 @@ Travel time and distance where standardized by subtracting the mean and forcing 
 \end{figure}
  
 
-Hourly time bins is standard practice in the field \cite{langlois2016inferring} \cite{ma2017understanding}, 
+Regardless of its drawbacks, using hourly time bins is standard practice in the field \cite{langlois2016inferring} \cite{ma2017understanding} \cite{morency2007measuring}. From Figure \ref{fig:preprocessing/start_end_hour}, we note that our data follows the expected distribution for the domain, showing clear morning and evening peaks. 
 
 \begin{figure}[H]
   \centering
@@ -464,29 +490,47 @@ Hourly time bins is standard practice in the field \cite{langlois2016inferring} 
   	\label{fig:preprocessing/start_end_hour}
 \end{figure}
 
-Figure \ref{fig:preprocessing/start_end_hour} shows clear morning and evening peak hours. 
-
-Furthermore, we create a marker to determine if the record was conducted over a weekday or not. \selfnote{TODO: implement in code}
 
 \subsection{Data mining techniques}
 The work for this project is coded in Python, using libraries for data and numerical manipulation (\textit{Pandas}, \textit{numpy}), regular expressions (\textit{re}), machine learning (\textit{sklearn}), neural networks(\textit{Theano}).
 
-\subsubsection{Feature engineering}
+\subsubsection{Spatio-temporal data structure}
 The temporal factors to be explored are represented by the start/end times, as well travel/transfer time.
 
-The spatial factors to be explored are represented by On/Off areas. \selfnote{and route lines?}. 
+The spatial factors to be explored are represented by On/Off areas, lines/routes and stations. 
 
-\technicalDoubt{hierarchical features? data structure for this?}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{./images/3D_structure.png}
+  \caption{Spatio-temporal data structure.}
+  \label{fig:preprocessing/3D_structure}
+\end{figure}
 
-Feature engineering by deep learning
+Each plane corresponds to a feature. The x-y composition constructs a temporal structure between days and hours of the day. The advantage of this structure is its local properties, similar to image processing. Here, a temporal pixel is influenced by what happened in the previous/following hour (y axis), and on the previous/following day at the same time (x axis).
+
+\selfnote{define temporal pixel as unit}
+Each pixel may contain a trip feature vectors, which expands several layers.
+
+Each layer is a feature, boarding spatial are in green, alighting spatial are in red, and other types of features are in yellow. 
+
+Every user is represented as this structure. It is sparse, in that only a few time pixels are populated with trips, considering even regular public transport users do not perform more than 4 trips a day. 
+
+
+\subsubsection{Feature engineering}
+Considering around 15 features, we have $24 * 30 * 15 = 10,800$ pixels per user. Given the high dimensionality and the sparsity of the structure, we will perform dimensionality reduction. 
+
+Taking advantage of the local properties of the proposed structure, we can apply convolutional filters to reduce the dimensionality to a more manageable number. 
+
+The end result will be used as features for clustering commuters. 
 
 \subsubsection{Ensemble models}
-Ensemble models benefit from combining non-correlated methods. Classifiers might correct each other in specific hard cases. 
+Ensemble models benefit from combining non-correlated methods. Classifiers might correct each other in specific hard cases. Ensemble models are chosen because of its robustness and modularity. Starting from a few simple classifiers, assembled via simple aggregation methods, the model can grow larger or more complex as needed.
 
+\textbf{Supervised learning}
+Decision trees, Bayesian classifiers and SVM are poweful enough. Bagging will be used to ensemble their predictions.
 
-Ensemble models are chosen because of its robustness and modularity. Starting from two simple classifiers, assembled via bagging, the model can grow larger or more complex as needed and it may be extended beyond the scope of this Thesis Project. 
-
-\technicalDoubt{ensemble models for supervised learning, consensus clustering for unsupervised}
+\textbf{Unsupervised learning}
+The equivalent to ensemble models in unsupervised learning is consensus clustering.
 
 
 \subsection{Correlation analysis}
@@ -508,9 +552,6 @@ With data used by Tu\cite{tu2016impact}, random forest achieves \%99.96 accuracy
 \subsection{Experiments}
 
 \subsection{Results}
-
-Accuracy
-
 Confusion matrix
 
 

@@ -221,8 +221,10 @@ def _parseRoute(data, modes, createVoc):
     print('Formating route')
 
     # TODO: remove when run over whole dataset
-    indices = random.sample(data.index, 100)
-    data = data.ix[indices]
+    #indices = random.sample(data.index, 100)
+    #data = data.ix[indices]
+
+    print('\nOriginal details', data['TRANSFER_DETAIL'][0])
 
     # Replace mode : dictionary
     data['TRANSFER_DETAIL'].replace(to_replace=modes, inplace=True, regex=True)
@@ -235,14 +237,28 @@ def _parseRoute(data, modes, createVoc):
     data['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True)
     data['TRANSFER_DETAIL'].replace(to_replace=stations, inplace=True, regex=True)
 
+    print('Parsed details', data['TRANSFER_DETAIL'][0])
+
+    print('\n\n')
+
     return data
 
 def _countTransfers(data):
     """
     Re calculate number of transfers
     """
+    # Plot number of transfers before and after patching
+    if FLAGS.plot_distr == 'True':
+        print("Plotting original number of transfers distribution")
+        _plotDistribution(data, 'num_transfers', 'TRANSFER_NUM')
+
     print("Recalculating transfer number")
     data['TRANSFER_NUM'] = data['TRANSFER_DETAIL'].str.count("->")
+
+    if FLAGS.plot_distr == 'True':
+        print("Plotting patched number of transfers distribution")
+        _plotDistribution(data, 'num_transfers_recalculated', 'TRANSFER_NUM')
+
     return data
 
 def _to_time_bins(data):
@@ -254,7 +270,7 @@ def _to_time_bins(data):
     data['END_HOUR'] = data['END_TIME'].apply(lambda x : x.hour)
     return data
 
-def _plotDistribution(sample, plot_dir, variable_name, column_name):
+def _plotDistribution(sample, variable_name, column_name):
     """
     Plot variables distribution
     """
@@ -263,30 +279,34 @@ def _plotDistribution(sample, plot_dir, variable_name, column_name):
     # Plot variable frequency histogram
     fig, ax = plt.subplots()
     sample[column_name].plot.hist(ax=ax, bins=20)
-    plt.savefig(plot_dir+variable_name+'_hist.png', format='png')
+    plt.savefig(FLAGS.plot_dir+variable_name+'_hist.png', format='png')
 
-def _standardize(data, plot_distr, plot_dir):
+def _standardize(data):
     """
     Rescale features to have mean 0 and std 1
     """
 
-    if plot_distr == 'True':
+    if FLAGS.plot_distr == 'True':
         # Sample 1000 random points
         indices = random.sample(data.index, 1000)
         sample = data.ix[indices]
 
-        print("Plotting original travel time and distance distributions")
-        _plotDistribution(sample, plot_dir, 'time', 'TRAVEL_TIME')
-        _plotDistribution(sample, plot_dir, 'distance', 'TRAVEL_DISTANCE')
-        _plotDistribution(sample, plot_dir, 'transfer_time', 'TRANSFER_TIME_SUM')
-        _plotDistribution(sample, plot_dir, 'num_transfers', 'TRANSFER_NUM')
-        _plotDistribution(sample, plot_dir, 'start_hour', 'START_HOUR')
-        _plotDistribution(sample, plot_dir, 'end_hour', 'END_HOUR')
+        # Plot general features
+        print("Plotting general distributions")
+        _plotDistribution(sample, 'transfer_time', 'TRANSFER_TIME_SUM')
+        _plotDistribution(sample, 'num_transfers', 'TRANSFER_NUM')
+        _plotDistribution(sample, 'start_hour', 'START_HOUR')
+        _plotDistribution(sample, 'end_hour', 'END_HOUR')
 
-        # Plot time vs distance
+        # Plot features to be standardized
+        print("Plotting original travel time and distance distributions")
+        _plotDistribution(sample, 'time', 'TRAVEL_TIME')
+        _plotDistribution(sample, 'distance', 'TRAVEL_DISTANCE')
+
+        # Plot correlated features to be standardized: time vs distance
         fig, ax = plt.subplots()
         sample.plot(x='TRAVEL_DISTANCE',y='TRAVEL_TIME', ax=ax, kind='scatter')
-        plt.savefig(plot_dir+'distance_vs_time.png', format='png')
+        plt.savefig(FLAGS.plot_dir+'distance_vs_time.png', format='png')
 
     # TODO: only fit and transform to train data, and transform test data
     # TODO: scale transfer time too?
@@ -294,21 +314,21 @@ def _standardize(data, plot_distr, plot_dir):
     scaler = StandardScaler()
     data[['TRAVEL_TIME', 'TRAVEL_DISTANCE']] = scaler.fit_transform(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE']])
 
-    if plot_distr == 'True':
-        # Sample 1000 random points
-        indices = random.sample(data.index, 1000)
+    if FLAGS.plot_distr == 'True':
+        # Use previous sample
         sample = data.ix[indices]
 
+        # Plot standardized features
         print("Plotting standarized travel time and distance distributions")
-        _plotDistribution(sample, plot_dir, 'time_standardized', 'TRAVEL_TIME')
-        _plotDistribution(sample, plot_dir, 'distance_standardized', 'TRAVEL_DISTANCE')
+        _plotDistribution(sample, 'time_standardized', 'TRAVEL_TIME')
+        _plotDistribution(sample, 'distance_standardized', 'TRAVEL_DISTANCE')
 
-        # Box plot of all standarized features
+        # Box plot of all standardized features
 
-        # Plot time vs distance
+        # Plot standardized correlated features: time vs distance
         fig, ax = plt.subplots()
         sample.plot(x='TRAVEL_DISTANCE',y='TRAVEL_TIME', ax=ax, kind='scatter')
-        plt.savefig(plot_dir+'distance_vs_time_standardized.png', format='png')
+        plt.savefig(FLAGS.plot_dir+'distance_vs_time_standardized.png', format='png')
 
     return data
 
@@ -345,8 +365,8 @@ def preprocess():
     #print("------------------- Create train  and test sets -------------------")
     #TODO divide and add labels?
 
-    #print("-------------------------- Standardizing --------------------------")
-    #data = _standardize(data, FLAGS.plot_distr, FLAGS.plot_dir)
+    print("-------------------------- Standardizing --------------------------")
+    data = _standardize(data)
 
     print("-------------------------- Storing  data --------------------------")
     _store(data)

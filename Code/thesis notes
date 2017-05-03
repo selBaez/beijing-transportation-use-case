@@ -18,18 +18,15 @@ one file for testing 				metrics for accuracy
 
 
 MAJOR PROBLEM
-	validation info: on 908 mentioned on paper
+	validation info: on 908 labeled records
 			K-fold with replacement
 
 TODO:
-vocabulary of stops
-recalculate transfer number
 reconsider the min_records approach
 standardize transfer time
-plot transfer time, num transfers
-parse route using regular expressions, translate dictionary and stops vocabulary
+recalculate path link (if necessary)
+extract boarding/alighting station, mode, line/route?
 
 
-
-distance calculation for bikes? dunno
-How much data to handle? 100,000 per day * month = 3,000,000 ~ 33% kept
+Papers to get:
+Reconstructing individual mobility from smart card transactions: a collaborative space alignment approach
