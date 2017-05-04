@@ -27,7 +27,7 @@ MODE_DICT_DEFAULT = {       '[(]轨道[.]' : '(R.',        # subway
 LOAD_FILE_DEFAULT = '../Data/sets/Travel chain sample data(50000).csv'
 LINES_VOC_FILE_DEFAULT = '../Data/vocabularies/full_lines vocabulary.json'
 ROUTES_VOC_FILE_DEFAULT = '../Data/vocabularies/full_routes vocabulary.json'
-STATIONS_VOC_FILE_DEFAULT = '../Data/vocabularies/full_stations vocabulary.json'
+STOPS_VOC_FILE_DEFAULT = '../Data/vocabularies/full_stops vocabulary.json'
 PLOT_DIR_DEFAULT = './Plots/'
 SAVE_TO_FILE_DEFAULT = '../Data/sets/preprocessed sample data(50000)'
 ############ --- END default directories--- ############
@@ -76,9 +76,9 @@ def _clean(data, min_records):
 
     return data
 
-def _createVocabularies(trips, lines_voc=LINES_VOC_FILE_DEFAULT, routes_voc=ROUTES_VOC_FILE_DEFAULT, stations_voc=STATIONS_VOC_FILE_DEFAULT):
+def _createVocabularies(trips, lines_voc=LINES_VOC_FILE_DEFAULT, routes_voc=ROUTES_VOC_FILE_DEFAULT, stops_voc=STOPS_VOC_FILE_DEFAULT):
     """
-    Create LINE, ROUTE and STATIONS vocabularies
+    Create LINE, ROUTE and STOPS vocabularies
     """
     lines = set()
     routes = set()
@@ -87,39 +87,39 @@ def _createVocabularies(trips, lines_voc=LINES_VOC_FILE_DEFAULT, routes_voc=ROUT
         # if FLAGS.verbose == 'True': print('Trip: ',trip)
         rides = re.split('->', trip)
         for ride in rides:
-            lines, routes, stations = _extractRideComponents(ride, lines, routes)
+            lines, routes, stops = _extractRideComponents(ride, lines, routes)
 
     # TODO: smarter way to save direction, for now we just ignore it
     print('Subway lines found:       ',len(lines))
     print('Bus routes found:         ',len(routes))
-    print('Combined stations found:  ',len(stations))
+    print('Combined stops found:  ',len(stops))
 
     # Turn into dictionaries
     lines =  dict(zip(lines, map(lambda x: ' '+str(x)+':',range(len(lines)))))               # TODO: fix . or - cases, for now we replace both with a space
     routes = dict(zip(routes, map(lambda x: ' '+str(x)+':',range(len(routes)))))
-    stations = dict(zip(map(lambda x: x.replace('(', '[(]').replace(')', '[)]'), stations), map(str,range(len(stations)))))
+    stops = dict(zip(map(lambda x: x.replace('(', '[(]').replace(')', '[)]'), stops), map(str,range(len(stops)))))
 
     # Sort them to have longest patterns replaced first
     lines = OrderedDict(sorted(lines.items(), key=lambda t: len(t[0]), reverse=True))
     routes = OrderedDict(sorted(routes.items(), key=lambda t: len(t[0]), reverse=True))
-    stations = OrderedDict(sorted(stations.items(), key=lambda t: len(t[0]), reverse=True))
+    stops = OrderedDict(sorted(stops.items(), key=lambda t: len(t[0]), reverse=True))
 
     # Save as JSON later use
     with open(lines_voc, 'w') as fp: json.dump(lines, fp, indent=4, ensure_ascii=False)
     with open(routes_voc, 'w') as fp: json.dump(routes, fp, indent=4, ensure_ascii=False)
-    with open(stations_voc, 'w') as fp: json.dump(stations, fp, indent=4, ensure_ascii=False)
+    with open(stops_voc, 'w') as fp: json.dump(stops, fp, indent=4, ensure_ascii=False)
 
-    return lines, routes, stations
+    return lines, routes, stops
 
-def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
+def _extractRideComponents(ride, lines=set(), routes=set(), stops=set()):
     """
-    Get MODE, STATIONS and other mode-specific components
+    Get MODE, STOPS and other mode-specific components
 
-    BIKE = (bike.STATION-STATION)
-    SUBWAY = (subway.LINE_NAME:STATION-LINE_NAME:STATION)
-    BUS = (bus.ROUTE_NAME(DIRECTION-DIRECTION):STATION-ROUTE_NAME(DIRECTION-DIRECTION):STATION)
+    BIKE = (bike.STOP-STOP)
+    SUBWAY = (subway.LINE_NAME:STOP-LINE_NAME:STOP)
+    BUS = (bus.ROUTE_NAME(DIRECTION-DIRECTION):STOP-ROUTE_NAME(DIRECTION-DIRECTION):STOP)
 
-    GENERAL = (MODE.[LINE/ROUTE_NAME:]?STATION-[LINE/ROUTE_NAME:]?STATION)[->PATTERN]?
+    GENERAL = (MODE.[LINE/ROUTE_NAME:]?STOP-[LINE/ROUTE_NAME:]?STOP)[->PATTERN]?
     # MODE              轨道|公交|自行车        ------ equivalent to ------       subway | bus | bike
     # LINE_NAME         5 号线 | NAME 线       ------ equivalent to ------       5 number line | NAME line
     # ROUTE_NAME        944 | 夜 32           ------ equivalent to ------       944 | night 32
@@ -129,8 +129,8 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
 
     # Shared fields across modes
     mode = r'(?P<mode>轨道|公交|自行车)'
-    station_b = r'(?P<station_b>.+?)'
-    station_a = r'(?P<station_a>.+?)'
+    stop_b = r'(?P<stop_b>.+?)'
+    stop_a = r'(?P<stop_a>.+?)'
 
     # Match and classify by mode
     pattern = re.compile(mode)
@@ -141,21 +141,21 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
         line_b = r'(?P<line_b>.+?)'
         line_a = r'(?P<line_a>.+?)'
 
-        pattern = re.compile(r'\('+mode+r'[.]'+line_b+r'[:]'+station_b+r'[-]'+line_a+r'[:]'+station_a+r'[)]$')
+        pattern = re.compile(r'\('+mode+r'[.]'+line_b+r'[:]'+stop_b+r'[-]'+line_a+r'[:]'+stop_a+r'[)]$')
         matcher = pattern.search(ride)
 
         if matcher and FLAGS.verbose == 'True':
             # print('Parsing a metro ride')
             # print('Mode:                  ',matcher.group('mode'))
             # print('Boarding Line:         ',matcher.group('line_b'))
-            # print('Boarding Station:      ',matcher.group('station_b'))
+            # print('Boarding Stop:      ',matcher.group('stop_b'))
             # print('Alighting Line:        ',matcher.group('line_a'))
-            # print('Alighting Station:     ',matcher.group('station_a'))
+            # print('Alighting Stop:     ',matcher.group('stop_a'))
 
             lines.add('([.]|[-])'+matcher.group('line_b')+'[:]')
             lines.add('([.]|[-])'+matcher.group('line_a')+'[:]')
-            stations.add(matcher.group('station_b'))
-            stations.add(matcher.group('station_a'))
+            stops.add(matcher.group('stop_b'))
+            stops.add(matcher.group('stop_a'))
         else:
             print('Failed at parsing metro ride:', ride)
 
@@ -166,41 +166,41 @@ def _extractRideComponents(ride, lines=set(), routes=set(), stations=set()):
         route_a = r'(?P<route_a>.+?)'
         direction_a = r'(?P<direction_a>[(].+?[)])'
 
-        pattern = re.compile(r'\('+mode+r'[.]'+route_b+direction_b+r'[:]'+station_b+r'[-]'+route_a+direction_a+r'[:]'+station_a+r'[)]$')
+        pattern = re.compile(r'\('+mode+r'[.]'+route_b+direction_b+r'[:]'+stop_b+r'[-]'+route_a+direction_a+r'[:]'+stop_a+r'[)]$')
         matcher = pattern.search(ride)
 
         if matcher and FLAGS.verbose == 'True':
             # print('\nParsing a bus ride')
             # print('Mode:                  ',matcher.group('mode'))
             # print('Boarding Route:        ',matcher.group('route_b'))
-            # print('Boarding Station:      ',matcher.group('station_b'))
+            # print('Boarding Stop:      ',matcher.group('stop_b'))
             # print('Alighting Route:       ',matcher.group('route_a'))
-            # print('Alighting Station:     ',matcher.group('station_a'))
+            # print('Alighting Stop:     ',matcher.group('stop_a'))
 
             routes.add('([.]|[-])'+matcher.group('route_b')+'[:]')
             routes.add('([.]|[-])'+matcher.group('route_a')+'[:]')
-            stations.add(matcher.group('station_b'))
-            stations.add(matcher.group('station_a'))
+            stops.add(matcher.group('stop_b'))
+            stops.add(matcher.group('stop_a'))
         else:
             print('Failed at parsing bus ride:', ride)
 
     # Parse bike
     elif matcher.group('mode') == '自行车':
-        pattern = re.compile(r'\('+mode+r'[.]'+station_b+r'[-]'+station_a+r'[)]$')
+        pattern = re.compile(r'\('+mode+r'[.]'+stop_b+r'[-]'+stop_a+r'[)]$')
         matcher = pattern.search(ride)
 
         if matcher and FLAGS.verbose == 'True':
             # print('Parsing a bike ride')
             # print('Mode:                  ',matcher.group('mode'))
-            # print('Boarding Station:      ',matcher.group('station_b'))
-            # print('Alighting Station:     ',matcher.group('station_a'))
+            # print('Boarding Stop:      ',matcher.group('stop_b'))
+            # print('Alighting Stop:     ',matcher.group('stop_a'))
 
-            stations.add(matcher.group('station_b'))
-            stations.add(matcher.group('station_a'))
+            stops.add(matcher.group('stop_b'))
+            stops.add(matcher.group('stop_a'))
         else:
             print('Failed at parsing bike ride:', ride)
 
-    return lines, routes, stations
+    return lines, routes, stops
 
 def _parseRoute(data, modes, createVoc):
     """
@@ -209,13 +209,13 @@ def _parseRoute(data, modes, createVoc):
     # Determine which vocabulary to use
     if createVoc == 'True':
         # Create vocabularies
-        print('Creating lines, routes and stations vocabularies')
-        lines, routes, stations = _createVocabularies(data['TRANSFER_DETAIL'])
+        print('Creating lines, routes and stops vocabularies')
+        lines, routes, stops = _createVocabularies(data['TRANSFER_DETAIL'])
     else:
         # Load existing vocabularies TODO: not working atm
         with open(LINES_VOC_FILE_DEFAULT, 'r') as fp: lines = json.load(fp, encoding="utf-8")
         with open(ROUTES_VOC_FILE_DEFAULT, 'r') as fp: routes = json.load(fp, encoding="utf-8")
-        with open(STATIONS_VOC_FILE_DEFAULT, 'r') as fp: stations = json.load(fp, encoding="utf-8")
+        with open(STOPS_VOC_FILE_DEFAULT, 'r') as fp: stops = json.load(fp, encoding="utf-8")
 
     # Replace for clean format
     print('Formating route')
@@ -224,7 +224,7 @@ def _parseRoute(data, modes, createVoc):
     #indices = random.sample(data.index, 100)
     #data = data.ix[indices]
 
-    print('\nOriginal details', data['TRANSFER_DETAIL'][0])
+    print('\n     Original details', data['TRANSFER_DETAIL'][0])
 
     # Replace mode : dictionary
     data['TRANSFER_DETAIL'].replace(to_replace=modes, inplace=True, regex=True)
@@ -232,12 +232,12 @@ def _parseRoute(data, modes, createVoc):
     # Strip bus directions away
     data['TRANSFER_DETAIL'].replace(to_replace='[(][^.-]+?[-][^.-]+?[)]:', value=':', inplace=True, regex=True)
 
-    # Replace line/route and stops/stations : vocabularies
+    # Replace line/route and stops/stops : vocabularies
     data['TRANSFER_DETAIL'].replace(to_replace=routes, inplace=True, regex=True)
     data['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True)
-    data['TRANSFER_DETAIL'].replace(to_replace=stations, inplace=True, regex=True)
+    data['TRANSFER_DETAIL'].replace(to_replace=stops, inplace=True, regex=True)
 
-    print('Parsed details', data['TRANSFER_DETAIL'][0])
+    print('     Parsed details', data['TRANSFER_DETAIL'][0])
 
     print('\n\n')
 
@@ -362,6 +362,9 @@ def preprocess():
     #print("------------------------ Extract weekdays -------------------------")
     # TODO http://nbviewer.jupyter.org/github/jvns/pandas-cookbook/blob/v0.1/cookbook/Chapter%204%20-%20Find%20out%20on%20which%20weekday%20people%20bike%20the%20most%20with%20groupby%20and%20aggregate.ipynb
 
+    #print("----------------------- Finding smart codes -----------------------")
+    #TODO find records related to given smart codes
+
     #print("------------------- Create train  and test sets -------------------")
     #TODO divide and add labels?
 
@@ -396,7 +399,7 @@ if __name__ == '__main__':
     parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
                         help='Traveler is required to have at least this number of records.')
     parser.add_argument('--create_voc', type = str, default = 'True',
-                        help='Create lines/routes/stations vocabularies from given data. If False, previously saved vocabularies will be used')
+                        help='Create lines/routes/stops vocabularies from given data. If False, previously saved vocabularies will be used')
     parser.add_argument('--plot_distr', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--plot_dir', type = str, default = PLOT_DIR_DEFAULT,

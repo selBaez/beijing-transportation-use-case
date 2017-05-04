@@ -26,6 +26,7 @@ reconsider the min_records approach
 standardize transfer time
 recalculate path link (if necessary)
 extract boarding/alighting station, mode, line/route?
+array of card codes corresponding to labeled data
 
 
 Papers to get:
