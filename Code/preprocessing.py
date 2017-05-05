@@ -233,9 +233,9 @@ def _parseRoute(data, modes, createVoc):
     data['TRANSFER_DETAIL'].replace(to_replace='[(][^.-]+?[-][^.-]+?[)]:', value=':', inplace=True, regex=True)
 
     # Replace line/route and stops/stops : vocabularies
-    data['TRANSFER_DETAIL'].replace(to_replace=routes, inplace=True, regex=True)
-    data['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True)
-    data['TRANSFER_DETAIL'].replace(to_replace=stops, inplace=True, regex=True)
+    #data['TRANSFER_DETAIL'].replace(to_replace=routes, inplace=True, regex=True)
+    #data['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True)
+    #data['TRANSFER_DETAIL'].replace(to_replace=stops, inplace=True, regex=True)
 
     print('     Parsed details', data['TRANSFER_DETAIL'][0])
 
@@ -249,15 +249,14 @@ def _countTransfers(data):
     """
     # Plot number of transfers before and after patching
     if FLAGS.plot_distr == 'True':
-        print("Plotting original number of transfers distribution")
-        _plotDistribution(data, 'num_transfers', 'TRANSFER_NUM')
+        original = data['TRANSFER_NUM'].copy()
 
     print("Recalculating transfer number")
     data['TRANSFER_NUM'] = data['TRANSFER_DETAIL'].str.count("->")
 
     if FLAGS.plot_distr == 'True':
-        print("Plotting patched number of transfers distribution")
-        _plotDistribution(data, 'num_transfers_recalculated', 'TRANSFER_NUM')
+        new = data['TRANSFER_NUM']
+        _plotDistributionCompare(original, new, 'Number of transfers', labels=['Original', 'Recalculation'])
 
     return data
 
@@ -270,15 +269,51 @@ def _to_time_bins(data):
     data['END_HOUR'] = data['END_TIME'].apply(lambda x : x.hour)
     return data
 
-def _plotDistribution(sample, variable_name, column_name):
+def _plotDistributionCompare(sample1, sample2, variable_name, labels, xticks=None):
     """
-    Plot variables distribution
+    Plot variables distribution with frequency histogram
     """
-    #TODO make plots nice with titles, etc
 
     # Plot variable frequency histogram
     fig, ax = plt.subplots()
-    sample[column_name].plot.hist(ax=ax, bins=20)
+
+    # Make plot pretty
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+    if xticks != None:
+        plt.xticks(np.arange(0.0, xticks, 1.0))
+
+    plt.hist([sample1, sample2], label=labels, color=['#578ac1', '#57c194'])
+
+    plt.legend(loc='upper right')
+    plt.xlabel(variable_name)
+
+    # Save
+    plt.savefig(FLAGS.plot_dir+variable_name+'_hist.png', format='png')
+
+def _plotDistribution(sample, variable_name, column_name, bins=None):
+    """
+    Plot variables distribution with frequency histogram
+    """
+    fig, ax = plt.subplots()
+
+    # Make plot pretty
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+    # Bins
+    if bins == None:
+        bins = max(sample[column_name])
+
+    # Plot
+    sample[column_name].plot.hist(ax=ax, bins=bins, color='#578ac1')
+    plt.xlabel(variable_name)
+
+    # Save
     plt.savefig(FLAGS.plot_dir+variable_name+'_hist.png', format='png')
 
 def _standardize(data):
@@ -288,20 +323,19 @@ def _standardize(data):
 
     if FLAGS.plot_distr == 'True':
         # Sample 1000 random points
-        indices = random.sample(data.index, 1000)
+        indices = random.sample(data.index, 2500)
         sample = data.ix[indices]
 
         # Plot general features
-        print("Plotting general distributions")
-        _plotDistribution(sample, 'transfer_time', 'TRANSFER_TIME_SUM')
-        _plotDistribution(sample, 'num_transfers', 'TRANSFER_NUM')
-        _plotDistribution(sample, 'start_hour', 'START_HOUR')
-        _plotDistribution(sample, 'end_hour', 'END_HOUR')
+        print("Plotting hour distributions")
+        _plotDistributionCompare(sample['START_HOUR'], sample['END_HOUR'], 'Hour of trip', labels=['Start', 'End'], xticks=25.0)
 
         # Plot features to be standardized
         print("Plotting original travel time and distance distributions")
-        _plotDistribution(sample, 'time', 'TRAVEL_TIME')
-        _plotDistribution(sample, 'distance', 'TRAVEL_DISTANCE')
+        _plotDistribution(sample, 'Travel time', 'TRAVEL_TIME', bins=20)
+        _plotDistribution(sample, 'Travel distance', 'TRAVEL_DISTANCE', bins=20)
+        _plotDistribution(sample, 'Total transfer time', 'TRANSFER_TIME_SUM', bins=20)
+        _plotDistribution(sample, 'Average transfer time', 'TRANSFER_TIME_AVG', bins=20)
 
         # Plot correlated features to be standardized: time vs distance
         fig, ax = plt.subplots()
@@ -309,10 +343,9 @@ def _standardize(data):
         plt.savefig(FLAGS.plot_dir+'distance_vs_time.png', format='png')
 
     # TODO: only fit and transform to train data, and transform test data
-    # TODO: scale transfer time too?
     print("Standarize travel time and distance")
     scaler = StandardScaler()
-    data[['TRAVEL_TIME', 'TRAVEL_DISTANCE']] = scaler.fit_transform(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE']])
+    data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']] = scaler.fit_transform(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']])
 
     if FLAGS.plot_distr == 'True':
         # Use previous sample
@@ -320,8 +353,10 @@ def _standardize(data):
 
         # Plot standardized features
         print("Plotting standarized travel time and distance distributions")
-        _plotDistribution(sample, 'time_standardized', 'TRAVEL_TIME')
-        _plotDistribution(sample, 'distance_standardized', 'TRAVEL_DISTANCE')
+        _plotDistribution(sample, 'Travel time standardized', 'TRAVEL_TIME', bins=20)
+        _plotDistribution(sample, 'Travel distance standardized', 'TRAVEL_DISTANCE', bins=20)
+        _plotDistribution(sample, 'Total transfer time standardized', 'TRANSFER_TIME_SUM', bins=20)
+        _plotDistribution(sample, 'Average transfer time standardized', 'TRANSFER_TIME_AVG', bins=20)
 
         # Box plot of all standardized features
 

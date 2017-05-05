@@ -423,21 +423,21 @@ In order to obtain the elements of each ride we look at the pattern per travel m
     &-ROUTE(DIRECTION-DIRECTION):STOP)
 	\end{align*}
 	
-where the upper-case text corresponds to placeholders for ride elements, the lower-case text corresponds to the English translation of descriptor in Chinese, and the punctuation (parentheses, dots and dashes) correspond to separators between ride elements.
+where the upper-case text corresponds to placeholders for ride elements, the lower-case text corresponds to the English translation of the descriptor in Chinese, and the punctuation (parentheses, dots, colons and dashes) correspond to separators between ride elements.
 
-Unifying the mode-specific patterns, we can describe a ride and a trip using regular expressions:
+Unifying the mode-specific patterns, we describe a ride and a trip using regular expressions:
     
 	\begin{align*}	        
     RIDE &= (MODE.[LINE/ROUTE:]?STOP-[LINE/ROUTE:]?STOP) \\
     TRIP &= RIDE[->RIDE]? 
 	\end{align*}    
 	
-where elements surrounded by squared brackets and followed by a question mark (e.g. $[ELEMENT]?$) correspond to optional elements. We note that when parsing bus details, we disregard the route direction. This decision is motivated to fit subway lines and bus routes to a single pattern, noting that the direction of the route does not affect the path of the route itself.
+where elements surrounded by squared brackets and followed by a question mark (e.g. $[ELEMENT]?$) correspond to optional elements. We note that when parsing bus details, we disregard the route direction. This decision is motivated to fit both subway lines and bus routes to a single pattern, noting that the direction of the route does not affect the path of the route itself.
 
 \textbf{Tokenization}
-Once the elements of a trip are extracted, they must be substituted with numerical IDs. These IDs are not available from the Beijing Institute of Transportation, thus three different vocabularies are created for subway lines, bus routes and stops correspondingly. 
+Once the elements of a trip are extracted, they must be substituted with numerical IDs. These IDs are not available from the Beijing Institute of Transportation, thus three different vocabularies are created for subway lines, bus routes and combined stops correspondingly. 
 
-Usually, bus routes identified by a number. However, in Beijing a single bus route number can be associated to different paths. Such is the case of night, express and special cases of a bus route, which follow different paths even if they are described with the same number. For this reason we create a vocabulary with all unique parsed routes according to their full description and not only their number.  
+Usually, bus routes are identified by a number. However, in Beijing a single bus route number can be associated to different paths. Such is the case of night, express and special cases of a bus route, which follow different paths even if they are described with the same number. For this reason we create a vocabulary with all unique parsed routes according to their full description and not only their number.  
 
 Examples of cleaned routes are shown in Figure \ref{fig:preprocessing/parsed_routes}
 
@@ -465,51 +465,43 @@ Examples of cleaned routes are shown in Figure \ref{fig:preprocessing/parsed_rou
 
 
 \subsubsection{Data patching}
-We note that the number of transfers and the path link are faulty. According to domain expert PhD. Tu Qiang, this must be recalculated \cite{tommy}. Figure \ref{fig:preprocessing/num_transfers} shows the distribution of the number of transfers per trip before and after patching.
+We note that the number of transfers and the path link fields of some records do not correspond to the infrmation in their trip details. According to domain expert PhD. Tu Qiang, this must be recalculated \cite{tommy}. Figure \ref{fig:preprocessing/num_transfers} shows the distribution of the number of transfers per trip before and after patching.
+
 
 \begin{figure}[H]
   \centering
-  \begin{subfigure}[b]{.45\textwidth}
-  	\centering
-  	\includegraphics[width=\linewidth]{./images/num_transfers_hist.png}
-  	\caption{Original}
-  \end{subfigure}
-  \begin{subfigure}[b]{.45\textwidth}
-  	\centering
-  	\includegraphics[width=\linewidth]{./images/num_transfers_recalculated_hist.png}
-  	\caption{Recalculated}
-  \end{subfigure}
+  \includegraphics[width=.8\linewidth]{"./images/Number of transfers_hist"}
   \caption{Transfer number distribution before and after recalculation.}
-  	\label{fig:preprocessing/num_transfers}
+  \label{fig:preprocessing/num_transfers}
 \end{figure}
 
-We note than most trips are performed without transfers, which is consistent with other studies \cite{bhaskar2015passenger}.
+Our distribution shows that most trips are performed without transfers, which is consistent with other studies findings \cite{bhaskar2015passenger}.
 
-\subsubsection{Transformation and Standardization} \selfnote{replace images once run with all data}
-Whitening vs standardization: whitening eliminates correlations between the data. In our case those are relevant and we ant to keep them. \technicalDoubt{Correlation between time and distance to be preserved?}Figure \ref{fig:preprocessing/distance_time_correlation} shows a clear correlation between travel distance and travel time. 
+\subsubsection{Transformation and Standardization} 
+In data mining, it is a standard practice to perform whitening. This technique eliminates correlations between features, which is desirable in most cases. However, the domain of Metropolitan Transportation some of these correlations are highly important, and should not be discarded. This is the case of total travel time and distance, as shown in Figure \ref{fig:preprocessing/distance_time_correlation}. For this reason, we choose to only standardize the features and keep the correlations. 
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=.8\linewidth]{./images/distance_vs_time.png}
-  \caption{Travel distance vs travel time.1000 record sample.}
+  \caption{Travel distance vs travel time. 2500 record sample.}
   \label{fig:preprocessing/distance_time_correlation}
 \end{figure}
 
-Travel time and distance where standardized by subtracting the mean and forcing a unit standard deviation. As a result we observe a truncated Gaussian distribution $\mathcal{N}(\mu = 1, \sigma^2 = 1)$.
+Travel time, travel distance, total transfer time and average transfer time where standardized by subtracting the mean of each distribution and forcing a unit standard deviation.
 
 \begin{figure}[H]
   \centering
   \begin{subfigure}[b]{.45\textwidth}
   	\centering
-  	\includegraphics[width=\linewidth]{./images/time_hist.png}
+  	\includegraphics[width=\linewidth]{"./images/Travel time_hist"}
   	\caption{Original}
   \end{subfigure}
   \begin{subfigure}[b]{.45\textwidth}
   	\centering
-  	\includegraphics[width=\linewidth]{./images/time_standardized_hist.png}
+  	\includegraphics[width=\linewidth]{"./images/Travel time standardized_hist"}
   	\caption{Standarized}
   \end{subfigure}
-  \caption{Time distribution before and after preprocessing. 1000 records sample.}
+  \caption{Time distribution before and after preprocessing. 2500 records sample.}
   	\label{fig:preprocessing/time}
 \end{figure}
 
@@ -517,77 +509,127 @@ Travel time and distance where standardized by subtracting the mean and forcing 
   \centering
   \begin{subfigure}[b]{.45\textwidth}
   	\centering
-  	\includegraphics[width=\linewidth]{./images/distance_hist.png}
+  	\includegraphics[width=\linewidth]{"./images/Travel distance_hist"}
   	\caption{Original}
   \end{subfigure}
   \begin{subfigure}[b]{.45\textwidth}
   	\centering
-  	\includegraphics[width=\linewidth]{./images/distance_standardized_hist.png}
+  	\includegraphics[width=\linewidth]{"./images/Travel distance standardized_hist"}
   	\caption{Standarized}
   \end{subfigure}
-  \caption{Distance distribution before and after preprocessing. 1000 records sample.}
+  \caption{Distance distribution before and after preprocessing. 2500 records sample.}
   	\label{fig:preprocessing/distance}
 \end{figure}
- 
 
-Regardless of its drawbacks, using hourly time bins is standard practice in the field \cite{langlois2016inferring} \cite{ma2017understanding} \cite{morency2007measuring}. From Figure \ref{fig:preprocessing/start_end_hour}, we note that our data follows the expected distribution for the domain, showing clear morning and evening peaks. 
+Figure \ref{fig:preprocessing/time} and \ref{fig:preprocessing/distance} show travel time and distance follow a truncated Gaussian distribution $\mathcal{N}(\mu = 1, \sigma^2 = 1)$. Since the nature of the data prevents negative values (time and distance must be positive), the original distribution is truncated at 0. Standardization maintains the shape of the distribution, but shifts and contracts it to be closer to zero values.
+
+The mean travel time is ~55 minutes, and the mean travel distance is ~10 kilometers.  
+ 
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{"./images/Total transfer time_hist"}
+  	\caption{Original}
+  \end{subfigure}
+  \begin{subfigure}[b]{.45\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{"./images/Total transfer time standardized_hist"}
+  	\caption{Standarized}
+  \end{subfigure}
+  \caption{Total transfer time distribution before and after preprocessing. 2500 records sample.}
+  	\label{fig:preprocessing/transfer_time}
+\end{figure}
 
 \begin{figure}[H]
   \centering
   \begin{subfigure}[b]{.45\textwidth}
   	\centering
-  	\includegraphics[width=\linewidth]{./images/start_hour_hist.png}
-  	\caption{Start hour}
+  	\includegraphics[width=\linewidth]{"./images/Average transfer time_hist"}
+  	\caption{Original}
   \end{subfigure}
   \begin{subfigure}[b]{.45\textwidth}
   	\centering
-  	\includegraphics[width=\linewidth]{./images/end_hour_hist.png}
-  	\caption{End hour}
+  	\includegraphics[width=\linewidth]{"./images/Average transfer time standardized_hist"}
+  	\caption{Standarized}
   \end{subfigure}
-  \caption{Distribution of start/end hours for trips.1000 records sample.}
-  	\label{fig:preprocessing/start_end_hour}
+  \caption{Average transfer time distribution before and after preprocessing. 2500 records sample.}
+  	\label{fig:preprocessing/transfer_avg}
 \end{figure}
 
+Figure \ref{fig:preprocessing/transfer_time} and \ref{fig:preprocessing/transfer_avg} show that transfer times, both total and average, follow distributions with very long tails. As mentioned before, most trips are performed without transfers, which explains that most of the trips have transfer times equal to zero.
+
+\textbf{Time bins}
+
+Regardless of its criticism, using hourly time bins is standard practice in the field and has shown sufficient to examine temporal data \cite{langlois2016inferring} \cite{ma2017understanding} \cite{morency2007measuring}. Therefore, in this project we follow the same technique and extract only the hour of the start and end of each trip.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.8\linewidth]{"./images/Hour of trip_hist"}
+  \caption{Distribution of start/end hours for trips. 2500 records sample.}
+  \label{fig:preprocessing/start_end_hour}
+\end{figure}
+
+From Figure \ref{fig:preprocessing/start_end_hour}, we note that our data follows the expected distribution for the domain, showing clear morning and evening peaks. Furthermore, we note that boarding and alighting patterns during the peaks hours are shifted by one hour. This is explained by the previous finding, that the mean travel time is almost one hour.
 
 \subsection{Data mining techniques}
 The work for this project is coded in Python, using libraries for data and numerical manipulation (\textit{Pandas}, \textit{numpy}), regular expressions (\textit{re}), machine learning (\textit{sklearn}), neural networks(\textit{Theano}).
 
-\subsubsection{Spatio-temporal data structure}
-The temporal factors to be explored are represented by the start/end times, as well travel/transfer time.
-
-The spatial factors to be explored are represented by On/Off areas, lines/routes and stations. 
+\subsubsection{Spatio-temporal representation}
+In this work we propose a 3 dimensional data representation to contain the monthly travel information of a user. This is shown in Figure \ref{fig:data_mining/3D_structure}.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=.9\linewidth]{./images/3D_structure.png}
   \caption{Spatio-temporal data structure.}
-  \label{fig:preprocessing/3D_structure}
+  \label{fig:data_mining/3D_structure}
 \end{figure}
 
-Each plane corresponds to a feature. The x-y composition constructs a temporal structure between days and hours of the day. The advantage of this structure is its local properties, similar to image processing. Here, a temporal pixel is influenced by what happened in the previous/following hour (y axis), and on the previous/following day at the same time (x axis).
+Inspired by \cite{langlois2016inferring}, the x-y plane constructs a temporal structure between days of the month and hours of the day. The crucial advantage of this structure lies in its local properties. Similar to the case of image processing, in this representation a temporal pixel is simultaneously influenced by what happened in the previous/following hours (y axis), and on the previous/following days (x axis).
 
-\selfnote{define temporal pixel as unit}
-Each pixel may contain a trip feature vectors, which expands several layers.
+As for the z plane, each layer contains a trip feature. In Figure \ref{fig:data_mining/3D_structure} boarding spatial features are portrayed in green, alighting spatial are portrayed in red, and other types of features (such as travel time, travel distance, transfer number, transfer total time, etc) are portrayed in yellow. 
 
-Each layer is a feature, boarding spatial are in green, alighting spatial are in red, and other types of features are in yellow. 
-
-Every user is represented as this structure. It is sparse, in that only a few time pixels are populated with trips, considering even regular public transport users do not perform more than 4 trips a day. 
+Therefore, each temporal pixel may contain a trip feature vector, which expands several layers deep. Considering that even regular public transport users do not perform more than 4 trips a day, the proposed representation is sparse, since only a few time pixels are populated with trips.  
 
 
 \subsubsection{Feature engineering}
-Considering around 15 features, we have $24 * 30 * 15 = 10,800$ pixels per user. Given the high dimensionality and the sparsity of the structure, we will perform dimensionality reduction. 
+The spatial features to be included in the representation are:
 
-Taking advantage of the local properties of the proposed structure, we can apply convolutional filters to reduce the dimensionality to a more manageable number. 
+\begin{enumerate}
+\item Small traffic area
+\item Middle traffic area
+\item Big traffic area
+\item Ring road
+\item District
+\item Mode
+\item Line/Route
+\item Stop
+\end{enumerate}
 
-The end result will be used as features for clustering commuters. 
+These are repeated for boarding and alighting information.
 
-\technicalDoubt{CNN chosen because of local properties, is PCA also local?}
+The general trip features to be included in the representation are: 
+
+\begin{enumerate}
+\item Travel time
+\item Travel distance
+\item Transfer number
+\item Transfer total time
+\item Transfer average time
+\item Start hour
+\item End hour
+\end{enumerate}
+
+\subsubsection{Dimensionality reduction}
+Considering these are 35 features, we have $24 * 30 * 25 = 18,000$ temporal pixels per user. Given the high dimensionality and the sparsity of the structure, we will perform dimensionality reduction. 
+
+Taking advantage of the local properties of the proposed structure, we can apply convolutional filters \technicalDoubt{CNN chosen because of local properties, is PCA also local?} to reduce the dimensionality to a more manageable number. The end result will be used as features for clustering commuters in Part III (Section \ref{sec:partIII}) of this project. 
 
 \subsubsection{Ensemble models}
-Ensemble models benefit from combining non-correlated methods. Classifiers might correct each other in specific hard cases. Ensemble models are chosen because of its robustness and modularity. Starting from a few simple classifiers, assembled via simple aggregation methods, the model can grow larger or more complex as needed.
+Ensemble models benefit from combining non-correlated prediction methods. Weak classifiers might correct each other in specific hard cases. Ensemble models are chosen for this project because of its robustness and modularity. Starting from a few simple classifiers, assembled via aggregation methods, the model can grow larger or more complex as needed.
 
 \textbf{Supervised learning}
-Decision trees, Bayesian classifiers and SVM are poweful enough. Bagging will be used to ensemble their predictions.
+As proven by Tu \cite{tu2016impact}, weak classifiers like an SVM prove to be sufficient to identify commuters. This hints to extend the ensemble model with other similar weak classifiers like decision trees, Bayesian classifiers or multilayer perceptron. Bagging will be used to ensemble their predictions.
 
 \textbf{Unsupervised learning}
 The equivalent to ensemble models in unsupervised learning is consensus clustering.
