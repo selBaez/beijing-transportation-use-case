@@ -219,8 +219,6 @@ def _extractOriginAndDestinationFeatures(trip):
     modeOrigin, lineOrigin, stopOrigin, _, _ = _extractTripFeatures(firstRide)
     modeDestination, _, _, lineDestination, stopDestination = _extractTripFeatures(lastRide)
 
-    print(modeOrigin, lineOrigin, stopOrigin, modeDestination, lineDestination, stopDestination)
-
     return modeOrigin, lineOrigin, stopOrigin, modeDestination, lineDestination, stopDestination
 
 def _extractTripFeatures(ride):
@@ -251,7 +249,7 @@ def _extractTripFeatures(ride):
         if matcher:
             return matcher.group('mode'), matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
         else:
-            print('Failed at parsing metro ride:', ride)
+            print('Failed at parsing metro/bus ride:', ride)
             return matcher.group('mode'), None, None, None, None
 
     # Parse bike
@@ -284,9 +282,9 @@ def _parseTrips(data, modes, createVoc):
     print('Formating route')
 
     # TODO: remove when run over whole dataset
-    indices = random.sample(data.index, 10)
-    data = data.ix[indices]
-    data = _filter(data, data[data['TRANSFER_NUM'] > 0], "at least one transfer")
+    # indices = random.sample(data.index, 10)
+    # data = data.ix[indices]
+    # data = _filter(data, data[data['TRANSFER_NUM'] > 0], "at least one transfer")
 
     if FLAGS.verbose == 'True': print('\n     Original details', data['TRANSFER_DETAIL'][0])
 
