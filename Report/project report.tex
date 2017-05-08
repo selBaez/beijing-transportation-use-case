@@ -401,9 +401,14 @@ As first step for preprocessing the data, we eliminate faulty records. The diffe
 
 The first four filters aim to eliminate records with missing fields, which already reduces the dataset to ~77.66\% of its original size. The last filter aims to eliminate users with insufficient number of trips. This users represent straightforward cases of irregular public transit users are unlikely to be commuters. Therefore, the minimal number of trips per user is a parameter that can be tuned. 
 
-\selfnote{plot percentage of records eliminated vs min records needed.}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.8\linewidth]{"./images/Number of trips_hist"}
+  \caption{Number of trips distribution. 2500 record sample.}
+  \label{fig:preprocessing/num_trips}
+\end{figure}
 
-Fixing the minimal number of trips to 60, which is equivalent to an average of two trips per day, the final dataset contains ~51.76\% records available for usage.  
+Figure \ref{fig:preprocessing/num_trips} shows the distribution of number of days in a single day. Its shows that most people perform two trips per day. Fixing the minimal number of trips to 60, which is equivalent to an average of two trips per day, the final dataset contains ~51.76\% records available for usage.  
 
 \subsubsection{Trip parsing} 
 \label{sec:tripParsing}

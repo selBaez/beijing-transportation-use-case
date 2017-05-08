@@ -22,9 +22,7 @@ MAJOR PROBLEM
 			K-fold with replacement
 
 TODO:
-reconsider the min_records approach
 recalculate path link (if necessary)
-extract boarding/alighting station, mode, line/route?
 array of card codes corresponding to labeled data
 
 
