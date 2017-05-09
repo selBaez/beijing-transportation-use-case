@@ -11,11 +11,9 @@ import scipy.io as sio
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas
-from sklearn import cross_validation
-from sklearn import ensemble
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import average_precision_score
-from sklearn.metrics import confusion_matrix
+from sklearn import cross_validation, svm, ensemble
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.metrics import average_precision_score, confusion_matrix
 
 ############ --- BEGIN default constants --- ############
 BATCH_SIZE_DEFAULT = 200
@@ -38,31 +36,28 @@ def loadData(fileName):
 
     return data['train_data'], data['train_labels'], data['test_data'], data['test_labels']
 
-def _predict(model, test_data):
+def _predict(name, predict_fn, test_data):
     """
-    Predict class using model.
+    Predict class using model's prefictive function
     Return classes as ordinal, not one hot
     """
-    hot_predictions = model.predict_proba(test_data)
-    print(hot_predictions.shape)
-    print(hot_predictions[:10])
+    predictions = predict_fn(test_data)
 
-    predictions = np.argmax(hot_predictions, axis=1)
-
-    print(predictions.shape)
-    print(predictions[:10])
+    if len(predictions.shape) > 1:
+        print('Need to turn ', name,' predictions into categorical')
+        predictions = np.argmax(predictions, axis=1)
 
     return predictions
 
-
 def _confusion_matrix(name, true, predicted, n_classes):
     """
-    Create confusion matrix and save to figure
+    Create heat confusion matrix and save to figure
     """
 
-    print(true.shape)
-    print(type(true[0]))
-    print(type(predicted[0]))
+    # print(true.shape, predicted.shape)
+    # print(type(true[0]), type(predicted[0]))
+    # print(true[:5])
+    # print(predicted[:5])
 
     if n_classes == 2:
         classes = ['Commuters','Non-Commuters']
@@ -88,7 +83,6 @@ def _confusion_matrix(name, true, predicted, n_classes):
 
     for x in xrange(n_classes):
         for y in xrange(n_classes):
-            #print(x, y)
             ax.annotate(str(confusion_array[x][y]), xy=(y, x),
                         horizontalalignment='center',
                         verticalalignment='center')
@@ -107,7 +101,6 @@ def _evaluate(name, labels, predictions):
 
     _confusion_matrix(name, labels[:,0], predictions, 2)
 
-
 def train():
     """
     Performs training and reports evaluation (on training and validation sets)
@@ -122,19 +115,47 @@ def train():
     #print("--------------------------- Create sets ---------------------------")
 
     print("--------------------------- Build model ---------------------------")
+    #################### Individual classifiers ####################
+    # Original SVM
+    model_svm =  svm.SVC(C=0.1, cache_size=200, class_weight=None, coef0=0.0, degree=1,gamma='auto', kernel='linear', max_iter=-1, probability=False, random_state=None,shrinking=True, tol=0.001, verbose=False)
+
+    # Gaussian
+
+    # Bayes
+
+    #################### Ensemble from the box ####################
     # Random Forest
+    # TODO, test bootstrap = True
     model_rf = ensemble.RandomForestClassifier(n_estimators=FLAGS.num_trees, max_depth=FLAGS.depth_trees)
 
-    print("---------------------- Forward pass  modules ----------------------")
-    model_rf.fit(train_data, train_labels.ravel())
+    # AdaBoost with trees
+    model_adb = ensemble.AdaBoostClassifier(n_estimators=FLAGS.num_trees)
 
-    #print("------------------------ Assemble  answers ------------------------")
+    # Bagging trees 
+    model_bag = ensemble.BaggingClassifier(n_estimators=FLAGS.num_trees)
+
+
+
+    # Ensemble perceptrons?
+
+
+
+
+    print("---------------------- Forward pass  modules ----------------------")
+    model_svm.fit(train_data, train_labels.ravel())
+    model_rf.fit(train_data, train_labels.ravel())
+    model_adb.fit(train_data, train_labels.ravel())
 
     print("---------------------------- Predict ------------------------------")
-    predictions_rf = _predict(model_rf, test_data)
+    predictions_svm = _predict('SVM', model_svm.predict, test_data)
+    predictions_rf = _predict('Random forest', model_rf.predict, test_data)
+    predictions_adb = _predict('AdaBoost of decision trees', model_adb.predict, test_data)
 
     print("---------------------------- Evaluate -----------------------------")
+    # TODO: cross validation
+    _evaluate('SVM', test_labels, predictions_svm)
     _evaluate('Random forest', test_labels, predictions_rf)
+    _evaluate('AdaBoost of decision trees', test_labels, predictions_adb)
 
 def print_flags():
     """

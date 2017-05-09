@@ -144,7 +144,7 @@ Clearly, technology for transit data collection is broadly spread around the wor
 \subsection{Thesis organization}
 This Thesis is organized as follows:
 
-First we perform a literature review to look for previous work on mining smart card transit data and for specific state-of-the art methodologies for classification and clustering complex spatio-temporal data. Subsequently, we establish the scope and research objectives of this project. We continue to describe the methodology thoroughly, including the data and the approach to mine it. Following this description, we identify three distinct stages of the project (Commuters classification, Variables evaluation, and Commuters clustering) and report their corresponding experimentation. Next, we discuss the findings and gather conclusions. Finally, future work opportunities are explored. 
+First we perform a literature review to look for previous work on mining smart card transit data and for specific state-of-the art methodologies for classification and clustering complex spatio-temporal data. Subsequently, we establish the scope and research objectives of this project. We continue to describe the methodology thoroughly, including the data and the approach to mine it. Following this description, we identify three distinct stages of the project (Commuters classification, Variables evaluation, and Commuters clustering) and report their corresponding experimentation. Next, we discuss the findings and gather conclusions. Finally, future work opportunities are explored. \selfnote{more detailed}
 
 
 \newpage
@@ -289,12 +289,14 @@ This project is divided three main stages:
 \item[PART III] Commuters clustering according to patterns in their travel behaviors. In this part we focus on research questions 4 and 5. Different clustering techniques will be combined via consensus clustering. The final clusters will be analyzed and interpreted to find distinctive characteristics that may be deemed as informative for transportation specialists. This part corresponds to Section \ref{sec:partIII}
 \end{description}
 
+\selfnote{make more technical}
+\selfnote{make flowchart of processes in project}
 
 \newpage
 \section{Methodology}
 \subsection{The data}
 \label{sec:data}
-Every record int the data represents a trip performed by a specific smart card. As such, it contains the following data fields:
+Every record in the data represents a trip performed by a specific smart card. As such, it contains the following data fields:
 
 \begin{itemize}
 \item Data date: Year, month and day that the trip was made
@@ -470,7 +472,7 @@ Examples of cleaned routes are shown in Figure \ref{fig:preprocessing/parsed_rou
 
 
 \subsubsection{Data patching}
-We note that the number of transfers and the path link fields of some records do not correspond to the infrmation in their trip details. According to domain expert PhD. Tu Qiang, this must be recalculated \cite{tommy}. Figure \ref{fig:preprocessing/num_transfers} shows the distribution of the number of transfers per trip before and after patching.
+We note that the number of transfers and the path link fields of some records do not correspond to the infrmation in their trip details. According to domain expert PhD. Tu Qiang, this must be recalculated \cite{tommy}. Figure \ref{fig:preprocessing/num_transfers} shows the distribution of the number of transfers per trip before and after patching. \selfnote{piechart might be better?}
 
 
 \begin{figure}[H]
@@ -562,7 +564,7 @@ The mean travel time is ~55 minutes, and the mean travel distance is ~10 kilomet
   	\label{fig:preprocessing/transfer_avg}
 \end{figure}
 
-Figure \ref{fig:preprocessing/transfer_time} and \ref{fig:preprocessing/transfer_avg} show that transfer times, both total and average, follow distributions with very long tails. As mentioned before, most trips are performed without transfers, which explains that most of the trips have transfer times equal to zero.
+Figure \ref{fig:preprocessing/transfer_time} and \ref{fig:preprocessing/transfer_avg} show that transfer times, both total and average, follow distributions with very long tails. As mentioned before, most trips are performed without transfers, which explains that most of the trips have transfer times equal to zero. \selfnote{do not include transfer 0. focus on tail behavior}
 
 \textbf{Time bins}
 
@@ -594,10 +596,11 @@ Inspired by \cite{langlois2016inferring}, the x-y plane constructs a temporal st
 
 As for the z plane, each layer contains a trip feature. In Figure \ref{fig:data_mining/3D_structure} boarding spatial features are portrayed in green, alighting spatial are portrayed in red, and other types of features (such as travel time, travel distance, transfer number, transfer total time, etc) are portrayed in yellow. 
 
-Therefore, each temporal pixel may contain a trip feature vector, which expands several layers deep. Considering that even regular public transport users do not perform more than 4 trips a day, the proposed representation is sparse, since only a few time pixels are populated with trips.  
+Therefore, each temporal pixel may contain a trip feature vector, which expands several layers deep. Considering that even regular public transport users do not perform more than 6 trips a day as shown by the number of trips distribution in Figure \ref{fig:preprocessing/num_trips}, the proposed representation is sparse, since only a few time pixels are populated with trips.  
 
 
 \subsubsection{Feature engineering}
+\label{sec:features}
 The spatial features to be included in the representation are:
 
 \begin{enumerate}
@@ -623,12 +626,8 @@ The general trip features to be included in the representation are:
 \item Transfer average time
 \item Start hour
 \item End hour
+\item Number of trips
 \end{enumerate}
-
-\subsubsection{Dimensionality reduction}
-Considering these are 35 features, we have $24 * 30 * 25 = 18,000$ temporal pixels per user. Given the high dimensionality and the sparsity of the structure, we will perform dimensionality reduction. 
-
-Taking advantage of the local properties of the proposed structure, we can apply convolutional filters \technicalDoubt{CNN chosen because of local properties, is PCA also local?} to reduce the dimensionality to a more manageable number. The end result will be used as features for clustering commuters in Part III (Section \ref{sec:partIII}) of this project. 
 
 \subsubsection{Ensemble models}
 Ensemble models benefit from combining non-correlated prediction methods. Weak classifiers might correct each other in specific hard cases. Ensemble models are chosen for this project because of its robustness and modularity. Starting from a few simple classifiers, assembled via aggregation methods, the model can grow larger or more complex as needed.
@@ -639,6 +638,10 @@ As proven by Tu \cite{tu2016impact}, weak classifiers like an SVM prove to be su
 \textbf{Unsupervised learning}
 The equivalent to ensemble models in unsupervised learning is consensus clustering.
 
+\subsubsection{Dimensionality reduction}
+Considering these are 24 features, we have $24 * 30 * 24 = 17,280$ temporal pixels per user. Given the high dimensionality and the sparsity of the structure, we will perform dimensionality reduction. 
+
+Taking advantage of the local properties of the proposed structure, we can apply convolutional filters \technicalDoubt{CNN chosen because of local properties, is PCA also local?} to reduce the dimensionality to a more manageable number. The end result will be used as features for clustering commuters in Part III (Section \ref{sec:partIII}) of this project. 
 
 \subsection{Correlation analysis}
 A different method for reducing the number of features in the model is to perform a factor analysis. The independent variables may be evaluated against each other to test their correlation using the Chi-Square test. The features that are strongly correlated are redundant, and thus can be eliminated from the model. 
@@ -646,16 +649,63 @@ A different method for reducing the number of features in the model is to perfor
 \newpage
 \section{Commuters identification}
 \label{sec:partI}
+\subsection{Features}
+A first instance of the model will use features as used by Tu \cite{tu2016impact} for a fair model comparison. A second instance will contain all the variables described in Section \ref{sec:features}
+
+\textbf{Tu features and representation}
+
+\textbf{Proposed features and representation}
+
 \subsection{Hypothesis}
 As suggested by Tu \cite{tu2016impact} results, the data is almost linearly separable thus simple classifiers such as decision trees may suffice. 
 
+The 3 dimensional representation will prevent overfitting. 
+
 
 \subsection{Model}
-A first instance of the model will use all available variables in the data as used by Tu \cite{tu2016impact} for a fair model comparison. 
+We compare a single SVM, ensembled random forests. 
 
-With data used by Tu\cite{tu2016impact}, random forest achieves \%99.96 accuracy. Probably overfit.
 
 \subsection{Experiments}
+\subsubsection{2 dimensional representation}
+
+\textbf{SVM}
+
+Accuracy: 94.66\%
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/SVM_confusionMatrix"}
+  \caption{SVM confusion matrix.}
+  \label{fig:classification/svm_confusion}
+\end{figure}
+  
+\textbf{Random Forest}  
+
+Accuracy: 97.54\%
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/Random forest_confusionMatrix"}
+  \caption{Random forest confusion matrix.}
+  \label{fig:classification/rf_confusion}
+\end{figure}
+
+
+\textbf{AdaBoost}  
+
+Accuracy: 98.24\%
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/AdaBoost of decision trees_confusionMatrix"}
+  \caption{Random forest confusion matrix.}
+  \label{fig:classification/adb_confusion}
+\end{figure}
+
+\subsubsection{3 dimensional representation}
+
 
 \subsection{Results}
 Confusion matrix
@@ -703,7 +753,9 @@ Following this formula:
 
 We find that the output size after the first convolution is $4 \times 22$. Considering 15 features, this reduces the dimensionality to $4 \times 22 \times 15 = 1320$
 
-\technicalDoubt{what about depth? can I have a filter that is 5 units deep, with 5 stride (features are divided as 5 spatial boarding, 5 spatial alighting and 5 transfer related)? How could this be applied?}
+Goal is to have a $ 4 \times 3 \times 3 = 36$ structure
+
+\technicalDoubt{what about depth? can I have a filter that is 8 units deep, with 8 stride (features are divided as 8 spatial boarding, 8 spatial alighting and 8 transfer related)? How could this be applied?}
 
 \subsubsection{Neural networks}
 A neural network is constructed to apply the convolutional filter. After the convolution layer, ReLU is applied as activation function. 

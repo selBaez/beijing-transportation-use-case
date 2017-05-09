@@ -1,30 +1,48 @@
-one file for preprocessing			save processed data
-						read csv
-						mean shift, std shrink
+one file for preprocessing
+
+one file per model				load data
+	tree					          predict-classify (forward pass)
+	mlp					            train or error correct (backward pass)
+	bayesian                save assembled model
+												  test
+													evaluation metrics
+
+one file for prediction   load trained model
+													forward pass
+													save predictions
+
+one file for feature engineering        load data
+																				create CNN
+																				apply CNN
+																				visualize features
+																				save features
+
+one file for correlation test			load data
+																	apply correlation tests
+																	select columns based on significance
+																	save only needed
 
 
-one file per model				save model type
-	tree					predict-classify (forward pass)
-	mlp					train or error correct (backward pass)
-	bayesian
-
-one file for training (ensemble)		save assembled model
-
-
-one file for testing 				metrics for accuracy
-						False positives, etc
-						plots and stuff (matplotlib)
-
-
-
-MAJOR PROBLEM
-	validation info: on 908 labeled records
+MAJOR PROBLEM: only 908 labeled records
 			K-fold with replacement
 
 TODO:
 recalculate path link (if necessary)
 array of card codes corresponding to labeled data
+sample algorithms on given data
+plot area distribution
+chi test
+normalize areas?
 
 
 Papers to get:
 Reconstructing individual mobility from smart card transactions: a collaborative space alignment approach
+
+
+Improvements to report:
+transfer time focus on TRANSFER_DETAIL
+pie chart for number of transfers
+thesis organization more technical, and methods per parts
+data flow chart for parts of study
+Mention hierarchy in traffic areas will cause correlation
+comment on ordinal structure vs one hot
