@@ -99,6 +99,9 @@ Report/*.log
 *.dvi
 Report/nips_2016.*
 
-#Confidential BJUT
+# Confidential BJUT
 Code/Previous*
 Data/sets/*
+
+# Heavy images not uploaded for now
+Report/images/*
