@@ -29,7 +29,7 @@ LINES_VOC_FILE_DEFAULT = '../Data/vocabularies/full_lines vocabulary.json'
 ROUTES_VOC_FILE_DEFAULT = '../Data/vocabularies/full_routes vocabulary.json'
 STOPS_VOC_FILE_DEFAULT = '../Data/vocabularies/full_stops vocabulary.json'
 PLOT_DIR_DEFAULT = './Plots/'
-SAVE_TO_FILE_DEFAULT = '../Data/sets/preprocessed sample data(50000)-noStand'
+SAVE_TO_FILE_DEFAULT = '../Data/sets/preprocessed sample data(50000)'
 ############ --- END default directories--- ############
 
 def _loadData(fileName):
@@ -84,7 +84,7 @@ def _createVocabularies(trips, lines_voc=LINES_VOC_FILE_DEFAULT, routes_voc=ROUT
     routes = set()
     sttaions = set()
     for index, trip in trips.iteritems():
-        # if FLAGS.verbose == 'True': print('Trip: ',trip)
+        if FLAGS.verbose == 'True': print('Trip: ',trip)
         rides = trip.split('->')
         for ride in rides:
             lines, routes, stops = _gatherRideComponents(ride, lines, routes)
@@ -127,7 +127,7 @@ def _gatherRideComponents(ride, lines=set(), routes=set(), stops=set()):
 
     """
     #TODO: consider using split instead of regular expressions at all
-    # if FLAGS.verbose == 'True': print('Ride details: ',ride)
+    if FLAGS.verbose == 'True': print('Ride details: ',ride)
 
     # Shared fields across modes
     mode = r'(?P<mode>轨道|公交|自行车)'
@@ -147,14 +147,6 @@ def _gatherRideComponents(ride, lines=set(), routes=set(), stops=set()):
         matcher = pattern.search(ride)
 
         if matcher:
-            # if FLAGS.verbose == 'True':
-                # print('Parsing a metro ride')
-                # print('Mode:                  ',matcher.group('mode'))
-                # print('Boarding Line:         ',matcher.group('line_b'))
-                # print('Boarding Stop:      ',matcher.group('stop_b'))
-                # print('Alighting Line:        ',matcher.group('line_a'))
-                # print('Alighting Stop:     ',matcher.group('stop_a'))
-
             lines.add('([.]|[-])'+matcher.group('line_b')+'[:]')
             lines.add('([.]|[-])'+matcher.group('line_a')+'[:]')
             stops.add(matcher.group('stop_b'))
@@ -173,14 +165,6 @@ def _gatherRideComponents(ride, lines=set(), routes=set(), stops=set()):
         matcher = pattern.search(ride)
 
         if matcher:
-            # if FLAGS.verbose == 'True':
-                # print('\nParsing a bus ride')
-                # print('Mode:                  ',matcher.group('mode'))
-                # print('Boarding Route:        ',matcher.group('route_b'))
-                # print('Boarding Stop:      ',matcher.group('stop_b'))
-                # print('Alighting Route:       ',matcher.group('route_a'))
-                # print('Alighting Stop:     ',matcher.group('stop_a'))
-
             routes.add('([.]|[-])'+matcher.group('route_b')+'[:]')
             routes.add('([.]|[-])'+matcher.group('route_a')+'[:]')
             stops.add(matcher.group('stop_b'))
@@ -194,12 +178,6 @@ def _gatherRideComponents(ride, lines=set(), routes=set(), stops=set()):
         matcher = pattern.search(ride)
 
         if matcher:
-            # if FLAGS.verbose == 'True':
-                # print('Parsing a bike ride')
-                # print('Mode:                  ',matcher.group('mode'))
-                # print('Boarding Stop:      ',matcher.group('stop_b'))
-                # print('Alighting Stop:     ',matcher.group('stop_a'))
-
             stops.add(matcher.group('stop_b'))
             stops.add(matcher.group('stop_a'))
         else:
@@ -227,7 +205,7 @@ def _extractTripFeatures(ride):
     """
     #TODO refactor with gather ride components
 
-    # if FLAGS.verbose == 'True': print('Ride details: ', ride)
+    if FLAGS.verbose == 'True': print('Ride details: ', ride)
 
     # Shared fields across modes
     mode = r'(?P<mode>R|B|Z)'
@@ -283,11 +261,9 @@ def _parseTrips(data, modes, createVoc):
     print('Formating route')
 
     # TODO: remove when run over whole dataset
-    indices = random.sample(data.index, 1000)
-    data = data.ix[indices]
+    # indices = random.sample(data.index, 1000)
+    # data = data.ix[indices]
     # data = _filter(data, data[data['TRANSFER_NUM'] > 0], "at least one transfer")
-
-    if FLAGS.verbose == 'True': print('\n     Original details', data['TRANSFER_DETAIL'][0])
 
     # Replace mode : dictionary
     data['TRANSFER_DETAIL'].replace(to_replace=modes, inplace=True, regex=True)
@@ -300,8 +276,6 @@ def _parseTrips(data, modes, createVoc):
     data['TRANSFER_DETAIL'].replace(to_replace=lines, inplace=True, regex=True)
     data['TRANSFER_DETAIL'].replace(to_replace=stops, inplace=True, regex=True)
 
-    if FLAGS.verbose == 'True': print('     Parsed details', data['TRANSFER_DETAIL'][0], '\n\n')
-
     # Retrieve on and off trip details
     data['ON_MODE'], data['OFF_MODE'], data['ON_LINE'], data['OFF_LINE'], data['ON_STOP'], data['OFF_STOP'] =  zip(*data['TRANSFER_DETAIL'].apply(lambda x : _extractOriginAndDestinationFeatures(x)))
 
@@ -309,18 +283,19 @@ def _parseTrips(data, modes, createVoc):
 
 def _countTransfers(data):
     """
-    Re calculate number of transfers
+    Re calculate number of transfers, and transfer average time (which is dependent on the previous)
     """
     # Plot number of transfers before and after patching
     if FLAGS.plot_distr == 'True':
-        original = data['TRANSFER_NUM'].copy()
+        original = data.copy()
 
-    print("Recalculating transfer number")
+    print("Recalculating transfer number and transfer average time")
     data['TRANSFER_NUM'] = data['TRANSFER_DETAIL'].str.count("->")
+    data['TRANSFER_TIME_AVG'] = np.where(data['TRANSFER_NUM'] > 0, data['TRANSFER_TIME_SUM'] / data['TRANSFER_NUM'], data['TRANSFER_NUM'])
 
     if FLAGS.plot_distr == 'True':
-        new = data['TRANSFER_NUM']
-        _plotDistributionCompare(original, new, 'Number of transfers', labels=['Original', 'Recalculation'])
+        _plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers', labels=['Original', 'Recalculation'], bins='Auto')
+        _plotDistributionCompare(original['TRANSFER_TIME_AVG'], data['TRANSFER_TIME_AVG'], 'Transfer average time', labels=['Original', 'Recalculation'], bins=20)
 
     return data
 
@@ -333,7 +308,7 @@ def _to_time_bins(data):
     data['END_HOUR'] = data['END_TIME'].apply(lambda x : x.hour)
     return data
 
-def _plotDistributionCompare(sample1, sample2, variable_name, labels, xticks=None):
+def _plotDistributionCompare(sample1, sample2, variable_name, labels, bins=None, xticks=None):
     """
     Plot variables distribution with frequency histogram
     """
@@ -345,10 +320,14 @@ def _plotDistributionCompare(sample1, sample2, variable_name, labels, xticks=Non
     ax.spines["right"].set_visible(False)
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
-    if xticks != None:
-        plt.xticks(np.arange(xticks[0], xticks[1], 1.0))
+    # Bins
+    if bins == 'Auto':
+        bins = max(max(sample1), max(sample2)) - min(min(sample1), min(sample2))
 
-    plt.hist([sample1, sample2], label=labels, color=['#578ac1', '#57c194'])
+    plt.hist([sample1, sample2], label=labels, color=['#578ac1', '#57c194'], bins=bins)
+
+    if xticks != None:
+        plt.xticks(np.arange(xticks[0], xticks[1], 1.0), ha='center')
 
     plt.legend(loc='upper right')
     plt.xlabel(variable_name)
@@ -367,15 +346,16 @@ def _plotDistribution(sample, variable_name, column_name, bins=None, xticks=None
     ax.spines["right"].set_visible(False)
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
-    if xticks != None:
-        plt.xticks(np.arange(xticks[0], xticks[1], 1.0))
 
     # Bins
-    if bins == None:
+    if bins == 'Auto':
         bins = max(sample[column_name]) - min(sample[column_name])
 
     # Plot
     sample[column_name].plot.hist(ax=ax, bins=bins, color='#578ac1')
+
+    if xticks != None:
+        plt.xticks(np.arange(xticks[0], xticks[1], 1.0), ha='center')
     plt.xlabel(variable_name)
 
     # Save
@@ -392,9 +372,14 @@ def _standardize(data):
         sample = data.ix[indices]
 
         # Plot general features
-        print("Plotting hour distributions")
-        _plotDistributionCompare(sample['START_HOUR'], sample['END_HOUR'], 'Hour of trip', labels=['Start', 'End'], xticks=[0.0, 25.0])
-        _plotDistribution(sample, 'Number of trips', 'NUM_TRIPS', xticks=[0.0, 8.0])
+        print("Plotting general distributions")
+        _plotDistributionCompare(sample['START_HOUR'], sample['END_HOUR'], 'Hour of trip', labels=['Start', 'End'], bins=25, xticks=[0.0, 25.0])
+        _plotDistribution(sample, 'Number of trips', 'NUM_TRIPS', bins='Auto', xticks=[0.0, 8.0])
+        _plotDistributionCompare(sample['ON_AREA'], sample['OFF_AREA'], 'District', labels= ['Boarding', 'Alighting'], bins=18, xticks=[1,18])
+        _plotDistributionCompare(sample['ON_TRAFFIC'], sample['OFF_TRAFFIC'], 'Small traffic area', labels= ['Boarding', 'Alighting'], bins=20, xticks=[1,1911])
+        _plotDistributionCompare(sample['ON_MIDDLEAREA'], sample['OFF_MIDDLEAREA'], 'Middle traffic area', labels= ['Boarding', 'Alighting'], bins=20, xticks=[1,389])
+        _plotDistributionCompare(sample['ON_BIGAREA'], sample['OFF_BIGAREA'], 'Big traffic area', labels= ['Boarding', 'Alighting'], bins=20, xticks=[1,60])
+        _plotDistributionCompare(sample['ON_RINGROAD'], sample['OFF_RINGROAD'], 'Ring road', labels= ['Boarding', 'Alighting'], bins=6, xticks=[1,6])
 
         # Plot features to be standardized
         print("Plotting original travel time and distance distributions")
@@ -409,7 +394,7 @@ def _standardize(data):
         plt.savefig(FLAGS.plot_dir+'distance_vs_time.png', format='png')
 
     # TODO: only fit and transform to train data, and transform test data
-    print("Standarize travel time and distance")
+    print("Standarize travel time and distance, transfer time total and average")
     scaler = StandardScaler()
     data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']] = scaler.fit_transform(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']])
     # TODO categoical cannot go to one hot, so divide by range?
@@ -425,8 +410,6 @@ def _standardize(data):
         _plotDistribution(sample, 'Travel distance standardized', 'TRAVEL_DISTANCE', bins=20)
         _plotDistribution(sample, 'Total transfer time standardized', 'TRANSFER_TIME_SUM', bins=20)
         _plotDistribution(sample, 'Average transfer time standardized', 'TRANSFER_TIME_AVG', bins=20)
-
-        # Box plot of all standardized features
 
         # Plot standardized correlated features: time vs distance
         fig, ax = plt.subplots()
@@ -486,7 +469,7 @@ def preprocess():
     #TODO divide and add labels?
 
     print("-------------------------- Standardizing --------------------------")
-    #data = _standardize(data)
+    data = _standardize(data)
 
     print("------------------------- Order  features -------------------------")
     data = _orderFeatures(data)
@@ -512,7 +495,7 @@ def main(_):
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--verbose', type = str, default = 'True',
+    parser.add_argument('--verbose', type = str, default = 'False',
                         help='Display parse route details.')
     parser.add_argument('--load_file', type = str, default = LOAD_FILE_DEFAULT,
                         help='Data file to load.')
