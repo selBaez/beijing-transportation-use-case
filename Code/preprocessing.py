@@ -29,7 +29,7 @@ LINES_VOC_FILE_DEFAULT = '../Data/vocabularies/full_lines vocabulary.json'
 ROUTES_VOC_FILE_DEFAULT = '../Data/vocabularies/full_routes vocabulary.json'
 STOPS_VOC_FILE_DEFAULT = '../Data/vocabularies/full_stops vocabulary.json'
 PLOT_DIR_DEFAULT = './Plots/'
-SAVE_TO_FILE_DEFAULT = '../Data/sets/preprocessed sample data(50000)'
+SAVE_TO_FILE_DEFAULT = '../Data/sets/preprocessed sample data(50000)-noStand'
 ############ --- END default directories--- ############
 
 def _loadData(fileName):
@@ -219,7 +219,7 @@ def _extractOriginAndDestinationFeatures(trip):
     modeOrigin, lineOrigin, stopOrigin, _, _ = _extractTripFeatures(firstRide)
     modeDestination, _, _, lineDestination, stopDestination = _extractTripFeatures(lastRide)
 
-    return modeOrigin, lineOrigin, stopOrigin, modeDestination, lineDestination, stopDestination
+    return modeOrigin, modeDestination, lineOrigin, lineDestination, stopOrigin, stopDestination
 
 def _extractTripFeatures(ride):
     """
@@ -247,7 +247,8 @@ def _extractTripFeatures(ride):
         matcher = pattern.search(ride)
 
         if matcher:
-            return matcher.group('mode'), matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
+            if matcher.group('mode') == 'R': return 0, matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
+            elif matcher.group('mode') == 'B': return 1, matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
         else:
             print('Failed at parsing metro/bus ride:', ride)
             return matcher.group('mode'), None, None, None, None
@@ -258,7 +259,7 @@ def _extractTripFeatures(ride):
         matcher = pattern.search(ride)
 
         if matcher:
-            return matcher.group('mode'), '0', matcher.group('stop_b'), '0', matcher.group('stop_a')
+            return 2, '0', matcher.group('stop_b'), '0', matcher.group('stop_a')
         else:
             print('Failed at parsing bike ride:', ride)
             return matcher.group('mode'), None, None, None, None
@@ -282,8 +283,8 @@ def _parseTrips(data, modes, createVoc):
     print('Formating route')
 
     # TODO: remove when run over whole dataset
-    # indices = random.sample(data.index, 10)
-    # data = data.ix[indices]
+    indices = random.sample(data.index, 1000)
+    data = data.ix[indices]
     # data = _filter(data, data[data['TRANSFER_NUM'] > 0], "at least one transfer")
 
     if FLAGS.verbose == 'True': print('\n     Original details', data['TRANSFER_DETAIL'][0])
@@ -302,7 +303,7 @@ def _parseTrips(data, modes, createVoc):
     if FLAGS.verbose == 'True': print('     Parsed details', data['TRANSFER_DETAIL'][0], '\n\n')
 
     # Retrieve on and off trip details
-    data['ON_MODE'], data['ON_LINE'], data['ON_STOP'], data['OFF_MODE'], data['OFF_LINE'], data['OFF_STOP'] =  zip(*data['TRANSFER_DETAIL'].apply(lambda x : _extractOriginAndDestinationFeatures(x)))
+    data['ON_MODE'], data['OFF_MODE'], data['ON_LINE'], data['OFF_LINE'], data['ON_STOP'], data['OFF_STOP'] =  zip(*data['TRANSFER_DETAIL'].apply(lambda x : _extractOriginAndDestinationFeatures(x)))
 
     return data
 
@@ -411,6 +412,8 @@ def _standardize(data):
     print("Standarize travel time and distance")
     scaler = StandardScaler()
     data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']] = scaler.fit_transform(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']])
+    # TODO categoical cannot go to one hot, so divide by range?
+
 
     if FLAGS.plot_distr == 'True':
         # Use previous sample
@@ -429,6 +432,20 @@ def _standardize(data):
         fig, ax = plt.subplots()
         sample.plot(x='TRAVEL_DISTANCE',y='TRAVEL_TIME', ax=ax, kind='scatter')
         plt.savefig(FLAGS.plot_dir+'distance_vs_time_standardized.png', format='png')
+
+    return data
+
+def _orderFeatures(data):
+    """
+    Order features by: General, then spatial boarding, then spatial alighting
+    """
+    order = ['DATADAY', 'CARD_CODE', 'PATH_LINK', 'TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_NUM', 'TRANSFER_TIME_AVG', \
+            'TRANSFER_TIME_SUM', 'START_TIME', 'END_TIME', 'START_HOUR', 'END_HOUR', 'TRANSFER_DETAIL', 'NUM_TRIPS', \
+            'ON_AREA', 'OFF_AREA', \
+            'ON_TRAFFIC', 'OFF_TRAFFIC', 'ON_MIDDLEAREA', 'OFF_MIDDLEAREA', 'ON_BIGAREA', 'OFF_BIGAREA', \
+            'ON_RINGROAD', 'OFF_RINGROAD',  \
+            'ON_MODE', 'OFF_MODE', 'ON_LINE', 'OFF_LINE', 'ON_STOP', 'OFF_STOP']
+    data = data[order]
 
     return data
 
@@ -469,7 +486,10 @@ def preprocess():
     #TODO divide and add labels?
 
     print("-------------------------- Standardizing --------------------------")
-    data = _standardize(data)
+    #data = _standardize(data)
+
+    print("------------------------- Order  features -------------------------")
+    data = _orderFeatures(data)
 
     print("-------------------------- Storing  data --------------------------")
     _store(data)
