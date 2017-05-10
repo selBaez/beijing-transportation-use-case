@@ -11,7 +11,8 @@ import scipy.io as sio
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas
-from sklearn import cross_validation, svm, ensemble
+import seaborn as sns
+from sklearn import svm, ensemble
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.metrics import average_precision_score, confusion_matrix
 
@@ -21,6 +22,9 @@ MAX_STEPS_DEFAULT = 1500
 NUM_TREES_DEFAULT = 100
 DEPTH_TREES_DEFAULT = 10
 ############ --- END default constants--- ############
+NUM_CLASSES = 2
+CLASSES = ['Commuters','Non-Commuters']
+LABELS = [0, 1]
 
 ############ --- BEGIN default directories --- ############
 LOAD_FILE_DEFAULT = './Previous work/commuting-classifier/dataset.mat'
@@ -49,22 +53,14 @@ def _predict(name, predict_fn, test_data):
 
     return predictions
 
-def _confusion_matrix(name, true, predicted, n_classes):
+def _confusion_matrix(name, true, predicted, n_classes, classes, labels):
     """
-    Create heat confusion matrix and save to figure
+    Create heat confusion matrix
     """
-
-    # print(true.shape, predicted.shape)
-    # print(type(true[0]), type(predicted[0]))
-    # print(true[:5])
-    # print(predicted[:5])
-
-    if n_classes == 2:
-        classes = ['Commuters','Non-Commuters']
-        labels = [0, 1]
-
+    # Calculate confusion matrix
     confusion_array = confusion_matrix(true, predicted, labels=labels)
 
+    # Class accuracy
     norm_conf = []
     for i in confusion_array:
         a = 0
@@ -75,31 +71,29 @@ def _confusion_matrix(name, true, predicted, n_classes):
             tmp_arr.append(value)
         norm_conf.append(tmp_arr)
 
-    fig = plt.figure()
-    plt.clf()
-    ax = fig.add_subplot(111)
-    ax.set_aspect(1)
-    res = ax.imshow(np.array(norm_conf), cmap=plt.cm.jet, interpolation='nearest')
+        # Plot
+    _matrixHeatmap(name, np.array(norm_conf), n_classes, classes)
 
-    for x in xrange(n_classes):
-        for y in xrange(n_classes):
-            ax.annotate(str(confusion_array[x][y]), xy=(y, x),
-                        horizontalalignment='center',
-                        verticalalignment='center')
+def _matrixHeatmap(name, matrix, n_classes, classes):
+    """
+    Plot heatmap of matrix and save to figure
+    """
+    fig, ax = plt.subplots()
+    sns.heatmap(matrix, annot=True, fmt="f", vmin=0, vmax=1)
 
-    cb = fig.colorbar(res)
-    plt.xticks([], [])
-    plt.yticks(range(n_classes), classes)
-    plt.savefig(FLAGS.plot_dir+name+'_confusionMatrix.png', format='png')
+    plt.xticks(range(n_classes), classes, rotation=0, ha='left', fontsize=15)
+    plt.yticks(range(n_classes), reversed(classes), rotation=0, va='bottom', fontsize=15)
+    plt.tight_layout()
+    plt.savefig(FLAGS.plot_dir+name+'_Heatmap.png', format='png')
 
 def _evaluate(name, labels, predictions):
     """
-    Confusion matrix and hinge loss
+    Confusion matrix and accuracy
     """
     accuracy = average_precision_score(labels, predictions)
     print(name, " accuracy : ", accuracy)
 
-    _confusion_matrix(name, labels[:,0], predictions, 2)
+    _confusion_matrix(name, labels, predictions, n_classes=NUM_CLASSES, classes=CLASSES, labels=LABELS)
 
 def train():
     """
@@ -131,7 +125,7 @@ def train():
     # AdaBoost with trees
     model_adb = ensemble.AdaBoostClassifier(n_estimators=FLAGS.num_trees)
 
-    # Bagging trees 
+    # Bagging trees
     model_bag = ensemble.BaggingClassifier(n_estimators=FLAGS.num_trees)
 
 
