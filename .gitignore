@@ -102,6 +102,7 @@ Report/nips_2016.*
 # Confidential BJUT
 Code/Previous*
 Data/sets/*
+Data/labels/*
 
 # Heavy images not uploaded for now
 Report/images/*
