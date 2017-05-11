@@ -1,13 +1,26 @@
 """
-This module contains the main plotting functions shared across scripts.
+This module contains the main functions shared across scripts.
 """
 import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 import matplotlib.pyplot as plt
+import seaborn as sns
 import random
 
 import paths
+
+def _matrixHeatmap(name, matrix, n_classes, classes):
+    """
+    Create heat confusion matrix and save to figure
+    """
+    fig, ax = plt.subplots()
+    sns.heatmap(matrix, vmin=-1, vmax=1)
+
+    plt.xticks(range(n_classes), classes, rotation=70, ha='center', fontsize=8)
+    plt.yticks(range(n_classes), reversed(classes), rotation=0, va='bottom', fontsize=8)
+    plt.tight_layout()
+    plt.savefig(paths.PLOT_DIR_DEFAULT+'heatmaps/'+name+'.png', format='png')
 
 def _plotDistributionCompare(sample1, sample2, variable_name, labels, bins=None, xticks=None):
     """
@@ -61,3 +74,24 @@ def _plotDistribution(sample, variable_name, column_name, bins=None, xticks=None
 
     # Save
     plt.savefig(paths.PLOT_DIR_DEFAULT+'histograms/'+variable_name+'.png', format='png')
+
+def _plotSeriesCorrelation(sample, variable1, variable2):
+    """
+    Scatter plot of correlated series in dataframe
+    """
+    fig, ax = plt.subplots()
+    sample.plot(x=variable1,y=variable2, ax=ax, kind='scatter')
+    # Save
+    plt.savefig(paths.PLOT_DIR_DEFAULT+'scatter/'+variable1+'_'+variable2+'.png', format='png')
+
+def _filter(data, condition, motivation):
+    """
+    Remove records from data due to motivation according to Boolean condition
+    """
+    recordsBefore = len(data.index)
+    data = condition
+    recordsLeft = len(data.index)
+    recordsRemoved = recordsBefore - recordsLeft
+    print("{} records removed due to {}, {} records left".format(recordsRemoved, motivation, recordsLeft))
+
+    return data

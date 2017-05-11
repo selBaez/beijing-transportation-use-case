@@ -12,12 +12,10 @@ import argparse
 import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
 import random, cPickle, re, json
 from collections import OrderedDict
 
-import paths, visualization
+import paths, shared
 
 ############ --- BEGIN default constants --- ############
 MIN_RECORDS_DEFAULT = 0
@@ -36,37 +34,25 @@ def _loadData(fileName):
 
     return data
 
-def _filter(data, condition, motivation):
-    """
-    Remove records from data due to motivation according to Boolean condition
-    """
-    recordsBefore = len(data.index)
-    data = condition
-    recordsLeft = len(data.index)
-    recordsRemoved = recordsBefore - recordsLeft
-    print(recordsRemoved, " records removed due to ", motivation, ", ", recordsLeft, " records left")
-
-    return data
-
 def _clean(data, min_records):
     """
     Remove rows with faulty data
     """
     # Remove rows containing NaN
-    data = _filter(data, data.dropna(), "empty fields")
+    data = shared._filter(data, data.dropna(), "empty fields")
 
     # Remove rows with travel detail containing null
-    data = _filter(data, data[~data['TRANSFER_DETAIL'].str.contains("null")], "null in transfer description")
+    data = shared._filter(data, data[~data['TRANSFER_DETAIL'].str.contains("null")], "null in transfer description")
 
     # Remove records with travel time <= 0
-    data = _filter(data, data[data['TRAVEL_TIME'] > 0], "travel time <= 0")
+    data = shared._filter(data, data[data['TRAVEL_TIME'] > 0], "travel time <= 0")
 
     # Remove records with travel distance <= 0
-    data = _filter(data, data[data['TRAVEL_DISTANCE'] > 0], "travel distance <= 0")
+    data = shared._filter(data, data[data['TRAVEL_DISTANCE'] > 0], "travel distance <= 0")
 
     # Remove cards with less than min_records
     data['NUM_TRIPS'] = data.groupby('CARD_CODE')['TRAVEL_DISTANCE'].transform('count')
-    data = _filter(data, data[data['NUM_TRIPS'] >= min_records], "users having insufficient associated records")
+    data = shared._filter(data, data[data['NUM_TRIPS'] >= min_records], "users having insufficient associated records")
 
     return data
 
@@ -74,6 +60,7 @@ def _createVocabularies(trips):
     """
     Create LINE, ROUTE and STOPS vocabularies based on the data in the given trips
     """
+    # Split the trip into rides and gather components
     lines = set()
     routes = set()
     sttaions = set()
@@ -83,13 +70,13 @@ def _createVocabularies(trips):
         for ride in rides:
             lines, routes, stops = _gatherRideComponents(ride, lines, routes)
 
-    # TODO: smarter way to save direction, for now we just ignore it
+    # Report length of vocabularies formed
     print('Subway lines found:       ',len(lines))
     print('Bus routes found:         ',len(routes))
     print('Combined stops found:  ',len(stops))
 
     # Turn into dictionaries
-    lines =  dict(zip(lines, map(lambda x: ' '+str(x)+':',range(len(lines)))))               # TODO: fix . or - cases, for now we replace both with a space
+    lines =  dict(zip(lines, map(lambda x: ' '+str(x)+':',range(len(lines)))))
     routes = dict(zip(routes, map(lambda x: ' '+str(x)+':',range(len(routes)))))
     stops = dict(zip(map(lambda x: x.replace('(', '[(]').replace(')', '[)]'), stops), map(str,range(len(stops)))))
 
@@ -254,10 +241,10 @@ def _parseTrips(data, modes, createVoc):
     # Replace for clean format
     print('Formating route')
 
-    # TODO: remove when run over whole dataset
-    indices = random.sample(data.index, 1000)
-    data = data.ix[indices]
-    data = _filter(data, data[data['TRANSFER_NUM'] > 0], "at least one transfer")
+    # Reduce dataset size since we are just debugging
+    if FLAGS.scriptMode == 'short':
+        indices = random.sample(data.index, 1000)
+        data = data.ix[indices]
 
     # Replace mode : dictionary
     data['TRANSFER_DETAIL'].replace(to_replace=modes, inplace=True, regex=True)
@@ -288,8 +275,8 @@ def _countTransfers(data):
     data['TRANSFER_TIME_AVG'] = np.where(data['TRANSFER_NUM'] > 0, data['TRANSFER_TIME_SUM'] / data['TRANSFER_NUM'], data['TRANSFER_NUM'])
 
     if FLAGS.plot_distr == 'True':
-        visualization._plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers', labels=['Original', 'Recalculation'], bins='Auto')
-        visualization._plotDistributionCompare(original['TRANSFER_TIME_AVG'], data['TRANSFER_TIME_AVG'], 'Transfer average time', labels=['Original', 'Recalculation'], bins=20)
+        shared._plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers', labels=['Original', 'Recalculation'], bins='Auto')
+        shared._plotDistributionCompare(original['TRANSFER_TIME_AVG'], data['TRANSFER_TIME_AVG'], 'Transfer average time', labels=['Original', 'Recalculation'], bins=20)
 
     return data
 
@@ -318,15 +305,14 @@ def _orderFeatures(data):
 
 def _store(data):
     """
-    Store data for use in model
+    Store clean data
     """
-    #TODO store test and train separately
     data.to_pickle(paths.CLEAN_FILE_DEFAULT+'.pkl')
     data.to_csv(paths.CLEAN_FILE_DEFAULT+'.csv')
 
-def preprocess():
+def prepare():
     """
-    Read raw data, clean it and store preprocessed data
+    Read raw data, clean it, format it and store preprocessed data
     """
     print("---------------------------- Load data ----------------------------")
     data = _loadData(paths.ORIGINAL_FILE_DEFAULT)
@@ -364,8 +350,7 @@ def main(_):
     Main function
     """
     print_flags()
-    #TODO Make directories if they do not exists yet
-    preprocess()
+    prepare()
 
 if __name__ == '__main__':
     # Command line arguments
@@ -378,6 +363,8 @@ if __name__ == '__main__':
                         help='Create lines/routes/stops vocabularies from given data. If False, previously saved vocabularies will be used')
     parser.add_argument('--plot_distr', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
+    parser.add_argument('--scriptMode', type = str, default = 'short',
+                        help='Run with long  or short dataset.')
     #TODO: overwrite voc
 
     FLAGS, unparsed = parser.parse_known_args()
