@@ -38,21 +38,27 @@ def _clean(data, min_records):
     """
     Remove rows with faulty data
     """
+    total = data
+
     # Remove rows containing NaN
-    data = shared._filter(data, data.dropna(), "empty fields")
+    data, numEmpty = shared._filter(data, data.dropna(), "empty fields")
 
     # Remove rows with travel detail containing null
-    data = shared._filter(data, data[~data['TRANSFER_DETAIL'].str.contains("null")], "null in transfer description")
+    data, numNull = shared._filter(data, data[~data['TRANSFER_DETAIL'].str.contains("null")], "null in transfer description")
 
     # Remove records with travel time <= 0
-    data = shared._filter(data, data[data['TRAVEL_TIME'] > 0], "travel time <= 0")
+    data, numTime = shared._filter(data, data[data['TRAVEL_TIME'] > 0], "travel time <= 0")
 
     # Remove records with travel distance <= 0
-    data = shared._filter(data, data[data['TRAVEL_DISTANCE'] > 0], "travel distance <= 0")
+    data, numDistance = shared._filter(data, data[data['TRAVEL_DISTANCE'] > 0], "travel distance <= 0")
 
     # Remove cards with less than min_records
     data['NUM_TRIPS'] = data.groupby('CARD_CODE')['TRAVEL_DISTANCE'].transform('count')
-    data = shared._filter(data, data[data['NUM_TRIPS'] >= min_records], "users having insufficient associated records")
+    data, numMin = shared._filter(data, data[data['NUM_TRIPS'] >= min_records], "users having insufficient associated records")
+
+    if FLAGS.plot_distr == 'True':
+        shared._plotPie('faulty', [numEmpty, numNull, numDistance, numTime, len(data.index)],\
+         ['Empty fields', 'Incomplete \ntransfer details', 'Negative distance', 'Negative travel time', 'Clean'])
 
     return data
 
@@ -243,7 +249,7 @@ def _parseTrips(data, modes, createVoc):
 
     # Reduce dataset size since we are just debugging
     if FLAGS.scriptMode == 'short':
-        indices = random.sample(data.index, 1000)
+        indices = random.sample(data.index, 1500)
         data = data.ix[indices]
 
     # Replace mode : dictionary
@@ -315,7 +321,7 @@ def prepare():
     Read raw data, clean it, format it and store preprocessed data
     """
     print("---------------------------- Load data ----------------------------")
-    data = _loadData(paths.ORIGINAL_FILE_DEFAULT)
+    data = _loadData(paths.RAW_FILE_DEFAULT)
 
     print("---------------------------- Cleaning -----------------------------")
     data = _clean(data, FLAGS.min_records)

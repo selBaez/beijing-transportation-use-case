@@ -50,60 +50,52 @@ def _labelData(data, labelsDir):
     data['LABEL'] = data['CARD_CODE'].apply(lambda x : _matchLabel(x, commuters, non_commuters) )
 
     # Eliminate records without labels
-    data = shared._filter(data, data[~data['LABEL'].isnull()], "no label available")
+    data, numUnlabeled = shared._filter(data, data[~data['LABEL'].isnull()], "no label available")
+
+    if FLAGS.plot_distr == 'True':
+        shared._plotPie('unlabeled', [numUnlabeled, len(data.index)],\
+         ['Unlabeled', 'Labeled'])
 
     return data
+
+def _visualize(data, text, general=False):
+    # Sample 'size' random points
+    size = 15 if FLAGS.scriptMode == 'short' else 450
+
+    indices = random.sample(data.index, size)
+    sample = data.ix[indices]
+
+    if general == True:
+        # Plot general features
+        print("Plotting general distributions")
+        shared._plotDistributionCompare(sample['START_HOUR'], sample['END_HOUR'], 'Hour of trip', labels=['Start', 'End'], bins=24, xticks=[0, 24])
+        shared._plotDistribution(sample, 'Number of trips', 'NUM_TRIPS', bins='Auto', xticks=[0.0, 8.0])
+        shared._plotDistributionCompare(sample['ON_AREA'], sample['OFF_AREA'], 'District', labels= ['Boarding', 'Alighting'], bins=18) #Range 1:18
+        shared._plotDistributionCompare(sample['ON_TRAFFIC'], sample['OFF_TRAFFIC'], 'Small traffic area', labels= ['Boarding', 'Alighting'], bins=20) #Range 1:1911
+        shared._plotDistributionCompare(sample['ON_MIDDLEAREA'], sample['OFF_MIDDLEAREA'], 'Middle traffic area', labels= ['Boarding', 'Alighting'], bins=20) #Range 1:389
+        shared._plotDistributionCompare(sample['ON_BIGAREA'], sample['OFF_BIGAREA'], 'Big traffic area', labels= ['Boarding', 'Alighting'], bins=20) #Range 1:60
+        shared._plotDistributionCompare(sample['ON_RINGROAD'], sample['OFF_RINGROAD'], 'Ring road', labels= ['Boarding', 'Alighting'], bins=6) #Range 1:6
+
+    # Plot features to be standardized
+    print("Plotting "+text+" travel time and distance distributions")
+    shared._plotDistribution(sample, 'Travel time '+text, 'TRAVEL_TIME', bins=20)
+    shared._plotDistribution(sample, 'Travel distance '+text, 'TRAVEL_DISTANCE', bins=20)
+    shared._plotDistribution(sample, 'Total transfer time '+text, 'TRANSFER_TIME_SUM', bins=20)
+    shared._plotDistribution(sample, 'Average transfer time '+text, 'TRANSFER_TIME_AVG', bins=20)
+
+    # Plot standardized correlated features: time vs distance
+    shared._plotSeriesCorrelation(sample,'TRAVEL_DISTANCE','TRAVEL_TIME')
+
 
 def _standardize(data):
     """
     Rescale features to have mean 0 and std 1
     """
-
-    if FLAGS.plot_distr == 'True':
-        # Sample 'size' random points
-        size = 100 if FLAGS.scriptMode == 'short' else 2500
-
-        indices = random.sample(data.index, size)
-        sample = data.ix[indices]
-
-        # Plot general features
-        print("Plotting general distributions")
-        shared._plotDistributionCompare(sample['START_HOUR'], sample['END_HOUR'], 'Hour of trip', labels=['Start', 'End'], bins=25, xticks=[0.0, 25.0])
-        shared._plotDistribution(sample, 'Number of trips', 'NUM_TRIPS', bins='Auto', xticks=[0.0, 8.0])
-        shared._plotDistributionCompare(sample['ON_AREA'], sample['OFF_AREA'], 'District', labels= ['Boarding', 'Alighting'], bins=18, xticks=[1,18])
-        shared._plotDistributionCompare(sample['ON_TRAFFIC'], sample['OFF_TRAFFIC'], 'Small traffic area', labels= ['Boarding', 'Alighting'], bins=20, xticks=[1,1911])
-        shared._plotDistributionCompare(sample['ON_MIDDLEAREA'], sample['OFF_MIDDLEAREA'], 'Middle traffic area', labels= ['Boarding', 'Alighting'], bins=20, xticks=[1,389])
-        shared._plotDistributionCompare(sample['ON_BIGAREA'], sample['OFF_BIGAREA'], 'Big traffic area', labels= ['Boarding', 'Alighting'], bins=20, xticks=[1,60])
-        shared._plotDistributionCompare(sample['ON_RINGROAD'], sample['OFF_RINGROAD'], 'Ring road', labels= ['Boarding', 'Alighting'], bins=6, xticks=[1,6])
-
-        # Plot features to be standardized
-        print("Plotting original travel time and distance distributions")
-        shared._plotDistribution(sample, 'Travel time', 'TRAVEL_TIME', bins=20)
-        shared._plotDistribution(sample, 'Travel distance', 'TRAVEL_DISTANCE', bins=20)
-        shared._plotDistribution(sample, 'Total transfer time', 'TRANSFER_TIME_SUM', bins=20)
-        shared._plotDistribution(sample, 'Average transfer time', 'TRANSFER_TIME_AVG', bins=20)
-
-
     # TODO: only fit and transform to train data, and transform test data
     print("Standarize travel time and distance, transfer time total and average")
     scaler = StandardScaler()
     data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']] = scaler.fit_transform(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']])
     # TODO categoical cannot go to one hot, so divide by range?
-
-
-    if FLAGS.plot_distr == 'True':
-        # Use previous sample
-        sample = data.ix[indices]
-
-        # Plot standardized features
-        print("Plotting standarized travel time and distance distributions")
-        shared._plotDistribution(sample, 'Travel time standardized', 'TRAVEL_TIME', bins=20)
-        shared._plotDistribution(sample, 'Travel distance standardized', 'TRAVEL_DISTANCE', bins=20)
-        shared._plotDistribution(sample, 'Total transfer time standardized', 'TRANSFER_TIME_SUM', bins=20)
-        shared._plotDistribution(sample, 'Average transfer time standardized', 'TRANSFER_TIME_AVG', bins=20)
-
-        # Plot standardized correlated features: time vs distance
-        shared._plotSeriesCorrelation(sample,'TRAVEL_DISTANCE','TRAVEL_TIME')
 
     return data
 
@@ -121,15 +113,23 @@ def preprocess():
     print("---------------------------- Load data ----------------------------")
     data = _loadData(paths.CLEAN_FILE_DEFAULT+'.csv')
 
-    #print("----------------------- Finding smart codes -----------------------")
-    #TODO find records related to given smart codes
+    if FLAGS.plot_distr == 'True':
+        print("--------------------- Visualize  general data ---------------------")
+        _visualize(data, 'original', general= True)
+
+    print("---------------------- Label and select data ----------------------")
     data = _labelData(data, paths.LABELS_DIR_DEFAULT)
 
     #print("------------------- Create train  and test sets -------------------")
     #TODO divide and add labels?
 
-    print("-------------------------- Standardizing --------------------------")
-    # data = _standardize(data)
+    if FLAGS.std == 'True':
+        print("-------------------------- Standardizing --------------------------")
+        data = _standardize(data)
+
+    if FLAGS.plot_distr == 'True':
+        print("----------------- Visualize standardized data -----------------")
+        _visualize(data, 'standardized')
 
     print("-------------------------- Storing  data --------------------------")
     _store(data, 'general')
@@ -153,10 +153,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', type = str, default = 'False',
                         help='Display parse route details.')
-    parser.add_argument('--plot_distr', type = str, default = 'False',
+    parser.add_argument('--plot_distr', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--scriptMode', type = str, default = 'short',
                         help='Run with long  or short dataset.')
+    parser.add_argument('--std', type = str, default = 'True',
+                        help='Standardize features.')
     #TODO: labeled or unlabeled? (labeled includes searching for codes)
 
     FLAGS, unparsed = parser.parse_known_args()

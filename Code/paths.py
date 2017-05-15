@@ -1,7 +1,7 @@
 ############ --- BEGIN default directories --- ############
-ORIGINAL_FILE_DEFAULT = '../Data/sets/Travel chain sample data(50000).csv'
-CLEAN_FILE_DEFAULT = '../Data/sets/Clean sample data(50000)'
-PREPROCESSED_FILE_DEFAULT = '../Data/sets/Preprocessed sample data(50000)'
+RAW_FILE_DEFAULT = '../Data/sets/raw/Travel chain sample data(50000).csv'
+CLEAN_FILE_DEFAULT = '../Data/sets/clean/sample data(50000)'
+PREPROCESSED_FILE_DEFAULT = '../Data/sets/preprocessed/sample data(50000)'
 
 # Vocabularies
 VOC_DIR_DEFAULT = '../Data/vocabularies/fullVocabulary'

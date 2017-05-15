@@ -27,12 +27,15 @@ MAJOR PROBLEM: only 908 labeled records
 			K-fold with replacement
 
 TODO:
-recalculate path link (if necessary)
-array of card codes corresponding to labeled data
+date number as feature? (extract day maybe)
+fix reading vocabularies from file
+normalize areas? keep as ordinal?
+num of transfer as pie chart
+
 sample algorithms on given data
-plot area distribution
-chi test
-normalize areas?
+ensemble
+
+silhouettes samples for cluster membership
 
 
 Papers to get:

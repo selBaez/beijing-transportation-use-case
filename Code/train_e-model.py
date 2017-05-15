@@ -1,6 +1,5 @@
 """
 This module implements training and evaluation of an ensemble model for classification.
-Argument parser and general sructure partly based on Deep Learning practicals from UvA
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -16,23 +15,19 @@ from sklearn import svm, ensemble
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.metrics import average_precision_score, confusion_matrix
 
+import paths, shared
+
 ############ --- BEGIN default constants --- ############
 BATCH_SIZE_DEFAULT = 200
 MAX_STEPS_DEFAULT = 1500
 NUM_TREES_DEFAULT = 100
 DEPTH_TREES_DEFAULT = 10
-############ --- END default constants--- ############
 NUM_CLASSES = 2
 CLASSES = ['Commuters','Non-Commuters']
 LABELS = [0, 1]
+############ --- END default constants--- ############
 
-############ --- BEGIN default directories --- ############
-LOAD_FILE_DEFAULT = './Previous work/commuting-classifier/dataset.mat'
-PLOT_DIR_DEFAULT = './Plots/'
-# SAVE_TO_FILE_DEFAULT = '../Data/sets/preprocessed sample data(50000)'
-############ --- END default directories--- ############
-
-def loadData(fileName):
+def _loadData(fileName):
     """
     Load preprocessed data
     """
@@ -71,20 +66,8 @@ def _confusion_matrix(name, true, predicted, n_classes, classes, labels):
             tmp_arr.append(value)
         norm_conf.append(tmp_arr)
 
-        # Plot
-    _matrixHeatmap(name, np.array(norm_conf), n_classes, classes)
-
-def _matrixHeatmap(name, matrix, n_classes, classes):
-    """
-    Plot heatmap of matrix and save to figure
-    """
-    fig, ax = plt.subplots()
-    sns.heatmap(matrix, annot=True, fmt="f", vmin=0, vmax=1)
-
-    plt.xticks(range(n_classes), classes, rotation=0, ha='left', fontsize=15)
-    plt.yticks(range(n_classes), reversed(classes), rotation=0, va='bottom', fontsize=15)
-    plt.tight_layout()
-    plt.savefig(FLAGS.plot_dir+name+'_Heatmap.png', format='png')
+    # Plot
+    shared._classificationHeatmap(name, np.array(norm_conf), n_classes, classes)
 
 def _evaluate(name, labels, predictions):
     """
@@ -100,7 +83,7 @@ def train():
     Performs training and reports evaluation (on training and validation sets)
     """
     print("---------------------------- Load data ----------------------------")
-    train_data, train_labels, test_data, test_labels = loadData(FLAGS.load_file)
+    train_data, train_labels, test_data, test_labels = _loadData(paths.PREVIOUS_DIR_DEFAULT+'dataset.mat')
 
     print("-------------------------- Rename labels --------------------------")
     train_labels[train_labels == -1] = 0
@@ -169,8 +152,6 @@ def main(_):
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load_file', type = str, default = LOAD_FILE_DEFAULT,
-                        help='Data file to load.')
     parser.add_argument('--batch_size', type = int, default = BATCH_SIZE_DEFAULT,
                         help='Batch size to run trainer.')
     parser.add_argument('--max_steps', type = int, default = MAX_STEPS_DEFAULT,
@@ -179,8 +160,6 @@ if __name__ == '__main__':
                         help='Number of trees in random forest.')
     parser.add_argument('--depth_trees', type = int, default = DEPTH_TREES_DEFAULT,
                         help='Depth of trees in random forest.')
-    parser.add_argument('--plot_dir', type = str, default = PLOT_DIR_DEFAULT,
-                        help='Directory to which save plots.')
 
 
     FLAGS, unparsed = parser.parse_known_args()
