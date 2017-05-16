@@ -27,8 +27,6 @@ MAJOR PROBLEM: only 908 labeled records
 			K-fold with replacement
 
 TODO:
-date number as feature? (extract day maybe)
-fix reading vocabularies from file
 normalize areas? keep as ordinal?
 num of transfer as pie chart
 
@@ -37,15 +35,19 @@ ensemble
 
 silhouettes samples for cluster membership
 
+save only as cPickle for faster read write
+
+
 
 Papers to get:
 Reconstructing individual mobility from smart card transactions: a collaborative space alignment approach
 
 
 Improvements to report:
-transfer time focus on TRANSFER_DETAIL
-pie chart for number of transfers
+transfer time focus on tail
 thesis organization more technical, and methods per parts
-data flow chart for parts of study
 Mention hierarchy in traffic areas will cause correlation
+Attributes summary: numerical vs categorical
+Section: deal with categorical -> tokenize, encode, bins
 comment on ordinal structure vs one hot
+random forests deal well with categorical (large node size), adaboost with missing info

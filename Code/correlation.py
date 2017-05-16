@@ -1,6 +1,5 @@
 """
-This module implements training and evaluation of an ensemble model for classification.
-Argument parser and general sructure partly based on Deep Learning practicals from UvA
+This module implements feature selection for commuters classification.
 """
 from __future__ import absolute_import
 from __future__ import division

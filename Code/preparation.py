@@ -330,7 +330,7 @@ if __name__ == '__main__':
                         help='Create lines/stops vocabularies from given data. If False, previously saved vocabularies will be used')
     parser.add_argument('--plot_distr', type = str, default = 'False',
                         help='Boolean to decide if we plot distributions.')
-    parser.add_argument('--scriptMode', type = str, default = 'short',
+    parser.add_argument('--scriptMode', type = str, default = 'long',
                         help='Run with long  or short dataset.')
     #TODO: overwrite voc
 

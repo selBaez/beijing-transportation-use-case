@@ -12,7 +12,7 @@ import argparse
 import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
-import random, cPickle
+import random, cPickle, csv
 from sklearn.preprocessing import StandardScaler
 
 import paths, shared
@@ -21,8 +21,8 @@ def _loadData(fileName):
     """
     Load csv data on pandas
     """
-    # Ignore column 3 'PATH_LINK', 10 and 11 'START_TIME', 'END_TIME', and 13 'TRIP_DETAILS'
-    data = pd.read_csv(fileName, index_col='ID', usecols= range(3)+range(4,9)+range(11,13)+range(14,31))#, parse_dates=[0,8,9])
+    # Ignore 'PATH_LINK', 'START_TIME', 'END_TIME', and 'TRIP_DETAILS'
+    data = pd.read_csv(fileName, index_col='ID', usecols= range(4)+range(5,10)+range(12,14)+range(15,32))#, parse_dates=[0,8,9])
     print("{} records loaded".format(len(data.index)))
 
     return data
@@ -86,7 +86,6 @@ def _visualize(data, text, general=False):
     # Plot standardized correlated features: time vs distance
     shared._plotSeriesCorrelation(sample,'TRAVEL_DISTANCE','TRAVEL_TIME')
 
-
 def _standardize(data):
     """
     Rescale features to have mean 0 and std 1
@@ -99,12 +98,33 @@ def _standardize(data):
 
     return data
 
+def _byCardCode(data):
+    """
+    structure per card code
+    """
+    # save groups in new frame with index card code
+    data = list(data.groupby('CARD_CODE'))
+    print(len(data), ' card codes found')
+
+    # print(list(data[range(4)+range(8,12)].groupby(data['CARD_CODE']))[2])
+
+    return data
+
 def _store(data, className):
     """
     Store data for use in model
     """
     data.to_pickle(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.pkl')
     data.to_csv(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.csv')
+
+def _storeGroups(data, className):
+    """
+    Store data for use in model
+    """
+    with open(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.pkl', 'w') as fp: cPickle.dump(data, fp)
+    with open(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.csv', 'w') as fp:
+        wr = csv.writer(fp, quoting=csv.QUOTE_ALL)
+        wr.writerows(data)
 
 def preprocess():
     """
@@ -134,6 +154,12 @@ def preprocess():
     print("-------------------------- Storing  data --------------------------")
     _store(data, 'general')
 
+    print("----------------------- Group by  card code -----------------------")
+    data = _byCardCode(data)
+
+    print("-------------------------- Storing  data --------------------------")
+    _storeGroups(data, 'groups')
+
 def print_flags():
     """
     Print all entries in FLAGS variable.
@@ -153,11 +179,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', type = str, default = 'False',
                         help='Display parse route details.')
-    parser.add_argument('--plot_distr', type = str, default = 'True',
+    parser.add_argument('--plot_distr', type = str, default = 'False',
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--scriptMode', type = str, default = 'short',
                         help='Run with long  or short dataset.')
-    parser.add_argument('--std', type = str, default = 'True',
+    parser.add_argument('--std', type = str, default = 'False',
                         help='Standardize features.')
     #TODO: labeled or unlabeled? (labeled includes searching for codes)
 
