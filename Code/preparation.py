@@ -73,20 +73,18 @@ def _createVocabularies(trips):
         if FLAGS.verbose == 'True': print('Trip: ',trip)
         rides = trip.split('->')
         for ride in rides:
-            lines, stops = _gatherRideComponents(ride, lines, stops)
-
-            # _, lineOrigin, stopOrigin, lineDestination, stopDestination = _extractTripFeatures(ride)
-            # lines.add(lineOrigin)
-            # lines.add(lineDestination)
-            # stops.add(stopOrigin)
-            # stops.add(stopDestination)
+            _, lineOrigin, stopOrigin, lineDestination, stopDestination = _extractTripFeatures(ride)
+            lines.add(lineOrigin)
+            lines.add(lineDestination)
+            stops.add(stopOrigin)
+            stops.add(stopDestination)
 
     # Report length of vocabularies formed
     print('     Combined lines found:  ',len(lines))
     print('     Combined stops found:  ',len(stops))
 
     # Turn into dictionaries
-    lines =  dict(zip(lines, map(str,range(1,len(lines)))))
+    lines =  dict(zip(lines, map(str,range(len(lines)))))
     stops = dict(zip(stops, map(str,range(len(stops)))))
 
     # Sort them to have longest patterns replaced first
@@ -96,80 +94,6 @@ def _createVocabularies(trips):
     # Save as JSON later use
     with open(paths.VOC_DIR_DEFAULT+'_lines.json', 'w') as fp: json.dump(lines, fp, indent=4, ensure_ascii=False)
     with open(paths.VOC_DIR_DEFAULT+'_stops.json', 'w') as fp: json.dump(stops, fp, indent=4, ensure_ascii=False)
-
-    return lines, stops
-
-def _gatherRideComponents(ride, lines=set(), stops=set()):
-    """
-    Get MODE, STOPS and other mode-specific components for the given ride and append to corresponding sets
-    Return components cummulative sets
-
-    BIKE = (bike.STOP-STOP)
-    SUBWAY = (subway.LINE_NAME:STOP-LINE_NAME:STOP)
-    BUS = (bus.LINE_NAME(DIRECTION-DIRECTION):STOP-LINE_NAME(DIRECTION-DIRECTION):STOP)
-
-    GENERAL = (MODE.[LINE_NAME:]?STOP-[LINE_NAME:]?STOP)[->PATTERN]?
-    # MODE                       轨道|公交|自行车        ------ equivalent to ------       subway | bus | bike
-    # LINE_NAME  (subway)        5 号线 | NAME 线       ------ equivalent to ------       5 number line | NAME line
-    # LINE_NAME  (bus)           944 | 夜 32           ------ equivalent to ------       944 | night 32
-
-    """
-    #TODO: consider using split instead of regular expressions at all
-    if FLAGS.verbose == 'True': print('Ride details: ',ride)
-
-    # Shared fields across modes
-    mode = r'(?P<mode>轨道|公交|自行车)'
-    stop_b = r'(?P<stop_b>.+?)'
-    stop_a = r'(?P<stop_a>.+?)'
-
-    # Match and classify by mode
-    pattern = re.compile(mode)
-    matcher = pattern.search(ride)
-
-    # Parse metro
-    if matcher.group('mode') == '轨道':
-        line_b = r'(?P<line_b>.+?)'
-        line_a = r'(?P<line_a>.+?)'
-
-        pattern = re.compile(r'\('+mode+r'[.]'+line_b+r'[:]'+stop_b+r'[-]'+line_a+r'[:]'+stop_a+r'[)]$')
-        matcher = pattern.search(ride)
-
-        if matcher:
-            lines.add(matcher.group('line_b'))
-            lines.add(matcher.group('line_a'))
-            stops.add(matcher.group('stop_b'))
-            stops.add(matcher.group('stop_a'))
-        else:
-            print('Failed at parsing metro ride:', ride)
-
-    # Parse bus
-    elif matcher.group('mode') == '公交':
-        line_b = r'(?P<line_b>.+?)'
-        direction_b = r'(?P<direction_b>[(].+?[)])'
-        line_a = r'(?P<line_a>.+?)'
-        direction_a = r'(?P<direction_a>[(].+?[)])'
-
-        pattern = re.compile(r'\('+mode+r'[.]'+line_b+direction_b+r'[:]'+stop_b+r'[-]'+line_a+direction_a+r'[:]'+stop_a+r'[)]$')
-        matcher = pattern.search(ride)
-
-        if matcher:
-            lines.add(matcher.group('line_b'))
-            lines.add(matcher.group('line_a'))
-            stops.add(matcher.group('stop_b'))
-            stops.add(matcher.group('stop_a'))
-        else:
-            print('Failed at parsing bus ride:', ride)
-
-    # Parse bike
-    elif matcher.group('mode') == '自行车':
-        pattern = re.compile(r'\('+mode+r'[.]'+stop_b+r'[-]'+stop_a+r'[)]$')
-        matcher = pattern.search(ride)
-
-        if matcher:
-            stops.add(matcher.group('stop_b'))
-            stops.add(matcher.group('stop_a'))
-        else:
-            print('Failed at parsing bike ride:', ride)
 
     return lines, stops
 
@@ -189,9 +113,18 @@ def _extractOriginAndDestinationFeatures(trip):
 
 def _extractTripFeatures(ride):
     """
-    Return MODE, LINE/LINE and STOP for the given ride
+    Get MODE, LINE and STOPS and other mode-specific components for the given ride
+
+    BIKE = (bike.STOP-STOP)
+    SUBWAY = (subway.LINE_NAME:STOP-LINE_NAME:STOP)
+    BUS = (bus.LINE_NAME(DIRECTION-DIRECTION):STOP-LINE_NAME(DIRECTION-DIRECTION):STOP)
+
+    GENERAL = (MODE.[LINE_NAME:]?STOP-[LINE_NAME:]?STOP)[->PATTERN]?
+    # MODE                       轨道|公交|自行车        ------ equivalent to ------       subway | bus | bike
+    # LINE_NAME  (subway)        5 号线 | NAME 线       ------ equivalent to ------       5 number line | NAME line
+    # LINE_NAME  (bus)           944 | 夜 32           ------ equivalent to ------       944 | night 32
+
     """
-    #TODO refactor with gather ride components
 
     if FLAGS.verbose == 'True': print('Ride details: ', ride)
 
@@ -249,6 +182,7 @@ def _parseTrips(data, modes, createVoc):
     """
     Parse 'TRANSFER_DETAIL' column to get ON/OFF mode, line and stop tokenized information
     """
+
     # Determine which vocabulary to use
     if createVoc == 'True':
         # Create vocabularies
@@ -259,18 +193,17 @@ def _parseTrips(data, modes, createVoc):
         with open(paths.VOC_DIR_DEFAULT+'_lines.json', 'r') as fp: lines = json.load(fp, encoding="utf-8")
         with open(paths.VOC_DIR_DEFAULT+'_stops.json', 'r') as fp: stops = json.load(fp, encoding="utf-8")
 
-
     # Retrieve on and off trip details
     data['ON_MODE'], data['OFF_MODE'], data['ON_LINE'], data['OFF_LINE'], data['ON_STOP'], data['OFF_STOP'] =  zip(*data['TRANSFER_DETAIL'].apply(lambda x : _extractOriginAndDestinationFeatures(x)))
 
-    # # Replace for clean format
-    # print('Formating trip')
-    #
-    # # Reduce dataset size since we are just debugging
-    # if FLAGS.scriptMode == 'short':
-    #     indices = random.sample(data.index, 1500)
-    #     data = data.ix[indices]
-    #
+    # Replace for clean format
+    print('Formating trip')
+
+    # Reduce dataset size since we are just debugging
+    if FLAGS.scriptMode == 'short':
+        indices = random.sample(data.index, 5)
+        data = data.ix[indices]
+
     # Replace line and stops : vocabularies
     data['ON_LINE'].replace(to_replace=lines, inplace=True)
     data['OFF_LINE'].replace(to_replace=lines, inplace=True)
@@ -308,11 +241,23 @@ def _to_time_bins(data):
     data['END_HOUR'] = data['END_TIME'].apply(lambda x : x.hour)
     return data
 
+def _weekday(data):
+    """
+    Extract day of observation and determine if it was a weekday
+    """
+    print("Extracting day")
+    data['DAY'] = data['DATADAY'].apply(lambda x: x.day)
+
+    print("Extracting weekday")
+    data['WEEKDAY'] = data['DATADAY'].dt.dayofweek
+
+    return data
+
 def _orderFeatures(data):
     """
     Order features by: General, then spatial boarding, then spatial alighting
     """
-    order = ['DATADAY', 'CARD_CODE', 'PATH_LINK', 'TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_NUM', 'TRANSFER_TIME_AVG', \
+    order = ['CARD_CODE', 'DAY', 'WEEKDAY', 'PATH_LINK', 'TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_NUM', 'TRANSFER_TIME_AVG', \
             'TRANSFER_TIME_SUM', 'START_TIME', 'END_TIME', 'START_HOUR', 'END_HOUR', 'TRANSFER_DETAIL', 'NUM_TRIPS', \
             'ON_AREA', 'OFF_AREA', \
             'ON_TRAFFIC', 'OFF_TRAFFIC', 'ON_MIDDLEAREA', 'OFF_MIDDLEAREA', 'ON_BIGAREA', 'OFF_BIGAREA', \
@@ -348,8 +293,8 @@ def prepare():
     print("-------------------- Creating time stamp bins ---------------------")
     data = _to_time_bins(data)
 
-    #print("------------------------ Extract weekdays -------------------------")
-    # TODO http://nbviewer.jupyter.org/github/jvns/pandas-cookbook/blob/v0.1/cookbook/Chapter%204%20-%20Find%20out%20on%20which%20weekday%20people%20bike%20the%20most%20with%20groupby%20and%20aggregate.ipynb
+    print("--------------------- Extract day and weekday ---------------------")
+    data = _weekday(data)
 
     print("------------------------- Order  features -------------------------")
     data = _orderFeatures(data)
