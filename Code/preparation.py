@@ -91,9 +91,12 @@ def _createVocabularies(trips):
     lines = OrderedDict(sorted(lines.items(), key=lambda t: len(t[0]), reverse=True))
     stops = OrderedDict(sorted(stops.items(), key=lambda t: len(t[0]), reverse=True))
 
-    # Save as JSON later use
+    # Save as JSON for view and pickle for later use
     with open(paths.VOC_DIR_DEFAULT+'_lines.json', 'w') as fp: json.dump(lines, fp, indent=4, ensure_ascii=False)
     with open(paths.VOC_DIR_DEFAULT+'_stops.json', 'w') as fp: json.dump(stops, fp, indent=4, ensure_ascii=False)
+
+    with open(paths.VOC_DIR_DEFAULT+'_lines.pkl', 'w') as fp: cPickle.dump(lines, fp)
+    with open(paths.VOC_DIR_DEFAULT+'_stops.pkl', 'w') as fp: cPickle.dump(stops, fp)
 
     return lines, stops
 
@@ -189,20 +192,20 @@ def _parseTrips(data, modes, createVoc):
         print('Creating lines and stops vocabularies')
         lines, stops = _createVocabularies(data['TRANSFER_DETAIL'])
     else:
-        # Load existing vocabularies TODO: not working atm
-        with open(paths.VOC_DIR_DEFAULT+'_lines.json', 'r') as fp: lines = json.load(fp, encoding="utf-8")
-        with open(paths.VOC_DIR_DEFAULT+'_stops.json', 'r') as fp: stops = json.load(fp, encoding="utf-8")
+        # Load existing vocabularies
+        with open(paths.VOC_DIR_DEFAULT+'_lines.pkl', 'r') as fp: lines = cPickle.load(fp)
+        with open(paths.VOC_DIR_DEFAULT+'_stops.pkl', 'r') as fp: stops = cPickle.load(fp)
+
+    # Reduce dataset size since we are just debugging
+    if FLAGS.scriptMode == 'short':
+        indices = random.sample(data.index, 5)
+        data = data.ix[indices]
 
     # Retrieve on and off trip details
     data['ON_MODE'], data['OFF_MODE'], data['ON_LINE'], data['OFF_LINE'], data['ON_STOP'], data['OFF_STOP'] =  zip(*data['TRANSFER_DETAIL'].apply(lambda x : _extractOriginAndDestinationFeatures(x)))
 
     # Replace for clean format
     print('Formating trip')
-
-    # Reduce dataset size since we are just debugging
-    if FLAGS.scriptMode == 'short':
-        indices = random.sample(data.index, 5)
-        data = data.ix[indices]
 
     # Replace line and stops : vocabularies
     data['ON_LINE'].replace(to_replace=lines, inplace=True)
@@ -323,7 +326,7 @@ if __name__ == '__main__':
                         help='Display parse trip details.')
     parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
                         help='Traveler is required to have at least this number of records.')
-    parser.add_argument('--create_voc', type = str, default = 'True',
+    parser.add_argument('--create_voc', type = str, default = 'False',
                         help='Create lines/stops vocabularies from given data. If False, previously saved vocabularies will be used')
     parser.add_argument('--plot_distr', type = str, default = 'False',
                         help='Boolean to decide if we plot distributions.')
