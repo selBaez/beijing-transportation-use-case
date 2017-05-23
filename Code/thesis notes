@@ -1,30 +1,36 @@
-one file for preprocessing
+preparation						cleaning																																							DONE
+											information extraction (mode,line,stop,#trips,time bins)															Extend vocabulary
+											patching																																							DONE
+											formatting																																						DONE
 
-one file per model				load data
-	tree					          predict-classify (forward pass)
-	mlp					            train or error correct (backward pass)
-	bayesian                save assembled model
-												  test
-													evaluation metrics
+preprocessing					label data																																						DONE
+											standardize																																						Refactor parameters
+											create user cubes/vectors																															DONE
 
-one file for prediction   load trained model
-													forward pass
-													save predictions
+feature selection 		preprocessing -> label data
+											correlation tests (correlation, feature importance, chi2 and anova f value)
+											select k best
+											preprocessing -> standardize
+											preprocessing -> create user cubes
+											flatten cubes into vectors
+											save vectors
 
-one file for feature engineering        load data
-																				create CNN
-																				apply CNN
-																				visualize features
-																				save features
+ensemble classifier 	create models (SVM, bayesian, random forest, mlp)
+											train using K-fold with replacement
+											test
+											save model
+											predict
 
-one file for correlation test			load data
-																	apply correlation tests
-																	select columns based on significance
-																	save only needed
+feature engineering 	preprocessing -> standardize
+											preprocessing -> create user cubes
+											create CNN
+											forward pass CNN
+											visualize features
+											save features
 
+clustering 						k-means
+											cluster analysis
 
-MAJOR PROBLEM: only 908 labeled records
-			K-fold with replacement
 
 TODO:
 normalize areas? keep as ordinal?
@@ -34,8 +40,6 @@ sample algorithms on given data
 ensemble
 
 silhouettes samples for cluster membership
-
-save only as cPickle for faster read write
 
 
 
