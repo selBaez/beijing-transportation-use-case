@@ -12,6 +12,8 @@ import argparse
 import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
+import warnings
+warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 import random, cPickle, csv
 from sklearn.preprocessing import StandardScaler
 
@@ -43,11 +45,11 @@ def _labelData(data, labelsDir):
     Get card codes whose label is available and return commuters and non-commuters datasets
     """
     # Load label sets
-    commuters = np.loadtxt(labelsDir+'commuterCardCodes.txt')
-    non_commuters = np.loadtxt(labelsDir+'nonCommuterCardCodes.txt')
+    commutersCodes = np.loadtxt(labelsDir+'commuterCardCodes.txt')
+    nonCommutersCodes = np.loadtxt(labelsDir+'nonCommuterCardCodes.txt')
 
     # Assign label
-    data['LABEL'] = data['CARD_CODE'].apply(lambda x : _matchLabel(x, commuters, non_commuters) )
+    data['LABEL'] = data['CARD_CODE'].apply(lambda x : _matchLabel(x, commutersCodes, nonCommutersCodes) )
 
     # Eliminate records without labels
     data, numUnlabeled = shared._filter(data, data[~data['LABEL'].isnull()], "no label available")
@@ -98,33 +100,77 @@ def _standardize(data):
 
     return data
 
-def _byCardCode(data):
+def _buildCubes(data):
     """
-    structure per card code
+    Structure per card code
     """
-    # save groups in new frame with index card code
+    # Organize cards per code
     data = list(data.groupby('CARD_CODE'))
+
+    # Sample in case we are debugging
+    if FLAGS.scriptMode == 'short':
+        data = random.sample(data, 50)
+
     print(len(data), ' card codes found')
 
-    # print(list(data[range(4)+range(8,12)].groupby(data['CARD_CODE']))[2])
+    # Dictionary per class
+    commutersCubes = {}
+    nonCommutersCubes = {}
 
-    return data
+    for userCode, userTrips in data:
+        if FLAGS.verbose == 'True': print('code:', userCode, 'label:', userTrips['LABEL'][0], 'number of trips:', userTrips['NUM_TRIPS'][0])
 
-def _store(data, className):
+        if userTrips['LABEL'][0] == 1.0:
+            # cube is 30 x 24 x 26 TODO: change 16 to 30
+            userCube = commutersCubes.setdefault(userCode, np.zeros(shape=(24,16,26)))
+
+            for index, trip in userTrips.iterrows():
+                y = trip['START_HOUR']
+                x = trip['DAY']
+                if FLAGS.verbose == 'True': print('coordinates: ',x, y, 'trip')#, trip[1:-1].values)
+                userCube[y, x-1, :] = trip[1:-1].values
+
+            commutersCubes[userCode] = userCube
+
+        else:
+            # cube is 30 x 24 x 26
+            userCube = nonCommutersCubes.setdefault(userCode, np.zeros(shape=(24,16,26)))
+
+            for index, trip in userTrips.iterrows():
+                y = trip['START_HOUR']
+                x = trip['DAY']
+                if FLAGS.verbose == 'True': print('coordinates: ',x, y, 'trip')#, trip[1:-1].values)
+                userCube[y, x-1, :] = trip[1:-1].values
+
+            nonCommutersCubes[userCode] = userCube
+
+    # Sanity check
+    code, cube = commutersCubes.popitem()
+    print('\ncommuter sample', code)
+    print(cube[:,:,0])
+    # if FLAGS.plot_distr == 'True':
+    shared._featureSliceHeatmap('commuter-day', cube[:,:,0])
+
+    code, cube = nonCommutersCubes.popitem()
+    print('\nnon commuter sample', code)
+    print(cube[:,:,0])
+    # if FLAGS.plot_distr == 'True':
+    shared._featureSliceHeatmap('NonCommuter-day', cube[:,:,0])
+
+    return commutersCubes, nonCommutersCubes
+
+def _storeDataframe(data, className):
     """
-    Store data for use in model
+    Store pickle and csv data for use in model
     """
     data.to_pickle(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.pkl')
     data.to_csv(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.csv')
 
-def _storeGroups(data, className):
+def _storeCubes(data, className):
     """
-    Store data for use in model
+    Store pickle
     """
     with open(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.pkl', 'w') as fp: cPickle.dump(data, fp)
-    with open(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.csv', 'w') as fp:
-        wr = csv.writer(fp, quoting=csv.QUOTE_ALL)
-        wr.writerows(data)
 
 def preprocess():
     """
@@ -140,25 +186,27 @@ def preprocess():
     print("---------------------- Label and select data ----------------------")
     data = _labelData(data, paths.LABELS_DIR_DEFAULT)
 
-    #print("------------------- Create train  and test sets -------------------")
-    #TODO divide and add labels?
-
     if FLAGS.std == 'True':
         print("-------------------------- Standardizing --------------------------")
         data = _standardize(data)
 
     if FLAGS.plot_distr == 'True':
-        print("----------------- Visualize standardized data -----------------")
+        print("------------------- Visualize standardized data -------------------")
         _visualize(data, 'standardized')
 
-    print("-------------------------- Storing  data --------------------------")
-    _store(data, 'general')
+    #print("------------------- Create train  and test sets -------------------")
+    #TODO divide and add labels?
 
-    print("----------------------- Group by  card code -----------------------")
-    data = _byCardCode(data)
+    print("------------------------ Storing dataframe ------------------------")
+    _storeDataframe(data, 'general')
 
-    print("-------------------------- Storing  data --------------------------")
-    _storeGroups(data, 'groups')
+    print("--------------------------- Build cubes ---------------------------")
+    commutersCubes, nonCommutersCubes = _buildCubes(data)
+
+
+    print("-------------------------- Storing cubes --------------------------")
+    _storeCubes(commutersCubes, 'commutersCubes')
+    _storeCubes(nonCommutersCubes, 'nonCommutersCubes')
 
 def print_flags():
     """

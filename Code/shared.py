@@ -51,6 +51,21 @@ def _classificationHeatmap(name, matrix, n_classes, classes):
     plt.savefig(paths.PLOT_DIR_DEFAULT+'heatmaps/'+name+'.png', format='png')
     plt.close()
 
+def _featureSliceHeatmap(name, matrix):#, n_classes, classes):
+    """
+    Plot heatmap of confusion matrix
+    """
+    fig, ax = plt.subplots()
+    sns.heatmap(matrix)#, annot=True, fmt="f", vmin=0, vmax=1)
+
+    plt.xticks(range(1, matrix.shape[1]))#, classes, rotation=0, ha='left', fontsize=15)
+    # plt.yticks(range(n_classes), reversed(classes), rotation=0, va='bottom', fontsize=15)
+    plt.xlabel('Days')
+    plt.ylabel('Hours')
+    plt.title(name)
+    plt.tight_layout()
+    plt.savefig(paths.PLOT_DIR_DEFAULT+'heatmaps/'+name+'.png', format='png')
+    plt.close()
 
 def _plotDistributionCompare(sample1, sample2, variable_name, labels, bins=None, xticks=None):
     """
