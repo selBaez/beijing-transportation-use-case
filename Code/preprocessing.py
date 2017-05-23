@@ -100,10 +100,21 @@ def _standardize(data):
 
     return data
 
-def _buildCubes(data):
+def _buildCubes(data, createDict):
     """
     Structure per card code
     """
+    # Dictionary per class
+    if createDict == 'True':
+        # Create dictionaries
+        print('Creating dictionaries for cubes')
+        commutersCubes = {}
+        nonCommutersCubes = {}
+    else:
+        # Load existing dictionaries
+        with open(paths.CUBES_DIR_DEFAULT+'commuters.pkl', 'r') as fp: commutersCubes = cPickle.load(fp)
+        with open(paths.CUBES_DIR_DEFAULT+'nonCommuters.pkl', 'r') as fp: nonCommutersCubes = cPickle.load(fp)
+
     # Organize cards per code
     data = list(data.groupby('CARD_CODE'))
 
@@ -113,9 +124,6 @@ def _buildCubes(data):
 
     print(len(data), ' card codes found')
 
-    # Dictionary per class
-    commutersCubes = {}
-    nonCommutersCubes = {}
 
     for userCode, userTrips in data:
         if FLAGS.verbose == 'True': print('code:', userCode, 'label:', userTrips['LABEL'][0], 'number of trips:', userTrips['NUM_TRIPS'][0])
@@ -146,31 +154,33 @@ def _buildCubes(data):
 
     # Sanity check
     code, cube = commutersCubes.popitem()
-    print('\ncommuter sample', code)
-    print(cube[:,:,0])
-    # if FLAGS.plot_distr == 'True':
-    shared._featureSliceHeatmap('commuter-day', cube[:,:,0])
+    if FLAGS.verbose == 'True':
+        print('\ncommuter sample', code)
+        print(cube[:,:,0])
+    if FLAGS.plot_distr == 'True':
+        shared._featureSliceHeatmap('commuter-day', cube[:,:,0])
 
     code, cube = nonCommutersCubes.popitem()
-    print('\nnon commuter sample', code)
-    print(cube[:,:,0])
-    # if FLAGS.plot_distr == 'True':
-    shared._featureSliceHeatmap('NonCommuter-day', cube[:,:,0])
+    if FLAGS.verbose == 'True':
+        print('\nnon commuter sample', code)
+        print(cube[:,:,0])
+    if FLAGS.plot_distr == 'True':
+        shared._featureSliceHeatmap('NonCommuter-day', cube[:,:,0])
 
     return commutersCubes, nonCommutersCubes
 
-def _storeDataframe(data, className):
+def _storeDataframe(data):
     """
     Store pickle and csv data for use in model
     """
-    data.to_pickle(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.pkl')
-    data.to_csv(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.csv')
+    data.to_pickle(paths.PREPROCESSED_FILE_DEFAULT+'.pkl')
+    data.to_csv(paths.PREPROCESSED_FILE_DEFAULT+'.csv')
 
 def _storeCubes(data, className):
     """
     Store pickle
     """
-    with open(paths.PREPROCESSED_FILE_DEFAULT+'_'+className+'.pkl', 'w') as fp: cPickle.dump(data, fp)
+    with open(paths.CUBES_DIR_DEFAULT+className+'.pkl', 'w') as fp: cPickle.dump(data, fp)
 
 def preprocess():
     """
@@ -194,19 +204,15 @@ def preprocess():
         print("------------------- Visualize standardized data -------------------")
         _visualize(data, 'standardized')
 
-    #print("------------------- Create train  and test sets -------------------")
-    #TODO divide and add labels?
-
     print("------------------------ Storing dataframe ------------------------")
-    _storeDataframe(data, 'general')
+    _storeDataframe(data)
 
     print("--------------------------- Build cubes ---------------------------")
-    commutersCubes, nonCommutersCubes = _buildCubes(data)
-
+    commutersCubes, nonCommutersCubes = _buildCubes(data, FLAGS.create_cubeDict)
 
     print("-------------------------- Storing cubes --------------------------")
-    _storeCubes(commutersCubes, 'commutersCubes')
-    _storeCubes(nonCommutersCubes, 'nonCommutersCubes')
+    _storeCubes(commutersCubes, 'commuters')
+    _storeCubes(nonCommutersCubes, 'nonCommuters')
 
 def print_flags():
     """
@@ -229,10 +235,13 @@ if __name__ == '__main__':
                         help='Display parse route details.')
     parser.add_argument('--plot_distr', type = str, default = 'False',
                         help='Boolean to decide if we plot distributions.')
-    parser.add_argument('--scriptMode', type = str, default = 'short',
+    parser.add_argument('--scriptMode', type = str, default = 'long',
                         help='Run with long  or short dataset.')
     parser.add_argument('--std', type = str, default = 'False',
                         help='Standardize features.')
+    parser.add_argument('--create_cubeDict', type = str, default = 'False',
+                        help='Create cube vocabularies from given data. If False, previously saved dictionaries will be loaded')
+
     #TODO: labeled or unlabeled? (labeled includes searching for codes)
 
     FLAGS, unparsed = parser.parse_known_args()

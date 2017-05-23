@@ -196,7 +196,7 @@ def _parseTrips(data, modes, createVoc):
         with open(paths.VOC_DIR_DEFAULT+'_lines.pkl', 'r') as fp: lines = cPickle.load(fp)
         with open(paths.VOC_DIR_DEFAULT+'_stops.pkl', 'r') as fp: stops = cPickle.load(fp)
 
-    # Reduce dataset size since we are just debugging
+    # Reduce dataset size if we are just debugging
     if FLAGS.scriptMode == 'short':
         indices = random.sample(data.index, 5)
         data = data.ix[indices]
