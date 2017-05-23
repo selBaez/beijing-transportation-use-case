@@ -49,20 +49,11 @@ def correlationAnalysis():
         shared._matrixHeatmap('NonCommuter Correlation', non_commuters_correlationsMatrix, n_attributes, attributes)
 
     print("---------------------- Feature  importance ------------------------")
-    # With card code
-    samples = data[attributes[0:-1]].values
-    labels = data[attributes[-1]].values
-
-    model = ExtraTreesClassifier()
-    model.fit(samples, labels)
-
-    if FLAGS.plot_distr == 'True':
-        shared._featureBar('Feature Importance-With Code', model.feature_importances_, n_attributes-1, attributes[0:-1])
-
     # Exclude card code
     samples = data[attributes[1:-1]].values
     labels = data[attributes[-1]].values
 
+    model = ExtraTreesClassifier()
     model.fit(samples, labels)
 
     if FLAGS.plot_distr == 'True':

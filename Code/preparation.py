@@ -260,6 +260,7 @@ def _orderFeatures(data):
     """
     Order features by: General, then spatial boarding, then spatial alighting
     """
+    print("Order by type of feature: general then spatial")
     order = ['CARD_CODE', 'DAY', 'WEEKDAY', 'PATH_LINK', 'TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_NUM', 'TRANSFER_TIME_AVG', \
             'TRANSFER_TIME_SUM', 'START_TIME', 'END_TIME', 'START_HOUR', 'END_HOUR', 'TRANSFER_DETAIL', 'NUM_TRIPS', \
             'ON_AREA', 'OFF_AREA', \
@@ -284,22 +285,24 @@ def prepare():
     print("---------------------------- Load data ----------------------------")
     data = _loadData(paths.RAW_FILE_DEFAULT)
 
-    print("---------------------------- Cleaning -----------------------------")
+    print("----------------------------  Cleaning ----------------------------")
     data = _clean(data, FLAGS.min_records)
 
-    print("-------------------------- Parsing  trip --------------------------")
+    print("------------------ Extract  relevant information ------------------")
+
+    print("               ----------- Parsing  trip ------------              ")
     data = _parseTrips(data, MODE_DICT_DEFAULT, FLAGS.create_voc)
 
-    print("------------------ Recalculating transfer number ------------------")
-    data = _countTransfers(data)
-
-    print("-------------------- Creating time stamp bins ---------------------")
+    print("               ----- Creating time stamp bins ------               ")
     data = _to_time_bins(data)
 
-    print("--------------------- Extract day and weekday ---------------------")
+    print("               ------ Extract day  attributes ------               ")
     data = _weekday(data)
 
-    print("------------------------- Order  features -------------------------")
+    print("----------------------------  Patching ----------------------------")
+    data = _countTransfers(data)
+
+    print("---------------------------  Formatting ---------------------------")
     data = _orderFeatures(data)
 
     print("-------------------------- Storing  data --------------------------")
