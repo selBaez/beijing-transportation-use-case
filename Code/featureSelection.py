@@ -1,10 +1,6 @@
 """
 This module implements feature selection for commuters classification.
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import pandas as pd
 import numpy as np
@@ -27,14 +23,13 @@ def correlationAnalysis():
     Performs training and reports evaluation (on training and validation sets)
     """
     print("---------------------------- Load data ----------------------------")
-    data = _loadData(paths.PREPROCESSED_FILE_DEFAULT+'_general.csv')
+    data = _loadData(paths.PREPROCESSED_FILE_DEFAULT+'_labeled.csv')
 
     print("------------------- Separate dataset  per class -------------------")
-    # Filter non relevant records
     commutersData = data[data['LABEL'] == 1]
     non_commutersData = data[data['LABEL'] == 0]
 
-    print("-------------------------- Correlation --------------------------")
+    print("-------------------- Correlation of attributes --------------------")
     attributes = data.select_dtypes(include=[np.number]).columns.values.tolist()
     n_attributes = len(attributes)
 
@@ -43,7 +38,7 @@ def correlationAnalysis():
     non_commuters_correlationsMatrix = non_commutersData.corr()
 
     if FLAGS.plot_distr == 'True':
-        print("-------------------- Plot correlation  heatmap --------------------")
+    print("               ----- Plot correlation heatmap -----                ")
         shared._matrixHeatmap('General Correlation', correlationsMatrix, n_attributes, attributes)
         shared._matrixHeatmap('Commuter Correlation', commuters_correlationsMatrix, n_attributes, attributes)
         shared._matrixHeatmap('NonCommuter Correlation', non_commuters_correlationsMatrix, n_attributes, attributes)

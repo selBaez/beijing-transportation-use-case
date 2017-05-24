@@ -7,7 +7,7 @@ preprocessing					label data																																						DONE
 											standardize																																						Refactor parameters
 											create user cubes/vectors																															DONE
 
-feature selection 		preprocessing -> label data
+feature selection 		preprocessing -> label data																														DONE
 											correlation tests (correlation, feature importance, chi2 and anova f value)
 											select k best
 											preprocessing -> standardize

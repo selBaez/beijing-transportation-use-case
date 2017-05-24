@@ -169,12 +169,12 @@ def _buildCubes(data, createDict):
 
     return commutersCubes, nonCommutersCubes
 
-def _storeDataframe(data):
+def _storeDataframe(data, name):
     """
     Store pickle and csv data for use in model
     """
-    data.to_pickle(paths.PREPROCESSED_FILE_DEFAULT+'.pkl')
-    data.to_csv(paths.PREPROCESSED_FILE_DEFAULT+'.csv')
+    data.to_pickle(paths.PREPROCESSED_FILE_DEFAULT+'_'+name+'.pkl')
+    data.to_csv(paths.PREPROCESSED_FILE_DEFAULT+'_'+name+'.csv')
 
 def _storeCubes(data, className):
     """
@@ -196,16 +196,18 @@ def preprocess():
     print("---------------------- Label and select data ----------------------")
     data = _labelData(data, paths.LABELS_DIR_DEFAULT)
 
+    print("------------------------ Storing dataframe ------------------------")
+    _storeDataframe(data, 'labeled')
+
     if FLAGS.std == 'True':
         print("-------------------------- Standardizing --------------------------")
         data = _standardize(data)
+        print("------------------------ Storing dataframe ------------------------")
+        _storeDataframe(data, 'labeled-std')
 
     if FLAGS.plot_distr == 'True':
         print("------------------- Visualize standardized data -------------------")
         _visualize(data, 'standardized')
-
-    print("------------------------ Storing dataframe ------------------------")
-    _storeDataframe(data)
 
     print("--------------------------- Build cubes ---------------------------")
     commutersCubes, nonCommutersCubes = _buildCubes(data, FLAGS.create_cubeDict)
@@ -237,7 +239,7 @@ if __name__ == '__main__':
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--scriptMode', type = str, default = 'long',
                         help='Run with long  or short dataset.')
-    parser.add_argument('--std', type = str, default = 'False',
+    parser.add_argument('--std', type = str, default = 'True',
                         help='Standardize features.')
     parser.add_argument('--create_cubeDict', type = str, default = 'False',
                         help='Create cube vocabularies from given data. If False, previously saved dictionaries will be loaded')
