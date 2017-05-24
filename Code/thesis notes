@@ -21,26 +21,26 @@ ensemble classifier 	create models (SVM, bayesian, random forest, mlp)
 											test
 											save model
 											predict
+											save card codes and their labels
 
 feature engineering 	preprocessing -> standardize
 											preprocessing -> create user cubes
-											create CNN
-											forward pass CNN
-											visualize features
-											save features
+											create convolutional autoencoder																												Needs to be tested
+											train encoder																																						Needs to be tested
+											encode samples																																					Needs to be tested
+											visualize low dimensional data																													Needs to be tested
+											save data																																								DONE
 
 clustering 						k-means
-											cluster analysis (silhouettes samples for cluster memebership)
+											cluster analysis (silhouettes samples for cluster membership)
 
 
 TODO:
 normalize areas? keep as ordinal?
 num of transfer as pie chart
 
-
 Papers to get:
 Reconstructing individual mobility from smart card transactions: a collaborative space alignment approach
-
 
 Improvements to report:
 transfer time focus on tail

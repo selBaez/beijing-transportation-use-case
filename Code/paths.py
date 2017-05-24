@@ -17,10 +17,16 @@ VOC_DIR_DEFAULT = '../Data/vocabularies/fullVocabulary'
 # Cubes
 CUBES_DIR_DEFAULT = '../Data/sets/cubes/'
 
+# Low dimensionality representation
+LOWDIM_DIR_DEFAULT = '../Data/sets/lowDim/'
+
 # Plots
 PLOT_DIR_DEFAULT = '../Code/Plots/'
-LABELS_DIR_DEFAULT = '../Data/labels/'
+
+# TensorBoard logs
+LOG_DIR_DEFAULT = '../Code/Logs/'
 
 # Resources
+LABELS_DIR_DEFAULT = '../Data/labels/'
 PREVIOUS_DIR_DEFAULT = './Previous work/commuting-classifier/'
 ############ --- END default directories--- ############

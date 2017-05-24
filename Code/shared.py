@@ -154,6 +154,18 @@ def _plotPie(name, sizes, labels):
     plt.savefig(paths.PLOT_DIR_DEFAULT+'pie/'+name+'.png', format='png')
     plt.close()
 
+def _lowDimFeaturesScatter(feature_name, features):
+    """
+    Scatter plot representing the low dimensional features
+    """
+    fig, ax = plt.subplots()
+    plt.scatter(features[:,0], features[:,1])
+
+    plt.title('Low dimenasional features')
+    plt.tight_layout()
+    plt.savefig(paths.PLOT_DIR_DEFAULT+'scatter/'+feature_name+'.png', format='png')
+    plt.close()
+
 
 ###################################################### Pandas ######################################################
 
