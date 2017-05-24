@@ -16,18 +16,25 @@ def _cleanCode(code):
     return int(cleanCode)
 
 
-# Read data
-dataCom = pd.read_csv(paths.PREVIOUS_DIR_DEFAULT+'Commuter_processed_data.txt', sep=" ", header = None)
-dataNonCom = pd.read_csv(paths.PREVIOUS_DIR_DEFAULT+'NonCommuter_processed_data.txt', sep=" ", header = None)
+def main(_):
+    """
+    Main function
+    """
+    # Read data
+    dataCom = pd.read_csv(paths.PREVIOUS_DIR_DEFAULT+'Commuter_processed_data.txt', sep=" ", header = None)
+    dataNonCom = pd.read_csv(paths.PREVIOUS_DIR_DEFAULT+'NonCommuter_processed_data.txt', sep=" ", header = None)
 
-# Get only codes
-dataCom = dataCom[0]
-dataNonCom = dataNonCom[0]
+    # Get only codes
+    dataCom = dataCom[0]
+    dataNonCom = dataNonCom[0]
 
-# Clean codes
-dataCom = dataCom.apply(lambda x: _cleanCode(x))
-dataNonCom = dataNonCom.apply(lambda x: _cleanCode(x))
+    # Clean codes
+    dataCom = dataCom.apply(lambda x: _cleanCode(x))
+    dataNonCom = dataNonCom.apply(lambda x: _cleanCode(x))
 
-# Save
-np.savetxt(paths.LABELS_DIR_DEFAULT+'commuterCardCodes.txt', dataCom.values, '%5.0f')
-np.savetxt(paths.LABELS_DIR_DEFAULT+'nonCommuterCardCodes.txt', dataNonCom.values, '%5.0f')
+    # Save
+    np.savetxt(paths.LABELS_DIR_DEFAULT+'commuterCardCodes.txt', dataCom.values, '%5.0f')
+    np.savetxt(paths.LABELS_DIR_DEFAULT+'nonCommuterCardCodes.txt', dataNonCom.values, '%5.0f')
+
+if __name__ == '__main__':
+    main(None)

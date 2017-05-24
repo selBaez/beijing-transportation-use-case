@@ -17,6 +17,7 @@ feature selection 		preprocessing -> label data																														DON
 
 ensemble classifier 	create models (SVM, bayesian, random forest, mlp)
 											train using K-fold with replacement
+											ensemble (adaboost or bagging)
 											test
 											save model
 											predict
@@ -29,18 +30,12 @@ feature engineering 	preprocessing -> standardize
 											save features
 
 clustering 						k-means
-											cluster analysis
+											cluster analysis (silhouettes samples for cluster memebership)
 
 
 TODO:
 normalize areas? keep as ordinal?
 num of transfer as pie chart
-
-sample algorithms on given data
-ensemble
-
-silhouettes samples for cluster membership
-
 
 
 Papers to get:

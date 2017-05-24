@@ -1,5 +1,5 @@
 """
-This module implements training and evaluation of an ensemble model for classification.
+This module implements training and evaluation of an ensemble model for commuter classification.
 """
 from __future__ import absolute_import
 from __future__ import division

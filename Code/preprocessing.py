@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-This module cleans and formats all the Yikatong smart card records.
+This module preprocess the Yikatong smart card records, labeling the records, standardizing the attributes and creating the 3D representation per user
 """
 
 from __future__ import absolute_import

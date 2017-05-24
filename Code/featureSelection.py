@@ -1,5 +1,5 @@
 """
-This module implements feature selection for commuters classification.
+This module implements feature selection for commuters classification via correlation tests 
 """
 import argparse
 import pandas as pd

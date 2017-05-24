@@ -1,5 +1,5 @@
 """
-This module contains the main functions shared across scripts.
+This module contains the main functions shared across scripts. Mainly done for visualization or Pandas dataframe manipulation.
 """
 import numpy as np
 import pandas as pd
@@ -9,6 +9,8 @@ import seaborn as sns
 import random
 
 import paths
+
+################################################## Visualization ##################################################
 
 def _featureBar(name, values, n_features, features):
     """
@@ -26,6 +28,7 @@ def _featureBar(name, values, n_features, features):
 def _matrixHeatmap(name, matrix, n_attributes, attributes):
     """
     Create heatmap of correlations
+    Not annotated values ranging from -1 to 1
     """
     fig, ax = plt.subplots()
     sns.heatmap(matrix, vmin=-1, vmax=1)
@@ -39,7 +42,8 @@ def _matrixHeatmap(name, matrix, n_attributes, attributes):
 
 def _classificationHeatmap(name, matrix, n_classes, classes):
     """
-    Plot heatmap of confusion matrix
+    Create heatmap for confusion matrix
+    Annotated values ranging from 0 to 1 (as they represent probabilities)
     """
     fig, ax = plt.subplots()
     sns.heatmap(matrix, annot=True, fmt="f", vmin=0, vmax=1)
@@ -51,12 +55,13 @@ def _classificationHeatmap(name, matrix, n_classes, classes):
     plt.savefig(paths.PLOT_DIR_DEFAULT+'heatmaps/'+name+'.png', format='png')
     plt.close()
 
-def _featureSliceHeatmap(name, matrix):#, n_classes, classes):
+def _featureSliceHeatmap(name, matrix):
     """
-    Plot heatmap of confusion matrix
+    Create heatmap of slice of user cube representing a feature in their monthly trips
+    Not annotated values with range according to distribution
     """
     fig, ax = plt.subplots()
-    sns.heatmap(matrix)#, annot=True, fmt="f", vmin=0, vmax=1)
+    sns.heatmap(matrix)
 
     plt.xticks(range(1, matrix.shape[1]+1), range(1, matrix.shape[1]+1), rotation=0, ha='right', fontsize=11)
     plt.yticks(range(matrix.shape[0]), reversed(range(matrix.shape[0])), rotation=0, va='bottom', fontsize=11)
@@ -69,7 +74,7 @@ def _featureSliceHeatmap(name, matrix):#, n_classes, classes):
 
 def _plotDistributionCompare(sample1, sample2, variable_name, labels, bins=None, xticks=None):
     """
-    Plot variables distribution with frequency histogram
+    Plot comparison of variables distribution with frequency histogram
     """
     # Plot variable frequency histogram
     fig, ax = plt.subplots()
@@ -148,6 +153,9 @@ def _plotPie(name, sizes, labels):
     # Save
     plt.savefig(paths.PLOT_DIR_DEFAULT+'pie/'+name+'.png', format='png')
     plt.close()
+
+
+###################################################### Pandas ######################################################
 
 def _filter(data, condition, motivation):
     """
