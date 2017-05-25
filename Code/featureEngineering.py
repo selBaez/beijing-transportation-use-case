@@ -83,6 +83,7 @@ def _visualize(encodedData):
     """
     manifold = TSNE(n_components=2, random_state=0)
     features = manifold.fit_transform(encodedData)
+    shared._lowDimFeaturesScatter('Encoded', features)
 
 def _store(encodedData):
     """

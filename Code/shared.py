@@ -154,12 +154,17 @@ def _plotPie(name, sizes, labels):
     plt.savefig(paths.PLOT_DIR_DEFAULT+'pie/'+name+'.png', format='png')
     plt.close()
 
-def _lowDimFeaturesScatter(feature_name, features):
+def _lowDimFeaturesScatter(feature_name, features, labels=None):
     """
     Scatter plot representing the low dimensional features
     """
     fig, ax = plt.subplots()
-    plt.scatter(features[:,0], features[:,1])
+
+    if labels = None:
+        plt.scatter(features[:,0], features[:,1])
+    else:
+        plt.scatter(features[:,0], features[:,1], c=labels.astype(int))
+
 
     plt.title('Low dimenasional features')
     plt.tight_layout()
