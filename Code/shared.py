@@ -160,7 +160,7 @@ def _lowDimFeaturesScatter(feature_name, features, labels=None):
     """
     fig, ax = plt.subplots()
 
-    if labels = None:
+    if labels == None:
         plt.scatter(features[:,0], features[:,1])
     else:
         plt.scatter(features[:,0], features[:,1], c=labels.astype(int))

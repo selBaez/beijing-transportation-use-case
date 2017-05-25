@@ -25,7 +25,7 @@ def _loadData(fileName):
     """
     # Ignore column 2 'DATA_LINK'
     data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9])
-    print(len(data.index), " records loaded")
+    print("{} records loaded".format(len(data.index)))
 
     return data
 
@@ -57,57 +57,15 @@ def _clean(data, min_records):
 
     return data
 
-def _createVocabularies(trips):
+def _saveVoc(lines, stops):
     """
-    Create LINE and STOPS vocabularies based on the data in the given trips
+    Save vocabularies to json for humans and pickle to load later
     """
-    # Split the trip into rides and gather components
-    lines = set()
-    stops = set()
-    for index, trip in trips.iteritems():
-        if FLAGS.verbose == 'True': print('Trip: ',trip)
-        rides = trip.split('->')
-        for ride in rides:
-            _, lineOrigin, stopOrigin, lineDestination, stopDestination = _extractTripFeatures(ride)
-            lines.add(lineOrigin)
-            lines.add(lineDestination)
-            stops.add(stopOrigin)
-            stops.add(stopDestination)
-
-    # Report length of vocabularies formed
-    print('     Combined lines found:  ',len(lines))
-    print('     Combined stops found:  ',len(stops))
-
-    # Turn into dictionaries
-    lines =  dict(zip(lines, map(str,range(len(lines)))))
-    stops = dict(zip(stops, map(str,range(len(stops)))))
-
-    # Sort them to have longest patterns replaced first
-    lines = OrderedDict(sorted(lines.items(), key=lambda t: len(t[0]), reverse=True))
-    stops = OrderedDict(sorted(stops.items(), key=lambda t: len(t[0]), reverse=True))
-
-    # Save as JSON for view and pickle for later use
     with open(paths.VOC_DIR_DEFAULT+'_lines.json', 'w') as fp: json.dump(lines, fp, indent=4, ensure_ascii=False)
     with open(paths.VOC_DIR_DEFAULT+'_stops.json', 'w') as fp: json.dump(stops, fp, indent=4, ensure_ascii=False)
 
     with open(paths.VOC_DIR_DEFAULT+'_lines.pkl', 'w') as fp: cPickle.dump(lines, fp)
     with open(paths.VOC_DIR_DEFAULT+'_stops.pkl', 'w') as fp: cPickle.dump(stops, fp)
-
-    return lines, stops
-
-def _extractOriginAndDestinationFeatures(trip):
-    """
-    Extract trip origin and destination features
-    """
-    rides = trip.split('->')
-
-    firstRide = rides[0]
-    lastRide = rides[-1]
-
-    modeOrigin, lineOrigin, stopOrigin, _, _ = _extractTripFeatures(firstRide)
-    modeDestination, _, _, lineDestination, stopDestination = _extractTripFeatures(lastRide)
-
-    return modeOrigin, modeDestination, lineOrigin, lineDestination, stopOrigin, stopDestination
 
 def _extractTripFeatures(ride):
     """
@@ -176,6 +134,97 @@ def _extractTripFeatures(ride):
             print('Failed at parsing bike ride:', ride)
             return 2, None, None, None, None
 
+def _extractOriginAndDestinationFeatures(trip):
+    """
+    Extract trip origin and destination features
+    """
+    rides = trip.split('->')
+
+    firstRide = rides[0]
+    lastRide = rides[-1]
+
+    modeOrigin, lineOrigin, stopOrigin, _, _ = _extractTripFeatures(firstRide)
+    modeDestination, _, _, lineDestination, stopDestination = _extractTripFeatures(lastRide)
+
+    return modeOrigin, modeDestination, lineOrigin, lineDestination, stopOrigin, stopDestination
+
+def _createVocabularies(trips):
+    """
+    Create LINE and STOPS vocabularies based on the data in the given trips
+    """
+    # Split the trip into rides and gather components
+    lines = set()
+    stops = set()
+    for index, trip in trips.iteritems():
+        if FLAGS.verbose == 'True': print('Trip: ',trip)
+        rides = trip.split('->')
+        for ride in rides:
+            _, lineOrigin, stopOrigin, lineDestination, stopDestination = _extractTripFeatures(ride)
+            lines.add(lineOrigin)
+            lines.add(lineDestination)
+            stops.add(stopOrigin)
+            stops.add(stopDestination)
+
+    # Report length of vocabularies formed
+    print('     Combined lines found:  {}'.format(len(lines)))
+    print('     Combined stops found:  {}'.format(len(stops)))
+
+    # Turn into dictionaries
+    lines =  dict(zip(lines, map(lambda x: str(x)+'-T',range(len(lines)))))
+    stops = dict(zip(stops, map(lambda x: str(x)+'-T',range(len(stops)))))
+
+    # Save updated vocabularies
+    _saveVoc(lines, stops)
+
+    return lines, stops
+
+def _updateVocabularies(data, lines, stops):
+    """
+    Find lines and routes that were not tokenized, and include them in vocabularies
+    """
+    print(data[['ON_LINE', 'OFF_LINE', 'ON_STOP', 'OFF_STOP']])
+
+    # Flag cases that were not replaced
+    data[['ON_LINE', 'FLAG_ON_LINE']] = data['ON_LINE'].str.split('-', expand=True)
+    data[['OFF_LINE', 'FLAG_OFF_LINE']] = data['OFF_LINE'].str.split('-', expand=True)
+    data[['ON_STOP', 'FLAG_ON_STOP']] = data['ON_STOP'].str.split('-', expand=True)
+    data[['OFF_STOP', 'FLAG_OFF_STOP']] = data['OFF_STOP'].str.split('-', expand=True)
+
+    # Find cases to add
+    lines_on = data['ON_LINE'][data['FLAG_ON_LINE'].isnull()]
+    lines_off = data['OFF_LINE'][data['FLAG_OFF_LINE'].isnull()]
+    stops_on = data['ON_STOP'][data['FLAG_ON_STOP'].isnull()]
+    stops_off = data['OFF_STOP'][data['FLAG_OFF_STOP'].isnull()]
+    # print(lines_on, lines_off, stops_on, stops_off)
+
+    # Create set to avoid duplicates
+    newLines = set(lines_on.values)
+    newLines.update(lines_off.values)
+    newStops = set(stops_on.values)
+    newStops.update(stops_off.values)
+
+    # Create dictionary starting from the last available ID in lines
+    newLines =  dict(zip(newLines, map(str,range(len(lines), len(lines)+len(newLines)))))
+    newStops =  dict(zip(newStops, map(str,range(len(stops), len(stops)+len(newStops)))))
+    print(newLines, newStops)
+
+    # Replace cases with new lines vocabulary
+    # TODO: fix replacement in place
+    lines_on.replace(to_replace=newLines, inplace=True)
+    lines_off.replace(to_replace=newLines, inplace=True)
+    stops_on.replace(to_replace=newStops, inplace=True)
+    stops_off.replace(to_replace=newStops, inplace=True)
+    print(lines_on, lines_off, stops_on, stops_off)
+
+    # Update lines vocabulary
+    lines.update(newLines)
+    stops.update(newStops)
+
+    # Save updated vocabularies
+    _saveVoc(lines, stops)
+
+    return data
+
 def _parseTrips(data, modes, createVoc):
     """
     Parse 'TRANSFER_DETAIL' column to get ON/OFF mode, line and stop tokenized information
@@ -185,7 +234,10 @@ def _parseTrips(data, modes, createVoc):
     if createVoc == 'True':
         # Create vocabularies
         print('Creating lines and stops vocabularies')
-        lines, stops = _createVocabularies(data['TRANSFER_DETAIL'])
+        if FLAGS.scriptMode == 'short':
+            indices = random.sample(data.index, 100)
+            sample = data.ix[indices]
+        lines, stops = _createVocabularies(sample['TRANSFER_DETAIL'])
     else:
         # Load existing vocabularies
         with open(paths.VOC_DIR_DEFAULT+'_lines.pkl', 'r') as fp: lines = cPickle.load(fp)
@@ -209,6 +261,9 @@ def _parseTrips(data, modes, createVoc):
     data['ON_STOP'].replace(to_replace=stops, inplace=True)
     data['OFF_STOP'].replace(to_replace=stops, inplace=True)
 
+    # Update vocabularies
+    data = _updateVocabularies(data, lines, stops)
+    print(data[['ON_LINE', 'OFF_LINE', 'ON_STOP', 'OFF_STOP']])
 
     return data
 
@@ -288,17 +343,17 @@ def prepare():
     print("               ----------- Parsing  trip ------------              ")
     data = _parseTrips(data, MODE_DICT_DEFAULT, FLAGS.create_voc)
 
-    print("               ----- Creating time stamp bins ------               ")
-    data = _to_time_bins(data)
-
-    print("               ------ Extract day  attributes ------               ")
-    data = _weekday(data)
-
-    print("----------------------------  Patching ----------------------------")
-    data = _countTransfers(data)
-
-    print("---------------------------  Formatting ---------------------------")
-    data = _orderFeatures(data)
+    # print("               ----- Creating time stamp bins ------               ")
+    # data = _to_time_bins(data)
+    #
+    # print("               ------ Extract day  attributes ------               ")
+    # data = _weekday(data)
+    #
+    # print("----------------------------  Patching ----------------------------")
+    # data = _countTransfers(data)
+    #
+    # print("---------------------------  Formatting ---------------------------")
+    # data = _orderFeatures(data)
 
     print("-------------------------- Storing  data --------------------------")
     _store(data)
@@ -328,9 +383,8 @@ if __name__ == '__main__':
                         help='Create lines/stops vocabularies from given data. If False, previously saved vocabularies will be used')
     parser.add_argument('--plot_distr', type = str, default = 'False',
                         help='Boolean to decide if we plot distributions.')
-    parser.add_argument('--scriptMode', type = str, default = 'long',
+    parser.add_argument('--scriptMode', type = str, default = 'short',
                         help='Run with long  or short dataset.')
-    #TODO: overwrite voc
 
     FLAGS, unparsed = parser.parse_known_args()
     main(None)
