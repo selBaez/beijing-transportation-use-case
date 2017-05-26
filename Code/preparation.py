@@ -182,14 +182,7 @@ def _updateVocabularies(data, lines, stops):
     """
     Find lines and routes that were not tokenized, and include them in vocabularies
     """
-    print(data[['ON_LINE', 'OFF_LINE', 'ON_STOP', 'OFF_STOP']])
-
-    # Flag cases that were not replaced
-    data[['ON_LINE', 'FLAG_ON_LINE']] = data['ON_LINE'].str.split('-', expand=True)
-    data[['OFF_LINE', 'FLAG_OFF_LINE']] = data['OFF_LINE'].str.split('-', expand=True)
-    data[['ON_STOP', 'FLAG_ON_STOP']] = data['ON_STOP'].str.split('-', expand=True)
-    data[['OFF_STOP', 'FLAG_OFF_STOP']] = data['OFF_STOP'].str.split('-', expand=True)
-
+    print('Updating vocabularies')
     # Find cases to add
     lines_on = data['ON_LINE'][data['FLAG_ON_LINE'].isnull()]
     lines_off = data['OFF_LINE'][data['FLAG_OFF_LINE'].isnull()]
@@ -203,18 +196,26 @@ def _updateVocabularies(data, lines, stops):
     newStops = set(stops_on.values)
     newStops.update(stops_off.values)
 
+    # Report length of vocabularies formed
+    print('     New lines found:  {}'.format(len(newLines)))
+    print('     New stops found:  {}'.format(len(newStops)))
+
     # Create dictionary starting from the last available ID in lines
     newLines =  dict(zip(newLines, map(str,range(len(lines), len(lines)+len(newLines)))))
     newStops =  dict(zip(newStops, map(str,range(len(stops), len(stops)+len(newStops)))))
     print(newLines, newStops)
 
     # Replace cases with new lines vocabulary
-    # TODO: fix replacement in place
     lines_on.replace(to_replace=newLines, inplace=True)
     lines_off.replace(to_replace=newLines, inplace=True)
     stops_on.replace(to_replace=newStops, inplace=True)
     stops_off.replace(to_replace=newStops, inplace=True)
-    print(lines_on, lines_off, stops_on, stops_off)
+
+    # Assign new replacements to main dataframe
+    data.loc[data['FLAG_ON_LINE'].isnull(), 'ON_LINE'] = lines_on
+    data.loc[data['FLAG_OFF_LINE'].isnull(), 'OFF_LINE'] = lines_off
+    data.loc[data['FLAG_ON_STOP'].isnull(), 'ON_STOP'] = stops_on
+    data.loc[data['FLAG_OFF_STOP'].isnull(), 'OFF_STOP'] = stops_off
 
     # Update lines vocabulary
     lines.update(newLines)
@@ -234,9 +235,6 @@ def _parseTrips(data, modes, createVoc):
     if createVoc == 'True':
         # Create vocabularies
         print('Creating lines and stops vocabularies')
-        if FLAGS.scriptMode == 'short':
-            indices = random.sample(data.index, 100)
-            sample = data.ix[indices]
         lines, stops = _createVocabularies(sample['TRANSFER_DETAIL'])
     else:
         # Load existing vocabularies
@@ -261,8 +259,17 @@ def _parseTrips(data, modes, createVoc):
     data['ON_STOP'].replace(to_replace=stops, inplace=True)
     data['OFF_STOP'].replace(to_replace=stops, inplace=True)
 
-    # Update vocabularies
-    data = _updateVocabularies(data, lines, stops)
+    # Flag cases that were not replaced
+    print(data[['ON_LINE', 'OFF_LINE', 'ON_STOP', 'OFF_STOP']])
+    data[['ON_LINE', 'FLAG_ON_LINE']] = data['ON_LINE'].str.split('-', expand=True)
+    data[['OFF_LINE', 'FLAG_OFF_LINE']] = data['OFF_LINE'].str.split('-', expand=True)
+    data[['ON_STOP', 'FLAG_ON_STOP']] = data['ON_STOP'].str.split('-', expand=True)
+    data[['OFF_STOP', 'FLAG_OFF_STOP']] = data['OFF_STOP'].str.split('-', expand=True)
+
+    # If the vocabulary was created on this run, we do not need to update
+    if createVoc != 'True':
+        # Update vocabularies
+        data = _updateVocabularies(data, lines, stops)
     print(data[['ON_LINE', 'OFF_LINE', 'ON_STOP', 'OFF_STOP']])
 
     return data
@@ -379,7 +386,7 @@ if __name__ == '__main__':
                         help='Display parse trip details.')
     parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
                         help='Traveler is required to have at least this number of records.')
-    parser.add_argument('--create_voc', type = str, default = 'False',
+    parser.add_argument('--create_voc', type = str, default = 'True',
                         help='Create lines/stops vocabularies from given data. If False, previously saved vocabularies will be used')
     parser.add_argument('--plot_distr', type = str, default = 'False',
                         help='Boolean to decide if we plot distributions.')
