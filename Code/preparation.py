@@ -72,8 +72,8 @@ def _saveVoc(lines, stops):
     """
     chinese, token = random.choice(list(lines.items()))
 
-    with open(paths.VOC_DIR_DEFAULT+'_lines.json', 'w') as fp: json.dump(lines, fp, indent=4, encoding='utf-8')
-    with open(paths.VOC_DIR_DEFAULT+'_stops.json', 'w') as fp: json.dump(stops, fp, indent=4, encoding='utf-8', ensure_ascii=True)
+    with open(paths.VOC_DIR_DEFAULT+'_lines.json', 'w') as fp: json.dump(lines, fp, indent=4)
+    with open(paths.VOC_DIR_DEFAULT+'_stops.json', 'w') as fp: json.dump(stops, fp, indent=4)
 
     with open(paths.VOC_DIR_DEFAULT+'_lines.pkl', 'w') as fp: cPickle.dump(lines, fp)
     with open(paths.VOC_DIR_DEFAULT+'_stops.pkl', 'w') as fp: cPickle.dump(stops, fp)
@@ -308,8 +308,10 @@ def _countTransfers(data):
     data['TRANSFER_TIME_AVG'] = np.where(data['TRANSFER_NUM'] > 0, data['TRANSFER_TIME_SUM'] / data['TRANSFER_NUM'], data['TRANSFER_NUM'])
 
     if FLAGS.plot_distr == 'True':
-        shared._plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers-'+paths.FILE_DEFAULT, labels=['Original', 'Recalculation'], bins='Auto')
-        shared._plotDistributionCompare(original['TRANSFER_TIME_AVG'], data['TRANSFER_TIME_AVG'], 'Transfer average time', labels=['Original', 'Recalculation'], bins=20)
+        shared._plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers', paths.FILE_DEFAULT, \
+        labels=['Original', 'Recalculation'], bins='Auto')
+        shared._plotDistributionCompare(original['TRANSFER_TIME_AVG'], data['TRANSFER_TIME_AVG'], 'Transfer average time', paths.FILE_DEFAULT, \
+        labels=['Original', 'Recalculation'], bins=20)
 
     return data
 
@@ -371,17 +373,17 @@ def prepare():
     print("               ----------- Parsing  trip ------------              ")
     data = _parseTrips(data, MODE_DICT_DEFAULT, FLAGS.create_voc)
     #
-    # print("               ----- Creating time stamp bins ------               ")
-    # data = _to_time_bins(data)
-    #
-    # print("               ------ Extract day  attributes ------               ")
-    # data = _weekday(data)
-    #
-    # print("----------------------------  Patching ----------------------------")
-    # data = _countTransfers(data)
-    #
-    # print("---------------------------  Formatting ---------------------------")
-    # data = _orderFeatures(data)
+    print("               ----- Creating time stamp bins ------               ")
+    data = _to_time_bins(data)
+
+    print("               ------ Extract day  attributes ------               ")
+    data = _weekday(data)
+
+    print("----------------------------  Patching ----------------------------")
+    data = _countTransfers(data)
+
+    print("---------------------------  Formatting ---------------------------")
+    data = _orderFeatures(data)
 
     print("-------------------------- Storing  data --------------------------")
     _store(data)
@@ -407,11 +409,11 @@ if __name__ == '__main__':
                         help='Display parse trip details.')
     parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
                         help='Traveler is required to have at least this number of records.')
-    parser.add_argument('--create_voc', type = str, default = 'False',
+    parser.add_argument('--create_voc', type = str, default = 'True',
                         help='Create lines/stops vocabularies from given data. If False, previously saved vocabularies will be used')
-    parser.add_argument('--plot_distr', type = str, default = 'False',
+    parser.add_argument('--plot_distr', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
-    parser.add_argument('--scriptMode', type = str, default = 'short',
+    parser.add_argument('--scriptMode', type = str, default = 'long',
                         help='Run with long  or short dataset.')
 
     FLAGS, unparsed = parser.parse_known_args()

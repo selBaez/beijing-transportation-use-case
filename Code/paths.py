@@ -25,7 +25,7 @@ PLOT_DIR_DEFAULT = '../Code/Plots/'
 
 # TensorBoard logs
 LOG_DIR_DEFAULT = '../Code/Logs/'
-STAT_DIR_DEFAULT = '../Code/Logs/dayStat/'
+STAT_DIR_DEFAULT = LOG_DIR_DEFAULT+'dayStat/'
 
 # Resources
 LABELS_DIR_DEFAULT = '../Data/labels/'

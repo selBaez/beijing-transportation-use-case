@@ -72,7 +72,7 @@ def _featureSliceHeatmap(name, matrix):
     plt.savefig(paths.PLOT_DIR_DEFAULT+'heatmaps/'+name+'.png', format='png')
     plt.close()
 
-def _plotDistributionCompare(sample1, sample2, variable_name, labels, bins=None, xticks=None):
+def _plotDistributionCompare(sample1, sample2, variable_name, fileName, labels, bins=None, xticks=None):
     """
     Plot comparison of variables distribution with frequency histogram
     """
@@ -98,7 +98,7 @@ def _plotDistributionCompare(sample1, sample2, variable_name, labels, bins=None,
     plt.tight_layout()
 
     # Save
-    plt.savefig(paths.PLOT_DIR_DEFAULT+'histograms/'+variable_name+'.png', format='png')
+    plt.savefig(paths.PLOT_DIR_DEFAULT+'histograms/'+variable_name+'/'+fileName+'.png', format='png')
     plt.close()
 
 def _plotDistribution(sample, variable_name, column_name, bins=None, xticks=None):
