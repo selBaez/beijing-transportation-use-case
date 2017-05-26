@@ -3,11 +3,13 @@
 """
 This module cleans and formats the Yikatong smart card records.
 """
+from __future__ import print_function
+
 import argparse
 import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
-import random, cPickle, re, json
+import random, cPickle, re, json, csv
 from collections import OrderedDict
 
 import paths, shared
@@ -24,7 +26,7 @@ def _loadData(fileName):
     Load csv data on pandas
     """
     # Ignore column 2 'DATA_LINK'
-    data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9])
+    data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9], encoding='cp936')
     print("{} records loaded".format(len(data.index)))
 
     return data
@@ -33,7 +35,7 @@ def _clean(data, min_records):
     """
     Remove rows with faulty data
     """
-    total = data
+    total = len(data.index)
 
     # Remove rows containing NaN
     data, numEmpty = shared._filter(data, data.dropna(), "empty fields")
@@ -51,9 +53,16 @@ def _clean(data, min_records):
     data['NUM_TRIPS'] = data.groupby('CARD_CODE')['TRAVEL_DISTANCE'].transform('count')
     data, numMin = shared._filter(data, data[data['NUM_TRIPS'] >= min_records], "users having insufficient associated records")
 
+    cleanStat = [numEmpty, numNull, numDistance, numTime, len(data.index)]
+
     if FLAGS.plot_distr == 'True':
-        shared._plotPie('faulty', [numEmpty, numNull, numDistance, numTime, len(data.index)],\
+        shared._plotPie('faulty', cleanStat,\
          ['Empty fields', 'Incomplete \ntransfer details', 'Negative distance', 'Negative travel time', 'Clean'])
+
+    # Save day statistics
+    with open(paths.STAT_DIR_DEFAULT+'cleaning.txt', 'a') as fp:
+        writer = csv.writer(fp, delimiter='\t')
+        writer.writerow([data['DATADAY'][0].day, total]+cleanStat)
 
     return data
 
@@ -61,8 +70,10 @@ def _saveVoc(lines, stops):
     """
     Save vocabularies to json for humans and pickle to load later
     """
-    with open(paths.VOC_DIR_DEFAULT+'_lines.json', 'w') as fp: json.dump(lines, fp, indent=4, ensure_ascii=False)
-    with open(paths.VOC_DIR_DEFAULT+'_stops.json', 'w') as fp: json.dump(stops, fp, indent=4, ensure_ascii=False)
+    chinese, token = random.choice(list(lines.items()))
+
+    with open(paths.VOC_DIR_DEFAULT+'_lines.json', 'w') as fp: json.dump(lines, fp, indent=4, encoding='utf-8')
+    with open(paths.VOC_DIR_DEFAULT+'_stops.json', 'w') as fp: json.dump(stops, fp, indent=4, encoding='utf-8', ensure_ascii=True)
 
     with open(paths.VOC_DIR_DEFAULT+'_lines.pkl', 'w') as fp: cPickle.dump(lines, fp)
     with open(paths.VOC_DIR_DEFAULT+'_stops.pkl', 'w') as fp: cPickle.dump(stops, fp)
@@ -85,54 +96,57 @@ def _extractTripFeatures(ride):
     if FLAGS.verbose == 'True': print('Ride details: ', ride)
 
     # Shared fields across modes
-    mode = r'(?P<mode>轨道|公交|自行车)'
     stop_b = r'(?P<stop_b>.+?)'
     stop_a = r'(?P<stop_a>.+?)'
 
-    # Match and classify by mode
-    pattern = re.compile(mode)
-    matcher = pattern.search(ride)
+    # ( mode . stuff - stuff )
+    mode = ride.split('.')[0].split('(')[-1]
 
-    # Parse metro
-    if matcher.group('mode') == '轨道':
-        line_b = r'(?P<line_b>.+?)'
-        line_a = r'(?P<line_a>.+?)'
+    try:
+        # Parse metro
+        if mode == u'轨道':
+            line_b = r'(?P<line_b>.+?)'
+            line_a = r'(?P<line_a>.+?)'
 
-        pattern = re.compile(r'\('+mode+r'[.]'+line_b+r'[:]'+stop_b+r'[-]'+line_a+r'[:]'+stop_a+r'[)]$')
-        matcher = pattern.search(ride)
+            pattern = re.compile(r'\('+mode+r'[.]'+line_b+r'[:]'+stop_b+r'[-]'+line_a+r'[:]'+stop_a+r'[)]$')
+            matcher = pattern.search(ride)
 
-        if matcher:
-            return 0, matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
-        else:
-            print('Failed at parsing metro ride:', ride)
-            return 0, None, None, None, None
+            if matcher:
+                return 0, matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
+            else:
+                print('Failed at parsing metro ride:', ride)
+                return 0, None, None, None, None
 
-    # Parse bus
-    elif matcher.group('mode') == '公交':
-        line_b = r'(?P<line_b>.+?)'
-        direction_b = r'(?P<direction_b>[(].+?[)])'
-        line_a = r'(?P<line_a>.+?)'
-        direction_a = r'(?P<direction_a>[(].+?[)])'
+        # Parse bus
+        elif mode == u'公交':
+            line_b = r'(?P<line_b>.+?)'
+            direction_b = r'(?P<direction_b>[(].+?[)])'
+            line_a = r'(?P<line_a>.+?)'
+            direction_a = r'(?P<direction_a>[(].+?[)])'
 
-        pattern = re.compile(r'\('+mode+r'[.]'+line_b+direction_b+r'[:]'+stop_b+r'[-]'+line_a+direction_a+r'[:]'+stop_a+r'[)]$')
-        matcher = pattern.search(ride)
+            pattern = re.compile(r'\('+mode+r'[.]'+line_b+direction_b+r'[:]'+stop_b+r'[-]'+line_a+direction_a+r'[:]'+stop_a+r'[)]$')
+            matcher = pattern.search(ride)
 
-        if matcher:
-            return 1, matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
-        else:
-            print('Failed at parsing bus ride:', ride)
-            return 1, None, None, None, None
+            if matcher:
+                return 1, matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
+            else:
+                print('Failed at parsing bus ride:', ride)
+                return 1, None, None, None, None
 
-    # Parse bike
-    elif matcher.group('mode') == '自行车':
-        pattern = re.compile(r'\('+mode+r'[.]'+stop_b+r'[-]'+stop_a+r'[)]$')
-        matcher = pattern.search(ride)
+        # Parse bike
+        elif mode == u'自行车':
+            pattern = re.compile(r'\('+mode+r'[.]'+stop_b+r'[-]'+stop_a+r'[)]$')
+            matcher = pattern.search(ride)
 
-        if matcher:
-            return 2, '0', matcher.group('stop_b'), '0', matcher.group('stop_a')
-        else:
-            print('Failed at parsing bike ride:', ride)
-            return 2, None, None, None, None
+            if matcher:
+                return 2, '0', matcher.group('stop_b'), '0', matcher.group('stop_a')
+            else:
+                print('Failed at parsing bike ride:', ride)
+                return 2, None, None, None, None
+
+    except AttributeError:
+        print('Failed at: ', ride)
+        return 4, None, None, None, None
 
 def _extractOriginAndDestinationFeatures(trip):
     """
@@ -200,26 +214,35 @@ def _updateVocabularies(data, lines, stops):
     print('     New lines found:  {}'.format(len(newLines)))
     print('     New stops found:  {}'.format(len(newStops)))
 
-    # Create dictionary starting from the last available ID in lines
-    newLines =  dict(zip(newLines, map(str,range(len(lines), len(lines)+len(newLines)))))
-    newStops =  dict(zip(newStops, map(str,range(len(stops), len(stops)+len(newStops)))))
-    print(newLines, newStops)
+    if len(newLines) != 0:
+        # Create dictionary starting from the last available ID in lines
+        newLines =  dict(zip(newLines, map(str,range(len(lines), len(lines)+len(newLines)))))
 
-    # Replace cases with new lines vocabulary
-    lines_on.replace(to_replace=newLines, inplace=True)
-    lines_off.replace(to_replace=newLines, inplace=True)
-    stops_on.replace(to_replace=newStops, inplace=True)
-    stops_off.replace(to_replace=newStops, inplace=True)
+        # Replace cases with new lines vocabulary
+        lines_on.replace(to_replace=newLines, inplace=True)
+        lines_off.replace(to_replace=newLines, inplace=True)
 
-    # Assign new replacements to main dataframe
-    data.loc[data['FLAG_ON_LINE'].isnull(), 'ON_LINE'] = lines_on
-    data.loc[data['FLAG_OFF_LINE'].isnull(), 'OFF_LINE'] = lines_off
-    data.loc[data['FLAG_ON_STOP'].isnull(), 'ON_STOP'] = stops_on
-    data.loc[data['FLAG_OFF_STOP'].isnull(), 'OFF_STOP'] = stops_off
+        # Assign new replacements to main dataframe
+        data.loc[data['FLAG_ON_LINE'].isnull(), 'ON_LINE'] = lines_on
+        data.loc[data['FLAG_OFF_LINE'].isnull(), 'OFF_LINE'] = lines_off
 
-    # Update lines vocabulary
-    lines.update(newLines)
-    stops.update(newStops)
+        # Update lines vocabulary
+        lines.update(newLines)
+
+    if len(newStops) != 0:
+        # Create dictionary starting from the last available ID in stops
+        newStops =  dict(zip(newStops, map(str,range(len(stops), len(stops)+len(newStops)))))
+
+        # Replace cases with new stops vocabulary
+        stops_on.replace(to_replace=newStops, inplace=True)
+        stops_off.replace(to_replace=newStops, inplace=True)
+
+        # Assign new replacements to main dataframe
+        data.loc[data['FLAG_ON_STOP'].isnull(), 'ON_STOP'] = stops_on
+        data.loc[data['FLAG_OFF_STOP'].isnull(), 'OFF_STOP'] = stops_off
+
+        # Update lines vocabulary
+        stops.update(newStops)
 
     # Save updated vocabularies
     _saveVoc(lines, stops)
@@ -235,7 +258,7 @@ def _parseTrips(data, modes, createVoc):
     if createVoc == 'True':
         # Create vocabularies
         print('Creating lines and stops vocabularies')
-        lines, stops = _createVocabularies(sample['TRANSFER_DETAIL'])
+        lines, stops = _createVocabularies(data['TRANSFER_DETAIL'])
     else:
         # Load existing vocabularies
         with open(paths.VOC_DIR_DEFAULT+'_lines.pkl', 'r') as fp: lines = cPickle.load(fp)
@@ -260,7 +283,6 @@ def _parseTrips(data, modes, createVoc):
     data['OFF_STOP'].replace(to_replace=stops, inplace=True)
 
     # Flag cases that were not replaced
-    print(data[['ON_LINE', 'OFF_LINE', 'ON_STOP', 'OFF_STOP']])
     data[['ON_LINE', 'FLAG_ON_LINE']] = data['ON_LINE'].str.split('-', expand=True)
     data[['OFF_LINE', 'FLAG_OFF_LINE']] = data['OFF_LINE'].str.split('-', expand=True)
     data[['ON_STOP', 'FLAG_ON_STOP']] = data['ON_STOP'].str.split('-', expand=True)
@@ -270,7 +292,6 @@ def _parseTrips(data, modes, createVoc):
     if createVoc != 'True':
         # Update vocabularies
         data = _updateVocabularies(data, lines, stops)
-    print(data[['ON_LINE', 'OFF_LINE', 'ON_STOP', 'OFF_STOP']])
 
     return data
 
@@ -287,7 +308,7 @@ def _countTransfers(data):
     data['TRANSFER_TIME_AVG'] = np.where(data['TRANSFER_NUM'] > 0, data['TRANSFER_TIME_SUM'] / data['TRANSFER_NUM'], data['TRANSFER_NUM'])
 
     if FLAGS.plot_distr == 'True':
-        shared._plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers', labels=['Original', 'Recalculation'], bins='Auto')
+        shared._plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers-'+paths.FILE_DEFAULT, labels=['Original', 'Recalculation'], bins='Auto')
         shared._plotDistributionCompare(original['TRANSFER_TIME_AVG'], data['TRANSFER_TIME_AVG'], 'Transfer average time', labels=['Original', 'Recalculation'], bins=20)
 
     return data
@@ -333,7 +354,7 @@ def _store(data):
     Store clean data
     """
     data.to_pickle(paths.CLEAN_FILE_DEFAULT+'.pkl')
-    data.to_csv(paths.CLEAN_FILE_DEFAULT+'.csv')
+    data.to_csv(paths.CLEAN_FILE_DEFAULT+'.csv', encoding='utf-8')
 
 def prepare():
     """
@@ -349,7 +370,7 @@ def prepare():
 
     print("               ----------- Parsing  trip ------------              ")
     data = _parseTrips(data, MODE_DICT_DEFAULT, FLAGS.create_voc)
-
+    #
     # print("               ----- Creating time stamp bins ------               ")
     # data = _to_time_bins(data)
     #
@@ -386,7 +407,7 @@ if __name__ == '__main__':
                         help='Display parse trip details.')
     parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
                         help='Traveler is required to have at least this number of records.')
-    parser.add_argument('--create_voc', type = str, default = 'True',
+    parser.add_argument('--create_voc', type = str, default = 'False',
                         help='Create lines/stops vocabularies from given data. If False, previously saved vocabularies will be used')
     parser.add_argument('--plot_distr', type = str, default = 'False',
                         help='Boolean to decide if we plot distributions.')

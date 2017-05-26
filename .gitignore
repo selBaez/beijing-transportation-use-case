@@ -107,3 +107,6 @@ Data/labels/*
 # Heavy images not uploaded for now
 Report/images/*
 Code/Plots/*
+
+# Logs also ignored
+Code/Logs/*

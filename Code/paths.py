@@ -4,7 +4,7 @@ This module Contains the file names and directories where to read and write.
 
 ############ --- BEGIN default directories --- ############
 # File name
-FILE_DEFAULT = 'sample data(50000)'
+FILE_DEFAULT = 'xaa'
 
 # Main directories
 RAW_FILE_DEFAULT = '../Data/sets/raw/'+FILE_DEFAULT+'.csv'
@@ -25,6 +25,7 @@ PLOT_DIR_DEFAULT = '../Code/Plots/'
 
 # TensorBoard logs
 LOG_DIR_DEFAULT = '../Code/Logs/'
+STAT_DIR_DEFAULT = '../Code/Logs/dayStat/'
 
 # Resources
 LABELS_DIR_DEFAULT = '../Data/labels/'

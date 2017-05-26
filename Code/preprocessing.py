@@ -14,7 +14,7 @@ import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 import warnings
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
-import random, cPickle, csv
+import random, cPickle
 from sklearn.preprocessing import StandardScaler
 
 import paths, shared
