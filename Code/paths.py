@@ -6,10 +6,10 @@ This module Contains the file names and directories where to read and write.
 # File name
 FILE_DEFAULT = 'xaa'
 
-# Main directories
-RAW_FILE_DEFAULT = '../Data/sets/raw/'+FILE_DEFAULT+'.csv'
-CLEAN_FILE_DEFAULT = '../Data/sets/clean/'+FILE_DEFAULT
-PREPROCESSED_FILE_DEFAULT = '../Data/sets/preprocessed/'+FILE_DEFAULT
+# Data directories
+RAW_DIR_DEFAULT = '../Data/sets/raw/'
+CLEAN_DIR_DEFAULT = '../Data/sets/clean/'
+PREPROCESSED_DIR_DEFAULT = '../Data/sets/preprocessed/'
 
 # Vocabularies
 VOC_DIR_DEFAULT = '../Data/vocabularies/fullVocabulary'

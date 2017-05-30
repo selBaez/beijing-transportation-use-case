@@ -1,5 +1,5 @@
 """
-This module implements feature selection for commuters classification via correlation tests 
+This module implements feature selection for commuters classification via correlation tests
 """
 import argparse
 import pandas as pd
@@ -23,7 +23,7 @@ def correlationAnalysis():
     Performs training and reports evaluation (on training and validation sets)
     """
     print("---------------------------- Load data ----------------------------")
-    data = _loadData(paths.PREPROCESSED_FILE_DEFAULT+'_labeled.csv')
+    data = _loadData(paths.PREPROCESSED_DIR_DEFAULT+FLAGS.file+'_labeled.csv')
 
     print("------------------- Separate dataset  per class -------------------")
     commutersData = data[data['LABEL'] == 1]

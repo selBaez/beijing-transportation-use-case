@@ -110,3 +110,6 @@ Code/Plots/*
 
 # Logs also ignored
 Code/Logs/*
+
+# Notes to operate cluster
+Code/das5 notes.txt

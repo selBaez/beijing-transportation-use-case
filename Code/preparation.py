@@ -54,10 +54,10 @@ def _clean(data, min_records):
     data, numMin = shared._filter(data, data[data['NUM_TRIPS'] >= min_records], "users having insufficient associated records")
 
     cleanStat = [numEmpty, numNull, numDistance, numTime, len(data.index)]
+    labels = ['Empty fields', 'Incomplete \ntransfer details', 'Negative distance', 'Negative travel time', 'Clean']
 
-    if FLAGS.plot_distr == 'True':
-        shared._plotPie('faulty', cleanStat,\
-         ['Empty fields', 'Incomplete \ntransfer details', 'Negative distance', 'Negative travel time', 'Clean'])
+    if FLAGS.plot == 'True':
+        shared._plotPie(cleanStat, labels, 'faulty', FLAGS.file)
 
     # Save day statistics
     with open(paths.STAT_DIR_DEFAULT+'cleaning.txt', 'a') as fp:
@@ -300,17 +300,17 @@ def _countTransfers(data):
     Re calculate number of transfers, and transfer average time (which is dependent on the previous)
     """
     # Plot number of transfers before and after patching
-    if FLAGS.plot_distr == 'True':
+    if FLAGS.plot == 'True':
         original = data.copy()
 
     print("Recalculating transfer number and transfer average time")
     data['TRANSFER_NUM'] = data['TRANSFER_DETAIL'].str.count("->")
     data['TRANSFER_TIME_AVG'] = np.where(data['TRANSFER_NUM'] > 0, data['TRANSFER_TIME_SUM'] / data['TRANSFER_NUM'], data['TRANSFER_NUM'])
 
-    if FLAGS.plot_distr == 'True':
-        shared._plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers', paths.FILE_DEFAULT, \
+    if FLAGS.plot == 'True':
+        shared._plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers', 'patch', FLAGS.file, \
         labels=['Original', 'Recalculation'], bins='Auto')
-        shared._plotDistributionCompare(original['TRANSFER_TIME_AVG'], data['TRANSFER_TIME_AVG'], 'Transfer average time', paths.FILE_DEFAULT, \
+        shared._plotDistributionCompare(original['TRANSFER_TIME_AVG'], data['TRANSFER_TIME_AVG'], 'Transfer average time', 'patch', FLAGS.file, \
         labels=['Original', 'Recalculation'], bins=20)
 
     return data
@@ -355,15 +355,15 @@ def _store(data):
     """
     Store clean data
     """
-    data.to_pickle(paths.CLEAN_FILE_DEFAULT+'.pkl')
-    data.to_csv(paths.CLEAN_FILE_DEFAULT+'.csv', encoding='utf-8')
+    data.to_pickle(paths.CLEAN_DIR_DEFAULT+FLAGS.file+'.pkl')
+    data.to_csv(paths.CLEAN_DIR_DEFAULT+FLAGS.file+'.csv', encoding='utf-8')
 
 def prepare():
     """
     Read raw data, clean it, format it and store preprocessed data
     """
     print("---------------------------- Load data ----------------------------")
-    data = _loadData(paths.RAW_FILE_DEFAULT)
+    data = _loadData(paths.RAW_DIR_DEFAULT+FLAGS.file+'.csv')
 
     print("----------------------------  Cleaning ----------------------------")
     data = _clean(data, FLAGS.min_records)
@@ -405,13 +405,15 @@ def main(_):
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument('--file', type = str, default = paths.FILE_DEFAULT,
+                        help='File to prepare')
     parser.add_argument('--verbose', type = str, default = 'False',
                         help='Display parse trip details.')
     parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
                         help='Traveler is required to have at least this number of records.')
-    parser.add_argument('--create_voc', type = str, default = 'True',
+    parser.add_argument('--create_voc', type = str, default = 'False',
                         help='Create lines/stops vocabularies from given data. If False, previously saved vocabularies will be used')
-    parser.add_argument('--plot_distr', type = str, default = 'True',
+    parser.add_argument('--plot', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--scriptMode', type = str, default = 'long',
                         help='Run with long  or short dataset.')

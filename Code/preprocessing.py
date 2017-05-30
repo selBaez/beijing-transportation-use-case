@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+plot# -*- coding: utf-8 -*-
 
 """
 This module preprocess the Yikatong smart card records, labeling the records, standardizing the attributes and creating the 3D representation per user
@@ -54,13 +54,12 @@ def _labelData(data, labelsDir):
     # Eliminate records without labels
     data, numUnlabeled = shared._filter(data, data[~data['LABEL'].isnull()], "no label available")
 
-    if FLAGS.plot_distr == 'True':
-        shared._plotPie('unlabeled', [numUnlabeled, len(data.index)],\
-         ['Unlabeled', 'Labeled'])
+    if FLAGS.plot == 'True':
+        shared._plotPie([numUnlabeled, len(data.index)], ['Unlabeled', 'Labeled'], 'unlabeled', FLAGS.file)
 
     return data
 
-def _visualize(data, text, general=False):
+def _visualize(data, condition, general=False):
     # Sample 'size' random points
     size = 15 if FLAGS.scriptMode == 'short' else 450
 
@@ -70,23 +69,29 @@ def _visualize(data, text, general=False):
     if general == True:
         # Plot general features
         print("Plotting general distributions")
-        shared._plotDistributionCompare(sample['START_HOUR'], sample['END_HOUR'], 'Hour of trip', labels=['Start', 'End'], bins=24, xticks=[0, 24])
-        shared._plotDistribution(sample, 'Number of trips', 'NUM_TRIPS', bins='Auto', xticks=[0.0, 8.0])
-        shared._plotDistributionCompare(sample['ON_AREA'], sample['OFF_AREA'], 'District', labels= ['Boarding', 'Alighting'], bins=18) #Range 1:18
-        shared._plotDistributionCompare(sample['ON_TRAFFIC'], sample['OFF_TRAFFIC'], 'Small traffic area', labels= ['Boarding', 'Alighting'], bins=20) #Range 1:1911
-        shared._plotDistributionCompare(sample['ON_MIDDLEAREA'], sample['OFF_MIDDLEAREA'], 'Middle traffic area', labels= ['Boarding', 'Alighting'], bins=20) #Range 1:389
-        shared._plotDistributionCompare(sample['ON_BIGAREA'], sample['OFF_BIGAREA'], 'Big traffic area', labels= ['Boarding', 'Alighting'], bins=20) #Range 1:60
-        shared._plotDistributionCompare(sample['ON_RINGROAD'], sample['OFF_RINGROAD'], 'Ring road', labels= ['Boarding', 'Alighting'], bins=6) #Range 1:6
+        shared._plotDistributionCompare(sample['START_HOUR'], sample['END_HOUR'], 'Hour of trip', 'general', FLAGS.file, \
+        labels=['Start', 'End'], bins=24, xticks=[0, 24])
+        shared._plotDistribution(sample['NUM_TRIPS'], 'Number of trips', 'general', FLAGS.file, bins='Auto', xticks=[0.0, 8.0])
+        shared._plotDistributionCompare(sample['ON_AREA'], sample['OFF_AREA'], 'District',  'general', FLAGS.file, \
+        labels= ['Boarding', 'Alighting'], bins=18) #Range 1:18
+        shared._plotDistributionCompare(sample['ON_TRAFFIC'], sample['OFF_TRAFFIC'], 'Small traffic area',  'general', FLAGS.file, \
+        labels= ['Boarding', 'Alighting'], bins=20) #Range 1:1911
+        shared._plotDistributionCompare(sample['ON_MIDDLEAREA'], sample['OFF_MIDDLEAREA'], 'Middle traffic area',  'general', FLAGS.file, \
+        labels= ['Boarding', 'Alighting'], bins=20) #Range 1:389
+        shared._plotDistributionCompare(sample['ON_BIGAREA'], sample['OFF_BIGAREA'], 'Big traffic area',  'general', FLAGS.file, \
+        labels= ['Boarding', 'Alighting'], bins=20) #Range 1:60
+        shared._plotDistributionCompare(sample['ON_RINGROAD'], sample['OFF_RINGROAD'], 'Ring road',  'general', FLAGS.file, \
+        labels= ['Boarding', 'Alighting'], bins=6) #Range 1:6
 
     # Plot features to be standardized
-    print("Plotting "+text+" travel time and distance distributions")
-    shared._plotDistribution(sample, 'Travel time '+text, 'TRAVEL_TIME', bins=20)
-    shared._plotDistribution(sample, 'Travel distance '+text, 'TRAVEL_DISTANCE', bins=20)
-    shared._plotDistribution(sample, 'Total transfer time '+text, 'TRANSFER_TIME_SUM', bins=20)
-    shared._plotDistribution(sample, 'Average transfer time '+text, 'TRANSFER_TIME_AVG', bins=20)
+    print("Plotting "+condition+" travel time and distance distributions")
+    shared._plotDistribution(sample['TRAVEL_TIME'], 'Travel time ', condition, FLAGS.file, bins=20)
+    shared._plotDistribution(sample['TRAVEL_DISTANCE'], 'Travel distance ', condition, FLAGS.file, bins=20)
+    shared._plotDistribution(sample['TRANSFER_TIME_SUM'], 'Total transfer time ', condition, FLAGS.file, bins=20)
+    shared._plotDistribution(sample['TRANSFER_TIME_AVG'], 'Average transfer time ', condition, FLAGS.file, bins=20)
 
     # Plot standardized correlated features: time vs distance
-    shared._plotSeriesCorrelation(sample,'TRAVEL_DISTANCE','TRAVEL_TIME')
+    shared._plotSeriesCorrelation(sample,'TRAVEL_DISTANCE','TRAVEL_TIME', 'Travel distance vs time',condition, FLAGS.file)
 
 def _standardize(data):
     """
@@ -157,14 +162,14 @@ def _buildCubes(data, createDict):
     if FLAGS.verbose == 'True':
         print('\ncommuter sample', code)
         print(cube[:,:,0])
-    if FLAGS.plot_distr == 'True':
+    if FLAGS.plot == 'True':
         shared._featureSliceHeatmap('commuter-day', cube[:,:,0])
 
     code, cube = nonCommutersCubes.popitem()
     if FLAGS.verbose == 'True':
         print('\nnon commuter sample', code)
         print(cube[:,:,0])
-    if FLAGS.plot_distr == 'True':
+    if FLAGS.plot == 'True':
         shared._featureSliceHeatmap('NonCommuter-day', cube[:,:,0])
 
     return commutersCubes, nonCommutersCubes
@@ -173,8 +178,8 @@ def _storeDataframe(data, name):
     """
     Store pickle and csv data for use in model
     """
-    data.to_pickle(paths.PREPROCESSED_FILE_DEFAULT+'_'+name+'.pkl')
-    data.to_csv(paths.PREPROCESSED_FILE_DEFAULT+'_'+name+'.csv')
+    data.to_pickle(paths.PREPROCESSED_DIR_DEFAULT+FLAGS.file+'_'+name+'.pkl')
+    data.to_csv(paths.PREPROCESSED_DIR_DEFAULT+FLAGS.file+'_'+name+'.csv')
 
 def _storeCubes(data, className):
     """
@@ -187,9 +192,9 @@ def preprocess():
     Read raw data, clean it and store preprocessed data
     """
     print("---------------------------- Load data ----------------------------")
-    data = _loadData(paths.CLEAN_FILE_DEFAULT+'.csv')
+    data = _loadData(paths.CLEAN_DIR_DEFAULT+FLAGS.file+'.csv')
 
-    if FLAGS.plot_distr == 'True':
+    if FLAGS.plot == 'True':
         print("--------------------- Visualize  general data ---------------------")
         _visualize(data, 'original', general= True)
 
@@ -205,7 +210,7 @@ def preprocess():
         print("------------------------ Storing dataframe ------------------------")
         _storeDataframe(data, 'labeled-std')
 
-    if FLAGS.plot_distr == 'True':
+    if FLAGS.plot == 'True':
         print("------------------- Visualize standardized data -------------------")
         _visualize(data, 'standardized')
 
@@ -233,9 +238,11 @@ def main(_):
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument('--file', type = str, default = paths.FILE_DEFAULT,
+                        help='File to preprocess')
     parser.add_argument('--verbose', type = str, default = 'False',
                         help='Display parse route details.')
-    parser.add_argument('--plot_distr', type = str, default = 'False',
+    parser.add_argument('--plot', type = str, default = 'False',
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--scriptMode', type = str, default = 'long',
                         help='Run with long  or short dataset.')
