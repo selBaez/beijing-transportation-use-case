@@ -16,9 +16,7 @@ import paths, shared
 
 ############ --- BEGIN default constants --- ############
 MIN_RECORDS_DEFAULT = 0
-MODE_DICT_DEFAULT = {       '[(]轨道[.]' : '(R.',        # subway
-                            '[(]公交[.]' : '(B.',        # bus
-                            '[(]自行车[.]' : '(Z.'}      # bike
+MODES_DEFAULT = ['轨道', '公交', '自行车']      # subway, bus, bike
 ############ --- END default constants--- ############
 
 def _loadData(fileName):
@@ -26,12 +24,12 @@ def _loadData(fileName):
     Load csv data on pandas
     """
     # Ignore column 2 'DATA_LINK'
-    data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9], encoding='cp936')
+    data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9])#, encoding='cp936')
     print("{} records loaded".format(len(data.index)))
 
     return data
 
-def _minisample(data):
+def _sampleByCode(data):
     """
     Search for codes in sample codes
     """
@@ -43,7 +41,17 @@ def _minisample(data):
 
     return data
 
-def _clean(data, min_records):
+def _sampleByTrip(data):
+    """
+    Select 10,000 random records, or as much as possible
+    """
+    sampleSize = 10000 if len(data.index) > 10000 else len(data.index)
+    indices = random.sample(data.index, sampleSize)
+    data = data.ix[indices]
+
+    return data
+
+def _clean(data):
     """
     Remove rows with faulty data
     """
@@ -60,10 +68,6 @@ def _clean(data, min_records):
 
     # Remove records with travel distance <= 0
     data, numDistance = shared._filter(data, data[data['TRAVEL_DISTANCE'] > 0], "travel distance <= 0")
-
-    # Remove cards with less than min_records
-    data['NUM_TRIPS'] = data.groupby('CARD_CODE')['TRAVEL_DISTANCE'].transform('count')
-    data, numMin = shared._filter(data, data[data['NUM_TRIPS'] >= min_records], "users having insufficient associated records")
 
     cleanStat = [numEmpty, numNull, numDistance, numTime, len(data.index)]
     labels = ['Empty fields', 'Incomplete \ntransfer details', 'Negative distance', 'Negative travel time', 'Clean']
@@ -82,8 +86,6 @@ def _saveVoc(lines, stops):
     """
     Save vocabularies to json for humans and pickle to load later
     """
-    chinese, token = random.choice(list(lines.items()))
-
     with open(paths.VOC_DIR_DEFAULT+'_lines.json', 'w') as fp: json.dump(lines, fp, indent=4)
     with open(paths.VOC_DIR_DEFAULT+'_stops.json', 'w') as fp: json.dump(stops, fp, indent=4)
 
@@ -112,7 +114,7 @@ def _extractTripFeatures(ride):
         stop_a = r'(?P<stop_a>.+?)'
 
         # Parse metro
-        if mode == u'轨道':
+        if mode == MODES_DEFAULT[0]:
             line_b = r'(?P<line_b>.+?)'
             line_a = r'(?P<line_a>.+?)'
 
@@ -126,7 +128,7 @@ def _extractTripFeatures(ride):
                 return 1, None, None, None, None
 
         # Parse bus
-        elif mode == u'公交':
+        elif mode == MODES_DEFAULT[1]:
             line_b = r'(?P<line_b>.+?)'
             direction_b = r'(?P<direction_b>[(].+?[)])'
             line_a = r'(?P<line_a>.+?)'
@@ -142,7 +144,7 @@ def _extractTripFeatures(ride):
                 return 2, None, None, None, None
 
         # Parse bike
-        elif mode == u'自行车':
+        elif mode == MODES_DEFAULT[2]:
             pattern = re.compile(r'\('+mode+r'[.]'+stop_b+r'[-]'+stop_a+r'[)]$')
             matcher = pattern.search(ride)
 
@@ -257,11 +259,10 @@ def _updateVocabularies(data, lines, stops):
 
     return data
 
-def _parseTrips(data, modes, createVoc):
+def _parseTrips(data, createVoc):
     """
     Parse 'TRANSFER_DETAIL' column to get ON/OFF mode, line and stop tokenized information
     """
-
     # Determine which vocabulary to use
     if createVoc == 'True':
         # Create vocabularies
@@ -271,11 +272,6 @@ def _parseTrips(data, modes, createVoc):
         # Load existing vocabularies
         with open(paths.VOC_DIR_DEFAULT+'_lines.pkl', 'r') as fp: lines = cPickle.load(fp)
         with open(paths.VOC_DIR_DEFAULT+'_stops.pkl', 'r') as fp: stops = cPickle.load(fp)
-
-    # Reduce dataset size if we are just debugging
-    if FLAGS.scriptMode == 'short':
-        indices = random.sample(data.index, 50000)
-        data = data.ix[indices]
 
     # Retrieve on and off trip details
     data['ON_MODE'], data['OFF_MODE'], data['ON_LINE'], data['OFF_LINE'], data['ON_STOP'], data['OFF_STOP'] = zip(*data['TRANSFER_DETAIL'].apply(lambda x : _extractOriginAndDestinationFeatures(x)))
@@ -344,6 +340,14 @@ def _weekday(data):
 
     return data
 
+def _numTrips(data):
+    """
+    Count number of trips in this day
+    """
+    data['NUM_TRIPS'] = data.groupby('CARD_CODE')['TRAVEL_DISTANCE'].transform('count')
+
+    return data
+
 def _orderFeatures(data):
     """
     Order features by: General, then spatial boarding, then spatial alighting
@@ -366,8 +370,15 @@ def _store(data):
     """
     Store clean data
     """
-    # data.to_pickle(paths.CLEAN_DIR_DEFAULT+FLAGS.file+'.pkl')
-    data.to_csv(paths.CLEAN_DIR_DEFAULT+FLAGS.file+'.csv', encoding='utf-8')
+    if FLAGS.sampleBy == 'Code':
+        fileName = paths.CLEAN_DIR_DEFAULT+FLAGS.file+'- sample codes'
+    elif FLAGS.sampleBy == 'Trip':
+        fileName = paths.CLEAN_DIR_DEFAULT+FLAGS.file+'- sample trips'
+    else:
+        fileName = paths.CLEAN_DIR_DEFAULT+FLAGS.file
+
+    # data.to_pickle(fileName+'.pkl')
+    data.to_csv(fileName+'.csv', encoding='utf-8')
 
 def prepare():
     """
@@ -376,23 +387,31 @@ def prepare():
     print("---------------------------- Load data ----------------------------")
     data = _loadData(paths.RAW_DIR_DEFAULT+FLAGS.file+'.csv')
 
-    if FLAGS.minisample == 'True':
-        print("------------------------- Minisample data -------------------------")
-        data = _minisample(data)
+    if FLAGS.sampleBy == 'Code':
+        print("------------------------- Sample by codes -------------------------")
+        data = _sampleByCode(data)
 
     print("----------------------------  Cleaning ----------------------------")
-    data = _clean(data, FLAGS.min_records)
+    data = _clean(data)
+
+
+    if FLAGS.sampleBy == 'Trip':
+        print("------------------------- Sample by trips -------------------------")
+        data = _sampleByTrip(data)
 
     print("------------------ Extract  relevant information ------------------")
 
     print("               ----------- Parsing  trip ------------              ")
-    data = _parseTrips(data, MODE_DICT_DEFAULT, FLAGS.create_voc)
+    data = _parseTrips(data, FLAGS.create_voc)
     #
     print("               ----- Creating time stamp bins ------               ")
     data = _to_time_bins(data)
 
     print("               ------ Extract day  attributes ------               ")
     data = _weekday(data)
+
+    print("               ------ Extract number of trips ------               ")
+    data = _numTrips(data)
 
     print("----------------------------  Patching ----------------------------")
     data = _countTransfers(data)
@@ -424,16 +443,12 @@ if __name__ == '__main__':
                         help='File to prepare')
     parser.add_argument('--verbose', type = str, default = 'False',
                         help='Display parse trip details.')
-    parser.add_argument('--min_records', type = int, default = MIN_RECORDS_DEFAULT,
-                        help='Traveler is required to have at least this number of records.')
     parser.add_argument('--create_voc', type = str, default = 'False',
                         help='Create lines/stops vocabularies from given data. If False, previously saved vocabularies will be used')
     parser.add_argument('--plot', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
-    parser.add_argument('--scriptMode', type = str, default = 'long',
-                        help='Run with long  or short dataset.')
-    parser.add_argument('--minisample', type = str, default = 'True',
-                        help='Run with long  or short dataset.')
+    parser.add_argument('--sampleBy', type = str, default = 'Code',
+                        help='May sample by "Code", or "Trip". False to run full.')
 
 
     FLAGS, unparsed = parser.parse_known_args()
