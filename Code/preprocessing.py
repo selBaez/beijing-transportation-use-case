@@ -1,4 +1,4 @@
-plot# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 This module preprocess the Yikatong smart card records, labeling the records, standardizing the attributes and creating the 3D representation per user
@@ -14,7 +14,7 @@ import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 import warnings
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
-import random, cPickle
+import random, cPickle, os
 from sklearn.preprocessing import StandardScaler
 
 import paths, shared
@@ -24,7 +24,7 @@ def _loadData(fileName):
     Load csv data on pandas
     """
     # Ignore 'PATH_LINK', 'START_TIME', 'END_TIME', and 'TRIP_DETAILS'
-    data = pd.read_csv(fileName, index_col='ID', usecols= range(4)+range(5,10)+range(12,14)+range(15,32))#, parse_dates=[0,8,9])
+    data = pd.read_csv(fileName, index_col='ID', usecols= range(4)+range(5,10)+range(12,14)+range(15,32))
     print("{} records loaded".format(len(data.index)))
 
     return data
@@ -40,13 +40,13 @@ def _matchLabel(code, commutersCodes, nonCommutersCodes):
     else:
         return None
 
-def _labelData(data, labelsDir):
+def _labelData(data):
     """
     Get card codes whose label is available and return commuters and non-commuters datasets
     """
     # Load label sets
-    commutersCodes = np.loadtxt(labelsDir+'commuterCardCodes.txt')
-    nonCommutersCodes = np.loadtxt(labelsDir+'nonCommuterCardCodes.txt')
+    commutersCodes = np.loadtxt(paths.LABELS_DIR_DEFAULT+'commuterCardCodes.txt')
+    nonCommutersCodes = np.loadtxt(paths.LABELS_DIR_DEFAULT+'nonCommuterCardCodes.txt')
 
     # Assign label
     data['LABEL'] = data['CARD_CODE'].apply(lambda x : _matchLabel(x, commutersCodes, nonCommutersCodes) )
@@ -61,7 +61,7 @@ def _labelData(data, labelsDir):
 
 def _visualize(data, condition, general=False):
     # Sample 'size' random points
-    size = 15 if FLAGS.scriptMode == 'short' else 450
+    size = 100 if FLAGS.scriptMode == 'short' else 450
 
     indices = random.sample(data.index, size)
     sample = data.ix[indices]
@@ -88,7 +88,7 @@ def _visualize(data, condition, general=False):
     shared._plotDistribution(sample['TRAVEL_TIME'], 'Travel time ', condition, FLAGS.file, bins=20)
     shared._plotDistribution(sample['TRAVEL_DISTANCE'], 'Travel distance ', condition, FLAGS.file, bins=20)
     shared._plotDistribution(sample['TRANSFER_TIME_SUM'], 'Total transfer time ', condition, FLAGS.file, bins=20)
-    shared._plotDistribution(sample['TRANSFER_TIME_AVG'], 'Average transfer time ', condition, FLAGS.file, bins=20)
+    shared._plotDistribution(sample['TRANSFER_TIME_AVG'], 'Average transfer time ', condition, FLAGS.file, bins=20) # TODO why does this cause error sometimes? singular matrix
 
     # Plot standardized correlated features: time vs distance
     shared._plotSeriesCorrelation(sample,'TRAVEL_DISTANCE','TRAVEL_TIME', 'Travel distance vs time',condition, FLAGS.file)
@@ -97,95 +97,158 @@ def _standardize(data):
     """
     Rescale features to have mean 0 and std 1
     """
-    # TODO: only fit and transform to train data, and transform test data
-    print("Standarize travel time and distance, transfer time total and average")
+    #TODO This method fits and transforms over all data, change parameters to allow fit train and transform test
+    print("Standarize travel time and distance, transfer total and average time")
     scaler = StandardScaler()
     data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']] = scaler.fit_transform(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']])
     # TODO categoical cannot go to one hot, so divide by range?
 
     return data
 
-def _buildCubes(data, createDict):
+def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True', std='True'):
     """
-    Structure per card code
+    3D structure per card code
+    Dictionary has key = card code, value = [cube, label(optional)]
     """
     # Dictionary per class
     if createDict == 'True':
-        # Create dictionaries
-        print('Creating dictionaries for cubes')
-        commutersCubes = {}
-        nonCommutersCubes = {}
+        # Create dictionary
+        print('Creating dictionary for cubes')
+        userStructures = {}
     else:
         # Load existing dictionaries
-        with open(paths.CUBES_DIR_DEFAULT+'commuters.pkl', 'r') as fp: commutersCubes = cPickle.load(fp)
-        with open(paths.CUBES_DIR_DEFAULT+'nonCommuters.pkl', 'r') as fp: nonCommutersCubes = cPickle.load(fp)
+        labelDirectory = 'labeled/' if labeled == 'True'  else 'all/'
+        stdDirectory = 'std/' if std == 'True' else 'original/'
+        directory = paths.CUBES_DIR_DEFAULT+labelDirectory+stdDirectory
 
-    # Organize cards per code
+        with open(directory+'userStructures.pkl', 'r') as fp: userStructures = cPickle.load(fp)
+
     data = list(data.groupby('CARD_CODE'))
 
     # Sample in case we are debugging
     if FLAGS.scriptMode == 'short':
-        data = random.sample(data, 50)
+        data = random.sample(data, 5)
 
     print(len(data), ' card codes found')
 
-
     for userCode, userTrips in data:
-        if FLAGS.verbose == 'True': print('code:', userCode, 'label:', userTrips['LABEL'][0], 'number of trips:', userTrips['NUM_TRIPS'][0])
+        if labeled == 'True':
+            if FLAGS.verbose == 'True': print('code:', userCode, 'label:', userTrips['LABEL'][0], 'number of trips:', userTrips['NUM_TRIPS'][0])
 
-        if userTrips['LABEL'][0] == 1.0:
-            # cube is 30 x 24 x 26 TODO: change 16 to 30
-            userCube = commutersCubes.setdefault(userCode, np.zeros(shape=(24,16,26)))
+            userCube, userLabel = userStructures.setdefault(userCode, [np.zeros(shape=cubeShape), userTrips['LABEL'][0]])
 
             for index, trip in userTrips.iterrows():
                 y = trip['START_HOUR']
                 x = trip['DAY']
-                if FLAGS.verbose == 'True': print('coordinates: ',x, y, 'trip')#, trip[1:-1].values)
-                userCube[y, x-1, :] = trip[1:-1].values
+                if FLAGS.verbose == 'True': print('coordinates: ',x, y)
 
-            commutersCubes[userCode] = userCube
+                details = trip[1:-1].values
+                userCube[y, x-1, :] = details
+
+            userStructures[userCode] = [userCube, userLabel]
 
         else:
-            # cube is 30 x 24 x 26
-            userCube = nonCommutersCubes.setdefault(userCode, np.zeros(shape=(24,16,26)))
+            if FLAGS.verbose == 'True': print('code:', userCode, 'number of trips:', userTrips['NUM_TRIPS'][0])
+
+            userCube = userStructures.setdefault(userCode, np.zeros(shape=cubeShape))
 
             for index, trip in userTrips.iterrows():
                 y = trip['START_HOUR']
                 x = trip['DAY']
-                if FLAGS.verbose == 'True': print('coordinates: ',x, y, 'trip')#, trip[1:-1].values)
-                userCube[y, x-1, :] = trip[1:-1].values
+                if FLAGS.verbose == 'True': print('coordinates: ',x, y)
 
-            nonCommutersCubes[userCode] = userCube
+                details = trip[1:].values
+                userCube[y, x-1, :] = details
 
-    # Sanity check
-    code, cube = commutersCubes.popitem()
-    if FLAGS.verbose == 'True':
-        print('\ncommuter sample', code)
-        print(cube[:,:,0])
+            userStructures[userCode] = [userCube]
+
     if FLAGS.plot == 'True':
-        shared._featureSliceHeatmap('commuter-day', cube[:,:,0])
+        print('Plot slices: ', data[0][1].iloc[:, [1,3,4,5,11,12,21,22]].columns.values)
 
-    code, cube = nonCommutersCubes.popitem()
-    if FLAGS.verbose == 'True':
-        print('\nnon commuter sample', code)
-        print(cube[:,:,0])
-    if FLAGS.plot == 'True':
-        shared._featureSliceHeatmap('NonCommuter-day', cube[:,:,0])
+    for i in range(5):
+        if labeled == 'True':
+            # TODO: mechanism to sample one of each class
+            code, [cube, label] = random.choice(list(userStructures.items()))
+            className = 'Commuter' if label == 1.0 else 'Non-commuter'
+            print(className, ' with code: ', str(code))
 
-    return commutersCubes, nonCommutersCubes
+        else:
+            code, [cube] = random.choice(list(userStructures.items()))
+            className = 'Unknown'
+            print(className, ' with code: ', str(code))
 
-def _storeDataframe(data, name):
+        # if FLAGS.verbose == 'True':
+        #     print(cube[:,:,0])
+
+        if FLAGS.plot == 'True':
+            # Plot several feature slices
+            shared._featureSliceHeatmap(cube[:,:,0], 'Day', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,2], 'Time', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,3], 'Distance', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,4], 'Transfer numbers', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,10], 'On area', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,11], 'Off area', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,20], 'On mode', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,21], 'Off mode', className, str(code))
+
+    return userStructures
+
+def _buildVectors(userStructures, labeled= 'True'):
+    """
+    2D structure per card code
+    Dictionary has key = card code, value = [cube, label(optional), flat]
+    """
+    for code, description in userStructures.items():
+        if labeled == 'True':
+            [cube, label] = description
+            flatCube = cube.flatten(order='F')
+            userStructures[code] = [cube, flatCube, label]
+        else:
+            [cube] = description
+            flatCube = cube.flatten(order='F')
+            userStructures[code] = [cube, flatCube]
+
+    return userStructures
+
+def _storeDataframe(data, labeled=True, std=True, size='full'):
     """
     Store pickle and csv data for use in model
     """
-    data.to_pickle(paths.PREPROCESSED_DIR_DEFAULT+FLAGS.file+'_'+name+'.pkl')
-    data.to_csv(paths.PREPROCESSED_DIR_DEFAULT+FLAGS.file+'_'+name+'.csv')
+    labelDirectory = 'labeled/' if labeled  else 'all/'
 
-def _storeCubes(data, className):
+    # Deal with folders that do not exist
+    directory = paths.PREPROCESSED_DIR_DEFAULT+labelDirectory
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    stdDirectory = 'std/' if std else 'original/'
+
+    # Deal with folders that do not exist
+    directory = paths.PREPROCESSED_DIR_DEFAULT+labelDirectory+stdDirectory
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    data.to_pickle(directory+FLAGS.file+'_'+size+'.pkl')
+    data.to_csv(directory+FLAGS.file+'_'+size+'.csv')
+
+def _storeCubes(cubes, className='commuters', labeled='True', std='True'):
     """
     Store pickle
     """
-    with open(paths.CUBES_DIR_DEFAULT+className+'.pkl', 'w') as fp: cPickle.dump(data, fp)
+    # Deal with folders that do not exist
+
+    labelDirectory = 'labeled/' if labeled == 'True'  else 'all/'
+    directory = paths.CUBES_DIR_DEFAULT+labelDirectory
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    stdDirectory = 'std/' if std == 'True' else 'original/'
+    directory = paths.CUBES_DIR_DEFAULT+labelDirectory+stdDirectory
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    print('writing to directory:', directory )
+
+    with open(directory+className+'.pkl', 'w') as fp: cPickle.dump(cubes, fp)
 
 def preprocess():
     """
@@ -198,28 +261,43 @@ def preprocess():
         print("--------------------- Visualize  general data ---------------------")
         _visualize(data, 'original', general= True)
 
-    print("---------------------- Label and select data ----------------------")
-    data = _labelData(data, paths.LABELS_DIR_DEFAULT)
+    if FLAGS.labeled == 'True':
+        print("---------------------- Label and select data ----------------------")
+        data = _labelData(data)
 
-    print("------------------------ Storing dataframe ------------------------")
-    _storeDataframe(data, 'labeled')
-
-    if FLAGS.std == 'True':
-        print("-------------------------- Standardizing --------------------------")
-        data = _standardize(data)
         print("------------------------ Storing dataframe ------------------------")
-        _storeDataframe(data, 'labeled-std')
+        _storeDataframe(data, labeled=True, std=False, size='full')
 
-    if FLAGS.plot == 'True':
-        print("------------------- Visualize standardized data -------------------")
-        _visualize(data, 'standardized')
+        if FLAGS.std == 'True':
+            print("-------------------------- Standardizing --------------------------")
+            data = _standardize(data)
+            print("------------------------ Storing dataframe ------------------------")
+            _storeDataframe(data, labeled=True, std=True, size='full')
+
+            if FLAGS.plot == 'True':
+                print("------------------- Visualize standardized data -------------------")
+                _visualize(data, 'standardized')
+
+    else: # do not select labeled data
+        if FLAGS.std == 'True':
+            print("-------------------------- Standardizing --------------------------")
+            data = _standardize(data)
+            print("------------------------ Storing dataframe ------------------------")
+            _storeDataframe(data, labeled=False, std=True, size='full')
+
+            if FLAGS.plot == 'True':
+                print("------------------- Visualize standardized data -------------------")
+                _visualize(data, 'standardized')
 
     print("--------------------------- Build cubes ---------------------------")
-    commutersCubes, nonCommutersCubes = _buildCubes(data, FLAGS.create_cubeDict)
+    # Build or write in corresponding cubes according to label, std
+    userStructures = _buildCubes(data, (24,16,26), FLAGS.create_cubeDict, FLAGS.labeled, FLAGS.std)
 
     print("-------------------------- Storing cubes --------------------------")
-    _storeCubes(commutersCubes, 'commuters')
-    _storeCubes(nonCommutersCubes, 'nonCommuters')
+    _storeCubes(userStructures, 'combined', FLAGS.labeled, FLAGS.std)
+
+    print("-------------------------- Flatten cubes --------------------------")
+    userStructures = _buildVectors(userStructures, FLAGS.labeled)
 
 def print_flags():
     """
@@ -240,18 +318,18 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--file', type = str, default = paths.FILE_DEFAULT,
                         help='File to preprocess')
-    parser.add_argument('--verbose', type = str, default = 'False',
+    parser.add_argument('--verbose', type = str, default = 'True',
                         help='Display parse route details.')
     parser.add_argument('--plot', type = str, default = 'False',
                         help='Boolean to decide if we plot distributions.')
-    parser.add_argument('--scriptMode', type = str, default = 'long',
-                        help='Run with long  or short dataset.')
+    parser.add_argument('--labeled', type = str, default = 'True',
+                        help='Choose records which labels are available.')
     parser.add_argument('--std', type = str, default = 'True',
                         help='Standardize features.')
-    parser.add_argument('--create_cubeDict', type = str, default = 'False',
+    parser.add_argument('--scriptMode', type = str, default = 'short',
+                        help='Run with long  or short dataset.')
+    parser.add_argument('--create_cubeDict', type = str, default = 'True',
                         help='Create cube vocabularies from given data. If False, previously saved dictionaries will be loaded')
-
-    #TODO: labeled or unlabeled? (labeled includes searching for codes)
 
     FLAGS, unparsed = parser.parse_known_args()
     main(None)

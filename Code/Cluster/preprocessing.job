@@ -1,0 +1,33 @@
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -p gpu
+#SBATCH -t 00:90:00
+#SBATCH -o ./Logs/preprocessing/das5/%A.output
+#SBATCH -e ./Logs/preprocessing/das5/%A.error
+
+module load python/2.7.11
+module load cuda/7.5.18
+module load cudnn/7.5-v5
+
+################################### LABELED ###################################
+
+# FIRST CREATES CUBES
+srun -u python preprocessing.py --file 'de_cxl_cxtz20151115(50000)' \
+                    --verbose 'True' \
+                    --plot 'True' \
+                    --labeled 'True' \
+                    --std 'True' \
+                    --scriptMode 'short' \
+                    --create_cubeDict 'True'
+
+# SUBSEQUENT WRITE IN EXISTING CUBES
+srun -u python preprocessing.py --file 'de_cxl_cxtz20151116' \
+                    --verbose 'True' \
+                    --plot 'True' \
+                    --labeled 'True' \
+                    --std 'True' \
+                    --scriptMode 'long' \
+                    --create_cubeDict 'False'
+
+
+################################## UNLABELED ##################################

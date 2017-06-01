@@ -9,10 +9,10 @@ preprocessing					label data																																						DONE
 
 feature selection 		preprocessing -> label data																														DONE
 											correlation tests (correlation, feature importance, chi2 and anova f value)
-											select k best
 											preprocessing -> standardize
+											select k best
 											preprocessing -> create user cubes
-											flatten cubes into vectors
+											preprocessing -> flatten cubes into vectors
 											save vectors
 
 ensemble classifier 	create models (SVM, bayesian, random forest, mlp)
@@ -36,8 +36,19 @@ clustering 						k-means
 
 
 TODO:
+sample card codes: 5 commuter, 5 non commuter, 5 unknown
+build cubes for these
+tsne plots for these
+
 normalize areas? keep as ordinal?
 num of transfer as pie chart
+
+NOTE:
+currently transforming data over whole data set and not over train/test or cross validation.
+ 	pro: convenient because normalization is over type of feature, meaning 'TRAVEL TIME' over all trips BEFORE merging per user
+				to change it would mean to grab feature slices from each cube, instead of values from each vector
+				list of slices, instead of list of values (vector)
+	con: scientifically correct? travel time and distance has large tail, thus the distribution really depends on the data
 
 Papers to get:
 Reconstructing individual mobility from smart card transactions: a collaborative space alignment approach
@@ -50,3 +61,5 @@ Attributes summary: numerical vs categorical
 Section: deal with categorical -> tokenize, encode, bins
 comment on ordinal structure vs one hot
 random forests deal well with categorical (large node size), adaboost with missing info
+
+categorize mode, stop, line: zero cannot be used cause it means empty. 

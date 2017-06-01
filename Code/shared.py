@@ -55,21 +55,33 @@ def _classificationHeatmap(name, matrix, n_classes, classes):
     plt.savefig(paths.PLOT_DIR_DEFAULT+'heatmaps/'+name+'.png', format='png')
     plt.close()
 
-def _featureSliceHeatmap(name, matrix):
+def _featureSliceHeatmap(matrix, featureName, className, code):
     """
     Create heatmap of slice of user cube representing a feature in their monthly trips
     Not annotated values with range according to distribution
     """
     fig, ax = plt.subplots()
-    sns.heatmap(matrix)
+    sns.heatmap(matrix, vmin=0, vmax=1)
 
     plt.xticks(range(1, matrix.shape[1]+1), range(1, matrix.shape[1]+1), rotation=0, ha='right', fontsize=11)
     plt.yticks(range(matrix.shape[0]), reversed(range(matrix.shape[0])), rotation=0, va='bottom', fontsize=11)
     plt.xlabel('Days')
     plt.ylabel('Hours')
-    plt.title(name)
+    plt.title(featureName+' feature slice for '+className)
     plt.tight_layout()
-    plt.savefig(paths.PLOT_DIR_DEFAULT+'heatmaps/'+name+'.png', format='png')
+
+    # Deal with folders that do not exist
+    directory = paths.PLOT_DIR_DEFAULT+'heatmaps/cubes/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    directory = paths.PLOT_DIR_DEFAULT+'heatmaps/cubes/'+className+'/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    directory = paths.PLOT_DIR_DEFAULT+'heatmaps/cubes/'+className+'/'+code+'/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    plt.savefig(directory+featureName+'.png', format='png')
     plt.close()
 
 def _plotDistributionCompare(sample1, sample2, variable_name, condition, fileName, labels, bins=None, xticks=None):
@@ -153,14 +165,14 @@ def _plotSeriesCorrelation(sample, variable1, variable2, name, condition, fileNa
     """
     fig, ax = plt.subplots()
     sample.plot(x=variable1,y=variable2, ax=ax, kind='scatter')
-    plt.xlabel(variable_name)
+    plt.xlabel(name)
     plt.tight_layout()
 
     # Deal with folders that do not exist
-    directory = paths.PLOT_DIR_DEFAULT+'histograms/'+name+'/'
+    directory = paths.PLOT_DIR_DEFAULT+'scatter/'+name+'/'
     if not os.path.exists(directory):
         os.makedirs(directory)
-    directory = paths.PLOT_DIR_DEFAULT+'histograms/'+name+'/'+condition+'/'
+    directory = paths.PLOT_DIR_DEFAULT+'scatter/'+name+'/'+condition+'/'
     if not os.path.exists(directory):
         os.makedirs(directory)
 

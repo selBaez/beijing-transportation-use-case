@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -p gpu
+#SBATCH -t 00:90:00
+#SBATCH -o ./Logs/preparation/das5/%A.output
+#SBATCH -e ./Logs/preparation/das5/%A.error
+
+module load python/2.7.11
+module load cuda/7.5.18
+module load cudnn/7.5-v5
+
+# FIRST CREATES VOCABULARY
+srun -u python preparation.py --file 'de_cxl_cxtz20151115' \
+                    --verbose 'True' \
+                    --min_records 0 \
+                    --create_voc 'True' \
+                    --plot 'True' \
+                    --scriptMode 'long'
+
+# SUBSEQUENT WRITE IN EXISTING VOCABULARY
+srun -u python preparation.py --file 'de_cxl_cxtz20151116' \
+                    --verbose 'True' \
+                    --min_records 0 \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --scriptMode 'long'

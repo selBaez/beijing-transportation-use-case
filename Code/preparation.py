@@ -31,6 +31,18 @@ def _loadData(fileName):
 
     return data
 
+def _minisample(data):
+    """
+    Search for codes in sample codes
+    """
+    # Load codes sets
+    sampleCodes = np.loadtxt(paths.LABELS_DIR_DEFAULT+'sampleCardCodes.txt')
+
+    # Eliminate codes taht are not in sample codes
+    data, _ = shared._filter(data, data[data['CARD_CODE'].isin(sampleCodes)], "not desired card codes")
+
+    return data
+
 def _clean(data, min_records):
     """
     Remove rows with faulty data
@@ -92,17 +104,13 @@ def _extractTripFeatures(ride):
     # LINE_NAME  (bus)           944 | 夜 32           ------ equivalent to ------       944 | night 32
 
     """
-
-    if FLAGS.verbose == 'True': print('Ride details: ', ride)
-
-    # Shared fields across modes
-    stop_b = r'(?P<stop_b>.+?)'
-    stop_a = r'(?P<stop_a>.+?)'
-
-    # ( mode . stuff - stuff )
     mode = ride.split('.')[0].split('(')[-1]
 
     try:
+        # Shared fields across modes
+        stop_b = r'(?P<stop_b>.+?)'
+        stop_a = r'(?P<stop_a>.+?)'
+
         # Parse metro
         if mode == u'轨道':
             line_b = r'(?P<line_b>.+?)'
@@ -112,10 +120,10 @@ def _extractTripFeatures(ride):
             matcher = pattern.search(ride)
 
             if matcher:
-                return 0, matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
+                return 1, matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
             else:
-                print('Failed at parsing metro ride:', ride)
-                return 0, None, None, None, None
+                if FLAGS.verbose == 'True': print('Failed at parsing metro ride:', ride)
+                return 1, None, None, None, None
 
         # Parse bus
         elif mode == u'公交':
@@ -128,10 +136,10 @@ def _extractTripFeatures(ride):
             matcher = pattern.search(ride)
 
             if matcher:
-                return 1, matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
+                return 2, matcher.group('line_b'), matcher.group('stop_b'), matcher.group('line_a'), matcher.group('stop_a')
             else:
-                print('Failed at parsing bus ride:', ride)
-                return 1, None, None, None, None
+                if FLAGS.verbose == 'True': print('Failed at parsing bus ride:', ride)
+                return 2, None, None, None, None
 
         # Parse bike
         elif mode == u'自行车':
@@ -139,14 +147,14 @@ def _extractTripFeatures(ride):
             matcher = pattern.search(ride)
 
             if matcher:
-                return 2, '0', matcher.group('stop_b'), '0', matcher.group('stop_a')
+                return 3, '0', matcher.group('stop_b'), '0', matcher.group('stop_a')
             else:
-                print('Failed at parsing bike ride:', ride)
-                return 2, None, None, None, None
+                if FLAGS.verbose == 'True': print('Failed at parsing bike ride:', ride)
+                return 3, None, None, None, None
 
     except AttributeError:
-        print('Failed at: ', ride)
-        return 4, None, None, None, None
+        if FLAGS.verbose == 'True': print('Failed at: ', ride)
+        return 0, None, None, None, None
 
 def _extractOriginAndDestinationFeatures(trip):
     """
@@ -170,7 +178,6 @@ def _createVocabularies(trips):
     lines = set()
     stops = set()
     for index, trip in trips.iteritems():
-        if FLAGS.verbose == 'True': print('Trip: ',trip)
         rides = trip.split('->')
         for ride in rides:
             _, lineOrigin, stopOrigin, lineDestination, stopDestination = _extractTripFeatures(ride)
@@ -184,8 +191,9 @@ def _createVocabularies(trips):
     print('     Combined stops found:  {}'.format(len(stops)))
 
     # Turn into dictionaries
-    lines =  dict(zip(lines, map(lambda x: str(x)+'-T',range(len(lines)))))
-    stops = dict(zip(stops, map(lambda x: str(x)+'-T',range(len(stops)))))
+    # IDs start from 1 instead of 0, because 0 means no travel at all
+    lines =  dict(zip(lines, map(lambda x: str(x)+'-T',range(1,len(lines)+1))))
+    stops = dict(zip(stops, map(lambda x: str(x)+'-T',range(1,len(stops)+1))))
 
     # Save updated vocabularies
     _saveVoc(lines, stops)
@@ -216,7 +224,7 @@ def _updateVocabularies(data, lines, stops):
 
     if len(newLines) != 0:
         # Create dictionary starting from the last available ID in lines
-        newLines =  dict(zip(newLines, map(str,range(len(lines), len(lines)+len(newLines)))))
+        newLines =  dict(zip(newLines, map(str,range(len(lines)+1, len(lines)+1+len(newLines)))))
 
         # Replace cases with new lines vocabulary
         lines_on.replace(to_replace=newLines, inplace=True)
@@ -231,7 +239,7 @@ def _updateVocabularies(data, lines, stops):
 
     if len(newStops) != 0:
         # Create dictionary starting from the last available ID in stops
-        newStops =  dict(zip(newStops, map(str,range(len(stops), len(stops)+len(newStops)))))
+        newStops =  dict(zip(newStops, map(str,range(len(stops)+1, len(stops)+1+len(newStops)))))
 
         # Replace cases with new stops vocabulary
         stops_on.replace(to_replace=newStops, inplace=True)
@@ -266,11 +274,11 @@ def _parseTrips(data, modes, createVoc):
 
     # Reduce dataset size if we are just debugging
     if FLAGS.scriptMode == 'short':
-        indices = random.sample(data.index, 5)
+        indices = random.sample(data.index, 50000)
         data = data.ix[indices]
 
     # Retrieve on and off trip details
-    data['ON_MODE'], data['OFF_MODE'], data['ON_LINE'], data['OFF_LINE'], data['ON_STOP'], data['OFF_STOP'] =  zip(*data['TRANSFER_DETAIL'].apply(lambda x : _extractOriginAndDestinationFeatures(x)))
+    data['ON_MODE'], data['OFF_MODE'], data['ON_LINE'], data['OFF_LINE'], data['ON_STOP'], data['OFF_STOP'] = zip(*data['TRANSFER_DETAIL'].apply(lambda x : _extractOriginAndDestinationFeatures(x)))
 
     # Replace for clean format
     print('Formating trip')
@@ -341,8 +349,11 @@ def _orderFeatures(data):
     Order features by: General, then spatial boarding, then spatial alighting
     """
     print("Order by type of feature: general then spatial")
-    order = ['CARD_CODE', 'DAY', 'WEEKDAY', 'PATH_LINK', 'TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_NUM', 'TRANSFER_TIME_AVG', \
-            'TRANSFER_TIME_SUM', 'START_TIME', 'END_TIME', 'START_HOUR', 'END_HOUR', 'TRANSFER_DETAIL', 'NUM_TRIPS', \
+    order = ['CARD_CODE', 'DAY', 'WEEKDAY', 'PATH_LINK', \
+            'TRAVEL_TIME', 'TRAVEL_DISTANCE', \
+            'TRANSFER_NUM', 'TRANSFER_TIME_AVG', 'TRANSFER_TIME_SUM', \
+            'START_TIME', 'END_TIME', 'START_HOUR', 'END_HOUR', \
+            'TRANSFER_DETAIL', 'NUM_TRIPS', \
             'ON_AREA', 'OFF_AREA', \
             'ON_TRAFFIC', 'OFF_TRAFFIC', 'ON_MIDDLEAREA', 'OFF_MIDDLEAREA', 'ON_BIGAREA', 'OFF_BIGAREA', \
             'ON_RINGROAD', 'OFF_RINGROAD',  \
@@ -355,7 +366,7 @@ def _store(data):
     """
     Store clean data
     """
-    data.to_pickle(paths.CLEAN_DIR_DEFAULT+FLAGS.file+'.pkl')
+    # data.to_pickle(paths.CLEAN_DIR_DEFAULT+FLAGS.file+'.pkl')
     data.to_csv(paths.CLEAN_DIR_DEFAULT+FLAGS.file+'.csv', encoding='utf-8')
 
 def prepare():
@@ -364,6 +375,10 @@ def prepare():
     """
     print("---------------------------- Load data ----------------------------")
     data = _loadData(paths.RAW_DIR_DEFAULT+FLAGS.file+'.csv')
+
+    if FLAGS.minisample == 'True':
+        print("------------------------- Minisample data -------------------------")
+        data = _minisample(data)
 
     print("----------------------------  Cleaning ----------------------------")
     data = _clean(data, FLAGS.min_records)
@@ -417,6 +432,9 @@ if __name__ == '__main__':
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--scriptMode', type = str, default = 'long',
                         help='Run with long  or short dataset.')
+    parser.add_argument('--minisample', type = str, default = 'True',
+                        help='Run with long  or short dataset.')
+
 
     FLAGS, unparsed = parser.parse_known_args()
     main(None)
