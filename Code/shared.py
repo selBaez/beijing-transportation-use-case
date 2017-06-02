@@ -12,20 +12,56 @@ import paths
 
 ################################################## Visualization ##################################################
 
-def _featureBar(name, values, n_features, features):
+def _stackedFeatureBar(scores, methods, n_features, features, testName, fileName):
     """
-    Create bar plot for feature importance
+    Create stacked bar plot for feature selection
+    """
+    fig, ax = plt.subplots()
+    lastValues = np.zeros(shape=scores[0].shape)
+
+    colors = sns.color_palette("husl", len(methods))
+
+    for i, values in enumerate(scores):
+        plt.bar(range(n_features), values, color=colors[i], bottom=lastValues)
+        lastValues = lastValues + values
+
+    plt.xticks(range(n_features), features, rotation=70, ha='center', fontsize=8)
+    plt.xlabel('Attributes')
+    plt.ylabel('Scores')
+    plt.legend(methods)
+    plt.title(testName+': '+fileName)
+    plt.tight_layout()
+
+    # Deal with folders that do not exist
+    directory = paths.PLOT_DIR_DEFAULT+'bar/'+testName+'/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    plt.savefig(directory+fileName+'.png', format='png')
+    plt.close()
+
+def _featureBar(values, n_features, features, testName, fileName):
+    """
+    Create bar plot for scoring attributes
     """
     fig, ax = plt.subplots()
     plt.bar(range(n_features), values)
 
     plt.xticks(range(n_features), features, rotation=70, ha='center', fontsize=8)
-    plt.xlabel(name)
+    plt.xlabel('Attributes')
+    plt.ylabel('Scores')
+    plt.title(testName+': '+fileName)
     plt.tight_layout()
-    plt.savefig(paths.PLOT_DIR_DEFAULT+'bar/'+name+'.png', format='png')
+
+    # Deal with folders that do not exist
+    directory = paths.PLOT_DIR_DEFAULT+'bar/'+testName+'/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    plt.savefig(directory+fileName+'.png', format='png')
     plt.close()
 
-def _matrixHeatmap(name, matrix, n_attributes, attributes):
+def _correlationHeatmap(matrix, n_attributes, attributes, className):
     """
     Create heatmap of correlations
     Not annotated values ranging from -1 to 1
@@ -35,9 +71,15 @@ def _matrixHeatmap(name, matrix, n_attributes, attributes):
 
     plt.xticks(range(n_attributes), attributes, rotation=70, ha='center', fontsize=8)
     plt.yticks(range(n_attributes), reversed(attributes), rotation=0, va='bottom', fontsize=8)
-    plt.xlabel(name)
+    plt.title(className+' Correlation')
     plt.tight_layout()
-    plt.savefig(paths.PLOT_DIR_DEFAULT+'heatmaps/'+name+'.png', format='png')
+
+    # Deal with folders that do not exist
+    directory = paths.PLOT_DIR_DEFAULT+'heatmaps/correlations/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    plt.savefig(directory+className+'.png', format='png')
     plt.close()
 
 def _classificationHeatmap(name, matrix, n_classes, classes):
@@ -52,7 +94,13 @@ def _classificationHeatmap(name, matrix, n_classes, classes):
     plt.yticks(range(n_classes), reversed(classes), rotation=0, va='bottom', fontsize=15)
     plt.xlabel(name)
     plt.tight_layout()
-    plt.savefig(paths.PLOT_DIR_DEFAULT+'heatmaps/'+name+'.png', format='png')
+
+    # Deal with folders that do not exist
+    directory = paths.PLOT_DIR_DEFAULT+'heatmaps/classification/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    plt.savefig(directory+name+'.png', format='png')
     plt.close()
 
 def _featureSliceHeatmap(matrix, featureName, className, code):

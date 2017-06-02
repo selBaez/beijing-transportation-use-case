@@ -61,7 +61,7 @@ def _labelData(data):
 
 def _visualize(data, condition, general=False):
     # Sample 'size' random points
-    size = 100 if FLAGS.scriptMode == 'short' else 450
+    size = 500 if len(data.index) > 500 else len(data.index)
 
     indices = random.sample(data.index, size)
     sample = data.ix[indices]
@@ -228,7 +228,7 @@ def _storeDataframe(data, labeled=True, std=True, size='full'):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    data.to_pickle(directory+FLAGS.file+'_'+size+'.pkl')
+    # data.to_pickle(directory+FLAGS.file+'_'+size+'.pkl')
     data.to_csv(directory+FLAGS.file+'_'+size+'.csv')
 
 def _storeCubes(cubes, className='commuters', labeled='True', std='True'):

@@ -4,7 +4,7 @@ This module Contains the file names and directories where to read and write.
 
 ############ --- BEGIN default directories --- ############
 # File name
-FILE_DEFAULT = 'xaa'
+FILE_DEFAULT = 'sample data(50000)_full'
 
 # Data directories
 RAW_DIR_DEFAULT = '../Data/sets/raw/'
