@@ -108,6 +108,22 @@ def _anova(samples, labels, attributes, n_attributes):
 
     return scores
 
+def _domainKnowledge(attributes, n_attributes):
+    """
+    Read scores given by domain expert
+    """
+    scores = np.loadtxt(paths.SCORES_DIR_DEFAULT+'domainScores.txt')
+
+    if FLAGS.plot == 'True':
+        print("                   ---------  Plot ---------                   ")
+        shared._featureBar(scores, n_attributes, attributes, 'Domain knowledge', 'scores')
+
+    # Normalize
+    total = np.nansum(scores)
+    scores = scores/total
+
+    return scores
+
 def selectFeatures():
     """
     Performs training and reports evaluation (on training and validation sets)
@@ -139,9 +155,12 @@ def selectFeatures():
     print("----------------------------- ANOVA-F -----------------------------")
     scores_fv = _anova(samples, labels, attributes, n_attributes)
 
+    print("------------------------ Domain  knowledge ------------------------")
+    scores_do = _domainKnowledge(attributes, n_attributes)
+
     print("------------------------ Aggregate  scores ------------------------")
-    scores = [scores_cr, scores_fi, scores_c2, scores_fv]
-    methods = ['correlation', 'importance', 'chi2', 'f-value']
+    scores = [scores_cr, scores_fi, scores_c2, scores_fv, scores_do]
+    methods = ['correlation', 'importance', 'chi2', 'f-value', 'domain knowledge']
 
     shared._stackedFeatureBar(scores, methods, n_attributes, attributes, 'Combined', 'scores')
 

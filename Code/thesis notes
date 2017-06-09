@@ -40,7 +40,10 @@ tsne plots for these
 
 normalize areas? keep as ordinal?
 num of transfer as pie chart
-fix start/end hour 0. change to 24? 
+fix start/end hour 0. change to 24?
+
+BIG ISSUE: vocabularies grow!!
+FIX ASAP: new lines in voc
 
 
 NOTE:

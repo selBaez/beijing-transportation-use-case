@@ -14,6 +14,9 @@ PREPROCESSED_DIR_DEFAULT = '../Data/sets/preprocessed/'
 # Vocabularies
 VOC_DIR_DEFAULT = '../Data/vocabularies/fullVocabulary'
 
+# Attribute scores
+SCORES_DIR_DEFAULT = '../Data/attribute scores/'
+
 # Cubes
 CUBES_DIR_DEFAULT = '../Data/sets/cubes/'
 
