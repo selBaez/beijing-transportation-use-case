@@ -61,7 +61,7 @@ def _labelData(data):
 
 def _visualize(data, condition, general=False):
     # Sample 'size' random points
-    size = 500 if len(data.index) > 500 else len(data.index)
+    size = 1000 if len(data.index) > 500 else len(data.index)
 
     indices = random.sample(data.index, size)
     sample = data.ix[indices]
@@ -116,7 +116,7 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True',
         print('Creating dictionary for cubes')
         userStructures = {}
     else:
-        # Load existing dictionaries
+        # Load existing corresponding cubes according to label, std
         labelDirectory = 'labeled/' if labeled == 'True'  else 'all/'
         stdDirectory = 'std/' if std == 'True' else 'original/'
         directory = paths.CUBES_DIR_DEFAULT+labelDirectory+stdDirectory
@@ -210,7 +210,7 @@ def _buildVectors(userStructures, labeled= 'True'):
 
     return userStructures
 
-def _storeDataframe(data, labeled=True, std=True, size='full'):
+def _storeDataframe(data, labeled=True, std=True):
     """
     Store pickle and csv data for use in model
     """
@@ -228,8 +228,8 @@ def _storeDataframe(data, labeled=True, std=True, size='full'):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    # data.to_pickle(directory+FLAGS.file+'_'+size+'.pkl')
-    data.to_csv(directory+FLAGS.file+'_'+size+'.csv')
+    # data.to_pickle(directory+FLAGS.file+'.pkl')
+    data.to_csv(directory+FLAGS.file+'.csv')
 
 def _storeCubes(cubes, className='commuters', labeled='True', std='True'):
     """
@@ -290,7 +290,7 @@ def preprocess():
                 _visualize(data, 'standardized')
 
     print("--------------------------- Build cubes ---------------------------")
-    # Build or write in corresponding cubes according to label, std
+    # TODO switch shape to 30 days
     userStructures = _buildCubes(data, (24,16,26), FLAGS.create_cubeDict, FLAGS.labeled, FLAGS.std)
 
     print("-------------------------- Storing cubes --------------------------")

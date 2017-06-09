@@ -22,7 +22,7 @@ def _loadData(fileName):
 
     return data
 
-def _correlationAnalysis(data, attributes, n_attributes):
+def _correlationAnalysis(data, columns, n_columns, attributes, n_attributes):
     """
     Plot correlations according to type
     """
@@ -36,12 +36,12 @@ def _correlationAnalysis(data, attributes, n_attributes):
     scores = np.absolute(correlationsMatrix.values[1:-1,-1])
 
     if FLAGS.plot == 'True':
-        print("               ----- Plot correlation heatmap -----                ")
-        shared._correlationHeatmap(correlationsMatrix, n_attributes, attributes, 'General')
-        shared._correlationHeatmap(commuters_correlationsMatrix, n_attributes, attributes, 'Commuter')
-        shared._correlationHeatmap(non_commuters_correlationsMatrix, n_attributes, attributes, 'Non Commuter')
+        print("                   ---------  Plot ---------                   ")
+        shared._correlationHeatmap(correlationsMatrix, n_columns, columns, 'General')
+        shared._correlationHeatmap(commuters_correlationsMatrix, n_columns, columns, 'Commuter')
+        shared._correlationHeatmap(non_commuters_correlationsMatrix, n_columns, columns, 'Non Commuter')
 
-        shared._featureBar(scores, n_attributes-2, attributes[1:-1], 'Correlation', 'to label')
+        shared._featureBar(scores, n_attributes, attributes, 'Correlation', 'to label')
 
     # TODO: sets of attributes that overlap a lot?
 
@@ -59,7 +59,8 @@ def _featureImportance(samples, labels, attributes, n_attributes):
     model.fit(samples, labels)
 
     if FLAGS.plot == 'True':
-        shared._featureBar(model.feature_importances_, n_attributes-2, attributes[1:-1], 'Feature Importance', 'scores')
+        print("                   ---------  Plot ---------                   ")
+        shared._featureBar(model.feature_importances_, n_attributes, attributes, 'Feature Importance', 'scores')
 
     scores = model.feature_importances_
 
@@ -76,8 +77,9 @@ def _chi2(samples, labels, attributes, n_attributes):
     chi2val, pval = chi2(samples, labels)
 
     if FLAGS.plot == 'True':
-        shared._featureBar(chi2val, n_attributes-2, attributes[1:-1], 'Chi squared', 'scores')
-        shared._featureBar(pval, n_attributes-2, attributes[1:-1], 'Chi squared', 'p values')
+        print("                   ---------  Plot ---------                   ")
+        shared._featureBar(chi2val, n_attributes, attributes, 'Chi squared', 'scores')
+        shared._featureBar(pval, n_attributes, attributes, 'Chi squared', 'p values')
 
     scores = chi2val
 
@@ -94,8 +96,9 @@ def _anova(samples, labels, attributes, n_attributes):
     fval, pval2 = f_classif(samples, labels)
 
     if FLAGS.plot == 'True':
-        shared._featureBar(fval, n_attributes-2, attributes[1:-1], 'F values', 'scores')
-        shared._featureBar(pval2, n_attributes-2, attributes[1:-1], 'F values', 'p values')
+        print("                   ---------  Plot ---------                   ")
+        shared._featureBar(fval, n_attributes, attributes, 'F values', 'scores')
+        shared._featureBar(pval2, n_attributes, attributes, 'F values', 'p values')
 
     scores = fval
 
@@ -113,17 +116,21 @@ def selectFeatures():
     data = _loadData(paths.PREPROCESSED_DIR_DEFAULT+'labeled/original/'+FLAGS.file+'.csv')
 
     print("----------------------- Extract  attributes -----------------------")
-    attributes = data.select_dtypes(include=[np.number]).columns.values.tolist()
+    columns = data.select_dtypes(include=[np.number]).columns.values.tolist()
+    n_columns = len(columns)
+
+    attributes = columns[1:-1]
     n_attributes = len(attributes)
 
     # Exclude card code
-    samples = data[attributes[1:-1]].values
-    labels = data[attributes[-1]].values
+    samples = data[attributes].values
+    labels = data[columns[-1]].values
 
     print("---------------------- Analyze  correlations ----------------------")
-    scores_cr = _correlationAnalysis(data, attributes, n_attributes)
+    scores_cr = _correlationAnalysis(data, columns, n_columns, attributes, n_attributes)
 
     print("---------------------- Feature  importance ------------------------")
+    #TODO: run on several instances and average scores
     scores_fi = _featureImportance(samples, labels, attributes, n_attributes)
 
     print("------------------------ Chi squared  test ------------------------")
@@ -136,8 +143,11 @@ def selectFeatures():
     scores = [scores_cr, scores_fi, scores_c2, scores_fv]
     methods = ['correlation', 'importance', 'chi2', 'f-value']
 
-    shared._stackedFeatureBar(scores, methods, n_attributes-2, attributes[1:-1], 'Combined', 'scores')
+    shared._stackedFeatureBar(scores, methods, n_attributes, attributes, 'Combined', 'scores')
 
+    print("------------------ Select best 25'%' attributes ------------------")
+    k = .25 * n_attributes
+    # smart choice, if on of something, off of something
 
     # cv = KFold(2)
     # selection = SelectKBest(5)

@@ -1,181 +1,177 @@
-################################### PREPARE ###################################
-
-# SAMPLE BY CODE
-python preparation.py --file 'sample data(50000)' \
-                    --verbose 'False' \
-                    --create_voc 'True' \
-                    --plot 'False' \
-                    --sampleBy 'Code'
-
-# SAMPLE BY TRIP
-python preparation.py --file 'sample data(50000)' \
-                    --verbose 'False' \
-                    --create_voc 'True' \
-                    --plot 'False' \
-                    --sampleBy 'Trip'
-
-# FULL
-python preparation.py --file 'sample data(50000)' \
-                    --verbose 'False' \
-                    --create_voc 'True' \
-                    --plot 'False' \
-                    --sampleBy 'False'
+# ################################### PREPARE ###################################
+#
+# # SAMPLE BY CODE
+# python preparation.py --file 'sample data(50000)' \
+#                     --verbose 'False' \
+#                     --create_voc 'True' \
+#                     --plot 'False' \
+#                     --sampleBy 'Code'
+#
+# # SAMPLE BY TRIP
+# python preparation.py --file 'sample data(50000)' \
+#                     --verbose 'False' \
+#                     --create_voc 'True' \
+#                     --plot 'False' \
+#                     --sampleBy 'Trip'
+#
+# # FULL
+# python preparation.py --file 'sample data(50000)' \
+#                     --verbose 'False' \
+#                     --create_voc 'True' \
+#                     --plot 'False' \
+#                     --sampleBy 'False'
 
 ############################### SAMPLE  BY CODE ###############################
 
 # FIRST CREATES VOCABULARY
-python preparation.py --file 'de_cxl_cxtz20151115' \
-                    --verbose 'False' \
+python preparation.py --file 'de_cxl_cxtz20151114' \
+                    --verbose 'True' \
                     --create_voc 'True' \
-                    --plot 'False' \
+                    --plot 'True' \
                     --sampleBy 'Code'
 
 # SUBSEQUENT WRITE IN EXISTING VOCABULARY
 python preparation.py --file 'de_cxl_cxtz20151115' \
-                    --verbose 'False' \
+                    --verbose 'True' \
                     --create_voc 'False' \
-                    --plot 'False' \
+                    --plot 'True' \
                     --sampleBy 'Code'
 
 python preparation.py --file 'de_cxl_cxtz20151116' \
-                    --verbose 'False' \
+                    --verbose 'True' \
                     --create_voc 'False' \
-                    --plot 'False' \
+                    --plot 'True' \
                     --sampleBy 'Code'
 
 python preparation.py --file 'de_cxl_cxtz20151117' \
-                    --verbose 'False' \
+                    --verbose 'True' \
                     --create_voc 'False' \
-                    --plot 'False' \
+                    --plot 'True' \
                     --sampleBy 'Code'
 
 python preparation.py --file 'de_cxl_cxtz20151118' \
-                    --verbose 'False' \
+                    --verbose 'True' \
                     --create_voc 'False' \
-                    --plot 'False' \
+                    --plot 'True' \
                     --sampleBy 'Code'
 
 python preparation.py --file 'de_cxl_cxtz20151119' \
-                    --verbose 'False' \
+                    --verbose 'True' \
                     --create_voc 'False' \
-                    --plot 'False' \
+                    --plot 'True' \
                     --sampleBy 'Code'
 
 python preparation.py --file 'de_cxl_cxtz20151120' \
-                    --verbose 'False' \
+                    --verbose 'True' \
                     --create_voc 'False' \
-                    --plot 'False' \
+                    --plot 'True' \
                     --sampleBy 'Code'
 
 python preparation.py --file 'de_cxl_cxtz20151121' \
-                    --verbose 'False' \
+                    --verbose 'True' \
                     --create_voc 'False' \
-                    --plot 'False' \
+                    --plot 'True' \
                     --sampleBy 'Code'
 
 python preparation.py --file 'de_cxl_cxtz20151122' \
-                    --verbose 'False' \
+                    --verbose 'True' \
                     --create_voc 'False' \
-                    --plot 'False' \
+                    --plot 'True' \
                     --sampleBy 'Code'
 
 python preparation.py --file 'de_cxl_cxtz20151123' \
-                    --verbose 'False' \
+                    --verbose 'True' \
                     --create_voc 'False' \
-                    --plot 'False' \
+                    --plot 'True' \
                     --sampleBy 'Code'
 
-################################### LABELED ###################################
-
-# FIRST CREATES CUBES
-python preprocessing.py --file 'sample data(50000)' \
-                    --verbose 'True' \
-                    --plot 'True' \
-                    --labeled 'True' \
-                    --std 'True' \
-                    --scriptMode 'short' \
-                    --create_cubeDict 'True'
-
-################################### LABELED ###################################
-
-# FIRST CREATES CUBES
-python preprocessing.py --file 'de_cxl_cxtz20151115' \
-                    --verbose 'True' \
-                    --plot 'True' \
-                    --labeled 'True' \
-                    --std 'True' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'True'
-
-# SUBSEQUENT WRITE IN EXISTING CUBES
-python preprocessing.py --file 'de_cxl_cxtz20151116' \
-                    --verbose 'True' \
-                    --plot 'True' \
-                    --labeled 'True' \
-                    --std 'True' \
-                    --scriptMode 'short' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151117' \
-                    --verbose 'True' \
-                    --plot 'True' \
-                    --labeled 'True' \
-                    --std 'True' \
-                    --scriptMode 'short' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151118' \
-                    --verbose 'True' \
-                    --plot 'True' \
-                    --labeled 'True' \
-                    --std 'True' \
-                    --scriptMode 'short' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151119' \
-                    --verbose 'True' \
-                    --plot 'True' \
-                    --labeled 'True' \
-                    --std 'True' \
-                    --scriptMode 'short' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151120' \
-                    --verbose 'True' \
-                    --plot 'True' \
-                    --labeled 'True' \
-                    --std 'True' \
-                    --scriptMode 'short' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151121' \
-                    --verbose 'True' \
-                    --plot 'True' \
-                    --labeled 'True' \
-                    --std 'True' \
-                    --scriptMode 'short' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151122' \
-                    --verbose 'True' \
-                    --plot 'True' \
-                    --labeled 'True' \
-                    --std 'True' \
-                    --scriptMode 'short' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151123' \
-                    --verbose 'True' \
-                    --plot 'True' \
-                    --labeled 'True' \
-                    --std 'True' \
-                    --scriptMode 'short' \
-                    --create_cubeDict 'False'
-
-################################## UNLABELED ##################################
-
-
-
-############################## FEATURE SELECTION ##############################
-python featureSelection.py --file 'sample data(50000)_full' \
-                    --plot 'True'
+# #################################  PREPROCESS #################################
+#
+# # FIRST CREATES CUBES
+# python preprocessing.py --file 'sample data(50000)-full' \
+#                     --verbose 'False' \
+#                     --plot 'True' \
+#                     --labeled 'True' \
+#                     --std 'True' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'True'
+#
+# ################################### LABELED ###################################
+#
+# # FIRST CREATES CUBES
+# python preprocessing.py --file 'de_cxl_cxtz20151115' \
+#                     --verbose 'True' \
+#                     --plot 'True' \
+#                     --labeled 'True' \
+#                     --std 'True' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'True'
+#
+# # SUBSEQUENT WRITE IN EXISTING CUBES
+# python preprocessing.py --file 'de_cxl_cxtz20151116' \
+#                     --verbose 'True' \
+#                     --plot 'True' \
+#                     --labeled 'True' \
+#                     --std 'True' \
+#                     --scriptMode 'short' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151117' \
+#                     --verbose 'True' \
+#                     --plot 'True' \
+#                     --labeled 'True' \
+#                     --std 'True' \
+#                     --scriptMode 'short' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151118' \
+#                     --verbose 'True' \
+#                     --plot 'True' \
+#                     --labeled 'True' \
+#                     --std 'True' \
+#                     --scriptMode 'short' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151119' \
+#                     --verbose 'True' \
+#                     --plot 'True' \
+#                     --labeled 'True' \
+#                     --std 'True' \
+#                     --scriptMode 'short' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151120' \
+#                     --verbose 'True' \
+#                     --plot 'True' \
+#                     --labeled 'True' \
+#                     --std 'True' \
+#                     --scriptMode 'short' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151121' \
+#                     --verbose 'True' \
+#                     --plot 'True' \
+#                     --labeled 'True' \
+#                     --std 'True' \
+#                     --scriptMode 'short' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151122' \
+#                     --verbose 'True' \
+#                     --plot 'True' \
+#                     --labeled 'True' \
+#                     --std 'True' \
+#                     --scriptMode 'short' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151123' \
+#                     --verbose 'True' \
+#                     --plot 'True' \
+#                     --labeled 'True' \
+#                     --std 'True' \
+#                     --scriptMode 'short' \
+#                     --create_cubeDict 'False'
+#
+# ############################## FEATURE SELECTION ##############################
+# python featureSelection.py --file 'sample data(50000)-full' \
+#                     --plot 'True'

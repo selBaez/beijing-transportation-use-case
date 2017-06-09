@@ -8,7 +8,7 @@ preprocessing					label data																																						DONE
 											create user cubes/vectors																															DONE
 
 feature selection 		preprocessing -> label data																														DONE
-											correlation tests (correlation, feature importance, chi2 and anova f value)
+											correlation tests (correlation, feature importance, chi2 and anova f value)						DONE
 											preprocessing -> standardize
 											select k best
 											preprocessing -> create user cubes
@@ -36,12 +36,12 @@ clustering 						k-means
 
 
 TODO:
-sample card codes: 5 commuter, 5 non commuter, 5 unknown
-build cubes for these
 tsne plots for these
 
 normalize areas? keep as ordinal?
 num of transfer as pie chart
+fix start/end hour 0. change to 24? 
+
 
 NOTE:
 currently transforming data over whole data set and not over train/test or cross validation.
@@ -62,4 +62,4 @@ Section: deal with categorical -> tokenize, encode, bins
 comment on ordinal structure vs one hot
 random forests deal well with categorical (large node size), adaboost with missing info
 
-categorize mode, stop, line: zero cannot be used cause it means empty. 
+categorize mode, stop, line: zero cannot be used cause it means empty.
