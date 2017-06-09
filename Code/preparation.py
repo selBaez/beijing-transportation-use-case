@@ -236,6 +236,9 @@ def _updateVocabularies(data, lines, stops):
         data.loc[data['FLAG_ON_LINE'].isnull(), 'ON_LINE'] = lines_on
         data.loc[data['FLAG_OFF_LINE'].isnull(), 'OFF_LINE'] = lines_off
 
+        # Fit new lines to format "-T"
+        newLines = {str(k)+'-T': v for k, v in newLines.items()}
+
         # Update lines vocabulary
         lines.update(newLines)
 
@@ -250,6 +253,9 @@ def _updateVocabularies(data, lines, stops):
         # Assign new replacements to main dataframe
         data.loc[data['FLAG_ON_STOP'].isnull(), 'ON_STOP'] = stops_on
         data.loc[data['FLAG_OFF_STOP'].isnull(), 'OFF_STOP'] = stops_off
+
+        # Fit new lines to format "-T"
+        newStops = {str(k)+'-T': v for k, v in newStops.items()}
 
         # Update lines vocabulary
         stops.update(newStops)
