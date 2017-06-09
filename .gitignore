@@ -104,12 +104,11 @@ Code/Previous*
 Data/sets/*
 Data/labels/*
 
-# Heavy images not uploaded for now
+# Do not commit large files such as images, logs and vocabularies
 Report/images/*
 Code/Plots/*
-
-# Logs also ignored
 Code/Logs/*
+Data/vocabularies/*
 
 # Notes to operate cluster
 Code/Cluster/das5 notes.txt
