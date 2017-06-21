@@ -359,11 +359,11 @@ def _orderFeatures(data):
     Order features by: General, then spatial boarding, then spatial alighting
     """
     print("Order by type of feature: general then spatial")
-    order = ['CARD_CODE', 'DAY', 'WEEKDAY', 'PATH_LINK', \
+    order = ['CARD_CODE', 'DAY', 'WEEKDAY', 'NUM_TRIPS', 'PATH_LINK', \
             'TRAVEL_TIME', 'TRAVEL_DISTANCE', \
             'TRANSFER_NUM', 'TRANSFER_TIME_AVG', 'TRANSFER_TIME_SUM', \
             'START_TIME', 'END_TIME', 'START_HOUR', 'END_HOUR', \
-            'TRANSFER_DETAIL', 'NUM_TRIPS', \
+            'TRANSFER_DETAIL', \
             'ON_AREA', 'OFF_AREA', \
             'ON_TRAFFIC', 'OFF_TRAFFIC', 'ON_MIDDLEAREA', 'OFF_MIDDLEAREA', 'ON_BIGAREA', 'OFF_BIGAREA', \
             'ON_RINGROAD', 'OFF_RINGROAD',  \

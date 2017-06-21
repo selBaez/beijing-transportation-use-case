@@ -121,7 +121,7 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True',
         stdDirectory = 'std/' if std == 'True' else 'original/'
         directory = paths.CUBES_DIR_DEFAULT+labelDirectory+stdDirectory
 
-        with open(directory+'userStructures.pkl', 'r') as fp: userStructures = cPickle.load(fp)
+        with open(directory+'combined.pkl', 'r') as fp: userStructures = cPickle.load(fp)
 
     data = list(data.groupby('CARD_CODE'))
 
@@ -266,13 +266,13 @@ def preprocess():
         data = _labelData(data)
 
         print("------------------------ Storing dataframe ------------------------")
-        _storeDataframe(data, labeled=True, std=False, size='full')
+        _storeDataframe(data, labeled=True, std=False)
 
         if FLAGS.std == 'True':
             print("-------------------------- Standardizing --------------------------")
             data = _standardize(data)
             print("------------------------ Storing dataframe ------------------------")
-            _storeDataframe(data, labeled=True, std=True, size='full')
+            _storeDataframe(data, labeled=True, std=True)
 
             if FLAGS.plot == 'True':
                 print("------------------- Visualize standardized data -------------------")
@@ -283,21 +283,21 @@ def preprocess():
             print("-------------------------- Standardizing --------------------------")
             data = _standardize(data)
             print("------------------------ Storing dataframe ------------------------")
-            _storeDataframe(data, labeled=False, std=True, size='full')
+            _storeDataframe(data, labeled=False, std=True)
 
             if FLAGS.plot == 'True':
                 print("------------------- Visualize standardized data -------------------")
                 _visualize(data, 'standardized')
 
-    print("--------------------------- Build cubes ---------------------------")
-    # TODO switch shape to 30 days
-    userStructures = _buildCubes(data, (24,16,26), FLAGS.create_cubeDict, FLAGS.labeled, FLAGS.std)
-
-    print("-------------------------- Storing cubes --------------------------")
-    _storeCubes(userStructures, 'combined', FLAGS.labeled, FLAGS.std)
-
-    print("-------------------------- Flatten cubes --------------------------")
-    userStructures = _buildVectors(userStructures, FLAGS.labeled)
+    # print("--------------------------- Build cubes ---------------------------")
+    # # TODO switch shape to 30 days
+    # userStructures = _buildCubes(data, (24,30,26), FLAGS.create_cubeDict, FLAGS.labeled, FLAGS.std)
+    #
+    # print("-------------------------- Storing cubes --------------------------")
+    # _storeCubes(userStructures, 'combined', FLAGS.labeled, FLAGS.std)
+    #
+    # print("-------------------------- Flatten cubes --------------------------")
+    # userStructures = _buildVectors(userStructures, FLAGS.labeled)
 
 def print_flags():
     """

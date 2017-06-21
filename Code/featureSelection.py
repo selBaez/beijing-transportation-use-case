@@ -1,7 +1,7 @@
 """
 This module implements feature selection for commuters classification via correlation tests
 """
-import argparse
+import argparse, glob
 import pandas as pd
 import numpy as np
 import warnings
@@ -13,11 +13,19 @@ from sklearn.model_selection import KFold
 
 import paths, shared
 
-def _loadData(fileName):
+def _loadData(directory):
     """
     Load csv data on pandas
     """
-    data = pd.read_csv(fileName, index_col='ID')
+    # Read many sample files
+    allFiles = glob.glob(directory + "/*.csv")
+    data = pd.DataFrame()
+    list_ = []
+    for file_ in allFiles:
+        df = pd.read_csv(file_,index_col='ID', header=0)
+        list_.append(df)
+    data = pd.concat(list_)
+
     print("{} records loaded").format(len(data.index))
 
     return data
@@ -55,7 +63,7 @@ def _featureImportance(samples, labels, attributes, n_attributes):
     """
     Measure feature importance by using a Tree
     """
-    model = ExtraTreesClassifier()
+    model = ExtraTreesClassifier(n_estimators=500, random_state=0)
     model.fit(samples, labels)
 
     if FLAGS.plot == 'True':
@@ -129,7 +137,7 @@ def selectFeatures():
     Performs training and reports evaluation (on training and validation sets)
     """
     print("---------------------------- Load data ----------------------------")
-    data = _loadData(paths.PREPROCESSED_DIR_DEFAULT+'labeled/original/'+FLAGS.file+'.csv')
+    data = _loadData(paths.PREPROCESSED_DIR_DEFAULT+'labeled/'+FLAGS.directory)
 
     print("----------------------- Extract  attributes -----------------------")
     columns = data.select_dtypes(include=[np.number]).columns.values.tolist()
@@ -150,7 +158,7 @@ def selectFeatures():
     scores_fi = _featureImportance(samples, labels, attributes, n_attributes)
 
     print("------------------------ Chi squared  test ------------------------")
-    scores_c2 = _chi2(samples, labels, attributes, n_attributes)
+    # scores_c2 = _chi2(samples, labels, attributes, n_attributes)
 
     print("----------------------------- ANOVA-F -----------------------------")
     scores_fv = _anova(samples, labels, attributes, n_attributes)
@@ -159,8 +167,8 @@ def selectFeatures():
     scores_do = _domainKnowledge(attributes, n_attributes)
 
     print("------------------------ Aggregate  scores ------------------------")
-    scores = [scores_cr, scores_fi, scores_c2, scores_fv, scores_do]
-    methods = ['correlation', 'importance', 'chi2', 'f-value', 'domain knowledge']
+    scores = [scores_cr, scores_fi, scores_fv, scores_do]#, scores_c2]
+    methods = ['correlation', 'importance', 'f-value', 'domain knowledge']#, 'chi2']
 
     shared._stackedFeatureBar(scores, methods, n_attributes, attributes, 'Combined', 'scores')
 
@@ -190,8 +198,8 @@ def main(_):
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file', type = str, default = paths.FILE_DEFAULT,
-                        help='File to read')
+    parser.add_argument('--directory', type = str, default = 'original',
+                        help='Directory to get files: original or std')
     parser.add_argument('--plot', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
 
