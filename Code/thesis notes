@@ -8,8 +8,8 @@ preprocessing					label data																																						DONE
 											create user cubes/vectors																															DONE
 
 feature selection 		preprocessing -> label data																														DONE
-											correlation tests (correlation, feature importance, chi2 and anova f value)						DONE
 											preprocessing -> standardize
+											correlation tests (correlation, feature importance, chi2 and anova f value)						DONE
 											select k best
 											preprocessing -> create user cubes
 											preprocessing -> flatten cubes into vectors
@@ -45,6 +45,8 @@ fix start/end hour 0. change to 24?
 BIG ISSUE: vocabularies grow!!
 FIX ASAP: new lines in voc
 
+fix two trips one start -> merge trips?
+
 
 NOTE:
 currently transforming data over whole data set and not over train/test or cross validation.
@@ -64,5 +66,6 @@ Attributes summary: numerical vs categorical
 Section: deal with categorical -> tokenize, encode, bins
 comment on ordinal structure vs one hot
 random forests deal well with categorical (large node size), adaboost with missing info
+feature selection by some sort of ensemble, voting system
 
 categorize mode, stop, line: zero cannot be used cause it means empty.
