@@ -16,7 +16,7 @@ import paths, shared
 ############ --- BEGIN default constants --- ############
 MIN_RECORDS_DEFAULT = 0
 MODES_DEFAULT = [u'轨道', u'公交', u'自行车']      # subway, bus, bike
-#TODO change back to unicode to read real data
+# NOTE change back to unicode to read real data
 ############ --- END default constants--- ############
 
 def _loadData(fileName):
@@ -286,6 +286,7 @@ def _parseTrips(data, createVoc):
     print('Formating trip')
 
     # Replace line and stops : vocabularies
+    # In parallel
     data['ON_LINE'].replace(to_replace=lines, inplace=True)
     data['OFF_LINE'].replace(to_replace=lines, inplace=True)
 

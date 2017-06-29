@@ -231,12 +231,11 @@ def _storeDataframe(data, labeled=True, std=True):
     # data.to_pickle(directory+FLAGS.file+'.pkl')
     data.to_csv(directory+FLAGS.file+'.csv')
 
-def _storeCubes(cubes, className='commuters', labeled='True', std='True'):
+def _storeStructures(structures, className='commuters', labeled='True', std='True'):
     """
     Store pickle
     """
     # Deal with folders that do not exist
-
     labelDirectory = 'labeled/' if labeled == 'True'  else 'all/'
     directory = paths.CUBES_DIR_DEFAULT+labelDirectory
     if not os.path.exists(directory):
@@ -289,15 +288,14 @@ def preprocess():
                 print("------------------- Visualize standardized data -------------------")
                 _visualize(data, 'standardized')
 
-    # print("--------------------------- Build cubes ---------------------------")
-    # # TODO switch shape to 30 days
-    # userStructures = _buildCubes(data, (24,30,26), FLAGS.create_cubeDict, FLAGS.labeled, FLAGS.std)
-    #
-    # print("-------------------------- Storing cubes --------------------------")
-    # _storeCubes(userStructures, 'combined', FLAGS.labeled, FLAGS.std)
-    #
-    # print("-------------------------- Flatten cubes --------------------------")
-    # userStructures = _buildVectors(userStructures, FLAGS.labeled)
+    print("--------------------------- Build cubes ---------------------------")
+    userStructures = _buildCubes(data, (24,30,26), FLAGS.create_cubeDict, FLAGS.labeled, FLAGS.std)
+
+    print("-------------------------- Flatten cubes --------------------------")
+    userStructures = _buildVectors(userStructures, FLAGS.labeled)
+
+    print("----------------------- Storing  structures -----------------------")
+    _storeStructures(userStructures, 'combined', FLAGS.labeled, FLAGS.std)
 
 def print_flags():
     """

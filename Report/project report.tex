@@ -64,37 +64,35 @@
 % Why is public transportation important?
 Urban public transportation includes systems that are available for use by anyone in urban areas. Its facilities are commonly composed by buses, subway/metro lines, light rails, tramways, trains, taxis and others. As a network, they provide service for the majority of citizens in urban areas.\citep{vuchic1900urban}
 
-Figure \ref{fig:transportation/passenger} shows the passsenger transport usage, as million passengers per kilometer. This represents the transport of a passenger for one kilometer. From the top image we note that United Stated, China, Germany, France, Italy, and United Kingdom contitute the six countries with the most passenger transport, according to their reported data from 2015 or later.\cite{OECD2017passenger} 
-
-Furthermore, historical data in the bottom image reveals the 15 years behavior for each of the aforementioned countries. Most of the countries show stability, with increase or decrease of less than .10 million passengers for European countries, and .5 million passengers for United States. China, however, shows a trend with steep increase for most of the selected years. In fact, comparing to its less than 1.2 million passengers in 2000, China doubled its public transport usage to 2.4 million passengers in 2015. 
+Figure \ref{fig:transportation/passenger} shows the passsenger transport usage, as million passengers per kilometer, in several different countries according to the Organisation for Economic Cooperation and Development (OECD). From all OECD countries, the United States, China, Germany, France, Italy, and the United Kingdom contitute the six countries with the most passenger transport, according to their reported data from 2015 or later.\cite{OECD2017passenger} 
 
 \begin{figure}[H]
-  \centering
-  \begin{subfigure}[b]{.85\textwidth}
   	\centering
   	\includegraphics[width=\linewidth]{./images/OECD_passengers_absolute.png}
-  	\caption{Passenger transport data, per country.}
-  \end{subfigure}
-  \begin{subfigure}[b]{.85\textwidth}
+  	\caption{OECD countries and their passenger transportation data.}
+  	\label{fig:transportation/passenger}
+\end{figure}
+
+Furthermore, historical data in Figure \ref{fig:transportation/passenger-trend} reveals the 15 years behavior for each of the aforementioned countries. Most of the countries show stability, with increase or decrease of less than 0.10 million passengers for European countries, and 0.5 million passengers for the United States. China, however, shows a trend with steep increase for most of the selected years. In fact, comparing to its less than 1.2 million passengers in 2000, China doubled its public transport usage to 2.4 million passengers in 2015. 
+  
+\begin{figure}
   	\centering
   	\includegraphics[width=\linewidth]{./images/OECD_passengers_increase.png}
-  	\caption{Historical data for the top six countries with most passenger transport usage.}
-  \end{subfigure}
-  \caption{OECD countries and their passenger transportation data.}
-  	\label{fig:transportation/passenger}
+  	\caption{Historical data for the top six countries with most passenger transport usage. China (top-left image) has the steepest increase overall.}
+  	\label{fig:transportation/passenger-trend}
 \end{figure}
 
 Though it is a more sustainable alternative compared to private car usage, public transport usage has a significant environmental impact, affecting noise and air pollution. Diesel buses, which generally make up a major part of public buses, have large fuel consumption needs and contribute significantly to CO$_{2}$ emissions. Even eco-friendly alternatives such as hybrid diesel buses are sensitive to operating conditions, as their fuel consumption may increase by up tp 50\% when the on-board air conditioning is on.\cite{zhang2014real}
 
-Consequently, public transportation directly relates to energetic demand, since its facilities are mostly petroleum or electrical based. In terms of global energy consumption, passenger transportation accounts for about 25\% of the total world energy consumption. Furthermore, the tarnsportation sector consupmtion increases at an annual average rate of 1.4.\% \cite{eia2016energy} This may bring further economical implications for countries with high public transportation demand.
+Consequently, public transportation directly relates to energetic demand, since its facilities are mostly petroleum or electrical based. In terms of global energy consumption, passenger transportation accounts for about 25\% of the total world energy consumption. Furthermore, the transportation sector consupmtion increases at an annual average rate of 1.4.\% \cite{eia2016energy} This may bring further economical implications for countries with high public transportation demand.
 
 \subsubsection{Who are the commuters?}
 % Self proclaimed commuters
-A major proportion of public transport users is represented by commuters. These are regular users of public transit, with consistent spatio-temporal patterns in their travels. Driven by a routine, commuters travel back and forth from specific places, commonly represented by their home, work, school, or other similar locations. \selfnote{mention that users are usually asked whether they consider themselves commuters or not. drawbacks of self reported data}
+A major proportion of public transport users is represented by commuters. These are regular users of public transit, with consistent spatiotemporal patterns in their travels. Driven by a routine, commuters travel back and forth from specific places, for example, from their home to work, school, or other similar locations. 
 
-As commuters are frequent users of public transit, the  conditions of the public network directly influence their personal well being and generally impacts their quality of life. Intuitively, if the commuting experience is unpleasant, daily travel can bring distress to commuters and even repel them from using the public transport at all. Several studies have looked into public transit evaluation from different perspectives, including commuters' needs \cite{mao2016commuting}. The most common aspects of it include: travel time, average speed, delays, accessibility, service coverage, crowded level, facilities quality, and fare rate. Weng et al \cite{weng2013bus} identified five categories (Convenience, Rapid, Reliability and Comfort) that summarize commuters priorities when choosing to travel by public transport.
+As commuters are frequent users of public transit, the  conditions of the public network directly influence their personal well being and generally impact their quality of life. Intuitively, if the commuting experience is unpleasant, daily travel can bring distress to commuters and/or even repel them from using the public transport at all. Several studies have looked into public transit evaluation from different perspectives, including commuters' needs \cite{mao2016commuting}. The most common aspects of it include: travel time, average speed, delays, accessibility, service coverage, crowded level, facilities quality, and fare rate. Weng et al \cite{weng2013bus} identified five indexes (Convenience, Rapid, Reliability and Comfort) that summarize commuters priorities when choosing to travel by public transport.
  
-From both of the above, the large presence of commuters and their known needs and preferences, it follows that identifying commuters can help in creating a sustainable public transportation network. Public transit stakeholders should be able to understand the commuters' demands and its dynamics, consequently bringing long term planning and policies for improving the overall commuting experience.
+From both of the above, the large presence of commuters and their known needs and preferences, it follows that identifying commuters and addressing their needs can help in creating a sustainable public transportation network. Public transit stakeholders should be able to understand the commuters' demands and its dynamics, consequently bringing long term planning and policies for improving the overall commuting experience.
 
 \subsection{The city of Beijing}
 % Why is beijing a good (challenging, rich, valuable, relevant) use case?
@@ -102,36 +100,33 @@ The city of Beijing presents a special case of urbanization and rapid industrial
 
 As a result of the population explosion, many environmental and social resources are under pressure. From the environmental side, one of the most notable issues is related to air pollution, due to the significantly high pollutant emissions in the city \cite{zhang2016air}. Similarly, the city's downstream river pollution is serious, with most regions of the Yellow river being unable to comply with the lowest water quality standards. \cite{wang2015studies} 
 
-In the aspect of social resources, one of the main complications is the one of mobility. In Beijing, public transport is the dominant mode of transportation, accounted for 44.0\% of all trips compared to 32.6\% attributed to private cars \cite{mao2016commuting}. In 2008, the total ridership was 6.5 billion travels. Though the network is continually expanding, it is a fact that public transport is overcrowded, constantly reaching over 100\% capacity \cite{beijing2009research}.
+On the aspect of social resources, one of the main complications is mobility. In Beijing, public transport is the dominant mode of transportation, accounted for 44.0\% of all trips compared to 32.6\% attributed to private cars \cite{mao2016commuting}. In 2008, the total ridership was 6.5 billion travels. Though the network is continually expanding, it is a fact that public transport is overcrowded, constantly reaching over 100\% capacity \cite{beijing2009research}.
 
 Beijing public transport is composed of buses, subway and bicycles. The three types can be accessed by using a single smart card. 
 
 \begin{description}
 \item[Bus:] In 2015, there were 876 bus lines with 23,287 buses in operation. The bus network is the most extensive mode of transportation, expanding over 20,186 km. It observes an average daily traffic volume of 10.98 million passengers, with the highest daily volume reaching 13.07 million on one day. \cite{beijing2016annual}
 
-\item[Subway:] The Beijing subway has 18 lines with 334 stations, of which 53 are transfer stations. In 2015 it had an operating length of 554 km, with 5,024 vehicles running. \cite{beijing2016annual} Its network is is split by two operators: the state-owned Beijing Mass Transit Railway Operation Corp (operating 15 lines), and the joint Hong Kong venture Beijing MTR Corp (operating 3 lines).
+\item[Subway:] The Beijing subway has 18 lines with 334 stations, of which 53 are transfer stations. In 2015 it had an operating length of 554 km, with 5,024 vehicles running. \cite{beijing2016annual} Its network is split by two operators: the state-owned Beijing Mass Transit Railway Operation Corp (operating 15 lines), and the joint Hong Kong venture Beijing MTR Corp (operating 3 lines).
 
 Beijing's subway has an average daily traffic volume of 9.11 million passengers, with a maximum recorded volume of 11.66 million passengers. As such, it is the second busiest metro system in the world, providing 3,410 million annual journeys. Compared to the service provided in 2012, the system observed a 39\% increase in usage by 2014. It is also the second longest metro network, surpassed by Shanghai by only 21 km.  \cite{uitp2015world} 
 
 \item[Bicycles:] Beijing first implemented public bicycle systems in 2012. As of 2015, in total, 67,000 bikes are available for rental with 2,700 pick up/drop off points spread across the city. \cite{beijing2016annual}
 \end{description}
 
-\selfnote{Beijing is a relevant valuable use case where the results of a study can bring tangible benefits in short and long term}
 
 \subsection{Smart cards and Big Data}
-Smart cards present us with a straightforward way of massively collecting daily data. In the last years, smart card systems have become more popular, making it possible to monitor travelers transactions and facilitating fare collection. Several cities have implemented such systems, for example the Octopus card in Hong Kong\cite{chau2003octopus}, Oyster card in London \cite{blythe2004improving}, OV-chipkaart in The Netherlands \cite{de2008analysis}, and Yikatong card in Beijing \cite{chan2010tactical}, to name a few.
+Smart cards present us with a straightforward way of massively collecting daily data. In the last years, smart card systems have become more popular in the Transportation domain, making it possible to monitor travelers transactions and facilitating fare collection. Several cities have implemented such systems, for example the Octopus card in Hong Kong\cite{chau2003octopus}, Oyster card in London \cite{blythe2004improving}, OV-chipkaart in The Netherlands \cite{de2008analysis}, and Yikatong card in Beijing \cite{chan2010tactical}, to name a few.
 
-In Beijing, over 90\% of public transit users are smart card holders. There is a significant incentive for using the Yikatong smart card since bus rides are heavily subsidized (the user has only to pay 50\% of the full price)\cite{ma2017understanding}. Moreover, the Yikatong smart card system is also integrated with taxi, electricity and sewage payments. 
+In Beijing, over 90\% of public transit users are smart card holders. There is a significant incentive for using the Yikatong smart card since bus rides are heavily subsidized (users have only to pay 50\% of the full price)\cite{ma2017understanding}. Moreover, the Yikatong smart card system is also integrated with taxi, electricity and sewage payments, making it convenient to use as a general paying method.
 
-\textbf{Data quantity}
+\paragraph{Data quantity}
 
-Placed in context, public transit systems serve at least hundreds of users daily, where a typical user performs several trips a day, every day. On the specific case of Beijing, there are hundreds of thousands of smart cards gathering between 5 and 16 million records (trips) a day among a large complex network containing thousands of routes and tens of thousands of stops. 
+Placed in context, public transit systems serve at least hundreds of users daily, where a typical user performs several trips a day, every day. On the specific case of Beijing, there are hundreds of thousands of smart cards gathering between 5 and 16 million records (trips) a day, among a large complex network containing thousands of routes and tens of thousands of stops. 
 
-\textbf{Data quality}
+\paragraph{Data quality}
 
-However, though smart cards exponentially increase the quantity of data, they do not completely guarantee its quality. For example, some aspects of the trips cannot always be faithfully recorded but are inferred (for example, the transfers between the subway system when no check-in/out is done at changing trains). Furthermore, some fields are sometimes simply missing or incorrectly recorded due to malfunctions and situations out of control. 
-
-Another important consideration is that the collected data is unlabeled. \selfnote{explain why this is relevant. no correct answers, no validation or error measure.}
+However, though smart cards exponentially increase the quantity of data, they do not completely guarantee its quality. As is, some aspects of the trips cannot always be faithfully recorded but are inferred (for example, the transfers between the subway system when no check-in/out is done at changing trains). Furthermore, some fields are sometimes simply missing or incorrectly recorded due to malfunctions and situations out of control. 
 
 
 Given the large amounts of data collected and its nature, the analysis of such becomes challenging. Transit smart cards are capable of recording spatiotemporal information at an individual level over long periods of time. This generates a large volume of historical data that only tailored big data techniques can deal with. 
@@ -140,36 +135,50 @@ Given the large amounts of data collected and its nature, the analysis of such b
 This project performs an interdisciplinary study between the areas of Artificial Intelligence and Metropolitan Transportation. It is focused on introducing data mining techniques to a data rich domain. 
 
 % Each science benefits
-The area of Artificial Intelligence is able to provide dozens of prediction algorithms. Though constantly under refinement, it is time for state-of-the-art techniques to be applied to real and large impact situations to test their ability to deal with noisy streams. Comparably, given the ever growing complexity of urban mobility, domain experts must focus on analyzing trends and insights instead of curating and making sense out of raw data. Therefore, both areas benefit from this project.
+The area of Artificial Intelligence is able to provide dozens of prediction algorithms. Though constantly under refinement, it is time for state-of-the-art techniques to be applied, tested and validated under real and large impact situations to test their ability to deal with noisy streams. Comparably, given the ever growing complexity of urban mobility, domain experts must focus on analyzing trends and insights instead of curating and making sense out of raw data. As such, introducing these state-of-the-art techniques into the Metropolitan Transportation domain can aid to unravel massive human behaviors and reveal patterns and trends in mobility.
 
 \subsubsection{Societal context}
 % description, prediction and preescription
-Looking at the social context of Beijing, there are several reasons justifying an in depth study of commuters. 
+Identifying and analyzing mobility patterns may have different goals, from description, prediction or prescription, all of which affect their stakeholders directly. 
 
-First, a survey conducted in 2009 showed that 80\% of the public transport passengers' complaints in Beijing were related to the network being slow and time-consuming, inconvenient to transfer, unpunctual and unreliable. Commuters use the public transport network regularly to perform their routines, and thus need efficient and reliable means of transportation. Flaws and failures in the network reduce the attraction of public transport. \cite{beijing2009research}
+A descriptive analysis determines how do people use the public transit. It can pinpoint chaotic hotspots in the city, peak hours, popular routes or other behaviors. A predictive analysis investigates how will people use the transit in the future or under new circumstances. For example, public transport usage projections in the years to come directly affects environmental models trying to improve air and water quality, energetic demand or other natural  and economic resources.
 
-Second, the city of Beijing faces a large imbalance between residential and working areas. Due to urban expansion, most residents have been forced to move to suburban areas due to the lack of affordable housing \cite{zhou2014commuting}. Targeting this group brings the largest benefits to the public.  
+Finally, a prescriptive analysis focuses on how should the different stakeholders deal with mobility behaviors. For example, the government as well as transport management and operators would gain invaluable spatial and temporal insights regarding commuters' behaviors. This insight may lead to tangible results, including policies for increasing the efficiency of the public transit network, adjustable travel fares tailored to the most relevant mobility patterns, incentives to relieve peak hours and thus traffic congestion, urban planning for residential and industrial land use, and others.
 
-Third, government, transport management and operators can gain invaluable spatial and temporal insights regarding commuters' behaviors. This insight can lead to tangible results, including policies for increasing the efficiency of the public transit network, adjustable travel fares tailored to most relevant commuters' patterns, incentives to relieve peak hours and thus traffic congestion, urban planning for residential and industrial land use, and others.
+Given that Beijing has a widely spread data collection system, combined with formidable institutions capable of introducing new measures in their public transportation network, this city is an excellent use case where the results of an in-depth study can generate actionable plans and bring benefits in the short and long term.
+
+Furthermore, the social context of Beijing presents specific opportunities for improvements where the full power of data analysis and its impact can be tested. 
+
+For example, the city of Beijing faces a large imbalance between residential and working areas. Due to urban expansion, most residents have been forced to move to suburban areas due to the lack of affordable housing, regardless of having their work environments within the six Ring Roads \cite{zhou2014commuting}. Investigating and targeting this group could alleviate the pitfalls of long distance commuting. 
+
 
 \subsubsection{Scientific context}
-From a scientific point of view, mobility patterns in metropolitan areas follow swarm behaviors. Based on individual travels and routines, travelers exhibit distinguishable characteristics on a larger scale. Both levels of understanding are crucial for Transportation experts. 
+% Improve individual and collective analysis
+Mobility patterns in metropolitan areas follow complex swarm behaviors. Based on individual travels and routines, travelers exhibit distinguishable characteristics on a larger scale. Both individual and collective levels of understanding are crucial for Transportation experts. In order to explore both levels, Metropolitan Transportation studies typically focus of the usage of surveys. These surveys are targeted to reach travelers on an individual level, while large scale indicators and aggregated data are taken to investigate their collective behavior. 
 
-%Individual surveys and aggregated 
-In order to explore both levels, Metropolitan Transportation studies typically focus of the usage of surveys. These surveys are targeted to reach travelers on an individual level, while aggregated measurements are taken to investigate their collective behavior. These methods have several disadvantages. On the one hand, surveys are costly to implement, and in general have problems related to small populations and non-representative samples. Even when the latter problems are escaped, the typical quality versus quantity trade off is present, reducing the confidence of the collected information. Furthermore, surveys are based on self-report, which by itself has bias problems. On the other hand, aggregated measurements miss the interactions between individuals that cause the collective behavior. 
+These methods have several disadvantages. On the one hand, surveys are costly to implement, and in general have problems related to small non-representative samples. Even when these problems are escaped, the typical quality versus quantity trade off is present, reducing the confidence of the collected information. On the other hand, large scale measurements (i.e. total passenger flow) miss the interactions between individuals that cause the collective behavior.
 
-Conveniently, there exists machine learning and other mining methods specialized in analyzing disaggregated complex information. As such, introducing these state-of-the-art techniques into the Metropolitan Transportation domain can aid to unravel massive human behaviors and reveal patterns and trends in mobility.
+On top of this, an important consideration on the Metropolitan Transportation domain is that the data collected by smart cards is unlabeled. This means that traveling behaviors are not assigned to known specific categories, making it hard to validate and evaluate. Typically, this issue is address by asking some sample users -via surveys- how they categorize themselves (for example, if they consider themselves to be commuters) and then extrapolating this profile to new users. However, self-reported data by itself has bias problems, therefore introducing noise or false patterns. 
+
+Fortunately, the field of pattern recognition has seen major development in the last years. Nowadays, there exist machine learning and other data mining methods specialized in analyzing disaggregated complex information. Data analysis can be as general is specialized as needed, producing reliable and comprehensible information and visualizations. Furthermore, unsupervised tools have arisen that find patterns based on the data alone, thus being independent from the aforementioned biases.
 
 
 \subsection{Thesis organization}
-This Thesis is organized as follows:
+The rest of this thesis is organized as follows: On the next section we perform a \textit{Literature review} to explore previous work on mining smart card transit data. We also summarize current representation and pattern recognition methodologies for dealing with complex spatiotemporal data.  
 
-First we perform a literature review to look for previous work on mining smart card transit data and for specific state-of-the art methodologies for classification and clustering complex spatiotemporal data. Subsequently, we establish the scope and research objectives of this project. We continue to describe the methodology thoroughly, including the data and the approach to mine it. Following this description, we identify three distinct stages of the project (Data preparation, Commuters classification, and Traveling behavior clustering) and report their corresponding experimentation. Finally, gather conclusions and future work opportunities are explored. \selfnote{more detailed}
+Subsequently, we establish the \textit{Research framework} where we explicitly state the objectives and research questions of this project. As a result, we limit the project's scope and clearly define the most important terms to be used. 
 
+We continue to describe the \textit{Methodology} thoroughly. This consists of an extensive description of the data and its characteristics, our proposed 3 dimensional representation for spatiotemporal data, and the data mining approach to follow, including supervised and unsupervised learning techniques for dimensionality reduction and pattern recognition.
+
+Following this, we identify three distinct stages of the project: \textit{Data preparation and preprocessing}, \textit{Commuters identification}, and \textit{Traveling behavior clustering}. In the \textit{Data preparation and preprocessing} section we describe the pipeline for processing raw data, extracting trip attributes and finally creating the proposed 3D representation of an user's traveling behavior. 
+
+The section on \textit{Commuters identification} describes a supervised learning approach to classifying labeled data, using feature selection and ensemble models. Its counterpart, the section on \textit{Traveling behavior clustering} describes an unsupervised  learning approach to recognize similar traveling behaviors, using feature extraction (by means of an autoencoder) and clustering algorithms. 
+
+Finally, we gather conclusions regarding the proposed representation. We compare both supervised and unsupervised approaches and explore future work opportunities. 
 
 \newpage
 \section{Literature review}
-In this section we look at studies within the last decade that are related to smart card transit data. First we summarize the approach and most relevant reproducible findings of each paper in order to get a big picture of the transportation domain. Secondly, we explore representations and compare the way traveling behavior is usually represented in the transportation domain, and other types of representations or embedding popular in the Artificial Intelligence domain. Thirdly, we discuss two techniques for pattern recognition through supervised or unsupervised learning. Finally we explore some pioneer work in end-to-end learning. 
+In this section we look at studies within the last decade that are related to smart card transit data. First, we summarize the approach and the most relevant reproducible findings of each paper in order grasp a broad view of the Transportation domain. Secondly, we explore representations for spatiotemporal data and compare the way traveling behavior is usually represented in the Transportation domain, and other types of representations available in the Artificial Intelligence domain. Thirdly, we discuss two techniques for pattern recognition through supervised and unsupervised learning. Finally we explore some pioneer work in end-to-end learning. 
 
 \subsection{Data mining on transit card data}
 % What questions and approaches are common. How do they interpret traveling behavior? What's the volume of data?

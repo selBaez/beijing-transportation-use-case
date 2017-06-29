@@ -8,9 +8,9 @@ preprocessing					label data																																						DONE
 											create user cubes/vectors																															DONE
 
 feature selection 		preprocessing -> label data																														DONE
-											preprocessing -> standardize
+											preprocessing -> standardize                                                          DONE
 											correlation tests (correlation, feature importance, chi2 and anova f value)						DONE
-											select k best
+											select k best																																					TODO
 											preprocessing -> create user cubes
 											preprocessing -> flatten cubes into vectors
 											save vectors

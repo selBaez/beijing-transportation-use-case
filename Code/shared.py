@@ -4,6 +4,8 @@ This module contains the main functions shared across scripts. Mainly done for v
 import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import random, os
