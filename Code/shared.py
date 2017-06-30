@@ -30,7 +30,7 @@ def _stackedFeatureBar(scores, methods, n_features, features, testName, fileName
     plt.xticks(range(n_features), features, rotation=70, ha='center', fontsize=8)
     plt.xlabel('Attributes')
     plt.ylabel('Scores')
-    plt.legend(methods)
+    plt.legend(methods, loc='upper left')
     plt.title(testName+': '+fileName)
     plt.tight_layout()
 

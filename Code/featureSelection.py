@@ -44,7 +44,7 @@ def _correlationAnalysis(data, columns, n_columns, attributes, n_attributes):
     scores = np.absolute(correlationsMatrix.values[1:-1,-1])
 
     if FLAGS.plot == 'True':
-        print("                   ---------  Plot ---------                   ")
+        print("Plot")
         shared._correlationHeatmap(correlationsMatrix, n_columns, columns, 'General')
         shared._correlationHeatmap(commuters_correlationsMatrix, n_columns, columns, 'Commuter')
         shared._correlationHeatmap(non_commuters_correlationsMatrix, n_columns, columns, 'Non Commuter')
@@ -67,7 +67,7 @@ def _featureImportance(samples, labels, attributes, n_attributes):
     model.fit(samples, labels)
 
     if FLAGS.plot == 'True':
-        print("                   ---------  Plot ---------                   ")
+        print("Plot")
         shared._featureBar(model.feature_importances_, n_attributes, attributes, 'Feature Importance', 'scores')
 
     scores = model.feature_importances_
@@ -85,7 +85,7 @@ def _chi2(samples, labels, attributes, n_attributes):
     chi2val, pval = chi2(samples, labels)
 
     if FLAGS.plot == 'True':
-        print("                   ---------  Plot ---------                   ")
+        print("Plot")
         shared._featureBar(chi2val, n_attributes, attributes, 'Chi squared', 'scores')
         shared._featureBar(pval, n_attributes, attributes, 'Chi squared', 'p values')
 
@@ -104,7 +104,7 @@ def _anova(samples, labels, attributes, n_attributes):
     fval, pval2 = f_classif(samples, labels)
 
     if FLAGS.plot == 'True':
-        print("                   ---------  Plot ---------                   ")
+        print("Plot")
         shared._featureBar(fval, n_attributes, attributes, 'F values', 'scores')
         shared._featureBar(pval2, n_attributes, attributes, 'F values', 'p values')
 
@@ -123,7 +123,7 @@ def _domainKnowledge(attributes, n_attributes):
     scores = np.loadtxt(paths.SCORES_DIR_DEFAULT+'domainScores.txt')
 
     if FLAGS.plot == 'True':
-        print("                   ---------  Plot ---------                   ")
+        print("Plot")
         shared._featureBar(scores, n_attributes, attributes, 'Domain knowledge', 'scores')
 
     # Normalize
@@ -131,6 +131,86 @@ def _domainKnowledge(attributes, n_attributes):
     scores = scores/total
 
     return scores
+
+def _analysis(data, samples, labels, columns, n_columns, attributes, n_attributes):
+    """
+    Run statistical, machine learning and domain knowledge analysis to score attributes
+    """
+    print("Correlation")
+    scores_cr = _correlationAnalysis(data, columns, n_columns, attributes, n_attributes)
+
+    print("Feature importance")
+    scores_fi = _featureImportance(samples, labels, attributes, n_attributes)
+
+    print("ANOVA-F")
+    scores_fv = _anova(samples, labels, attributes, n_attributes)
+
+    print("Domain  knowledge")
+    scores_do = _domainKnowledge(attributes, n_attributes)
+
+    # print("Chi squared test")
+    # Not using because it unbalances scores towards larger values
+    # scores_c2 = _chi2(samples, labels, attributes, n_attributes)
+
+    print("Aggregated scores")
+    methods = ['correlation', 'extraTrees importance', 'ANOVA f-value', 'domain knowledge']#, 'chi2']
+    scores = [scores_cr, scores_fi, scores_fv, scores_do]#, scores_c2]
+    aggScores = np.zeros(shape=scores[0].shape)
+
+    # Normalize scores by method and merge
+    for i, values in enumerate(scores):
+        scores[i] = values / len(scores)
+        aggScores = aggScores + scores[i]
+
+    if FLAGS.plot == 'True':
+        print("Plot")
+        shared._stackedFeatureBar(scores, methods, n_attributes, attributes, 'Aggregated', 'scores')
+        shared._featureBar(aggScores, n_attributes, attributes, 'Merged', 'scores')
+
+    return aggScores
+
+def _selectBest(scores, attributes):
+    """
+    Select best attributes per category according to their scores
+    """
+    #TODO change according to new position of num trips
+
+    # Category: General
+    generalScores = scores[0:7]
+    print("General attributes: {}".format(len(generalScores)))
+
+    k = 2
+    selectedGeneral = np.argsort(generalScores)[-k:]
+    print("Best {}: {}".format(k, np.array(attributes)[selectedGeneral]))
+
+    # Category: Temporal
+    temporalScores = scores[7:9]
+    print("\nTemporal attributes: {}".format(len(temporalScores)))
+
+    k = 2
+    selectedTemporal = np.argsort(temporalScores)[-k:] + 7
+    print("Best {}: {}".format(k, np.array(attributes)[selectedTemporal]))
+
+    # Category: Spatial
+    spatialScores = scores[10:]
+    print("\nSpatial attributes: {}".format(len(spatialScores)))
+
+    # Calculate scores per spatial attribute ON/OFF pair
+    pairSpatialScores = np.zeros(len(spatialScores/2))
+    for i in range(len(spatialScores)):
+        if i % 2 == 0: # ON
+            pairSpatialScores[i/2] = spatialScores[i] + spatialScores[i+1]
+
+    k = 2
+    selectedSpatial = np.argsort(pairSpatialScores)[-k:]
+    selectedSpatial = np.sort(np.concatenate((selectedSpatial*2+10, selectedSpatial*2+10+1)))
+    print("Best {}: {}".format(k*2, np.array(attributes)[selectedSpatial]))
+
+    # Join all
+    selected = np.sort(np.concatenate((selectedGeneral, selectedTemporal, selectedSpatial)))
+    print("\nFinal selection of {}: {}".format(len(selected), np.array(attributes)[selected]))
+
+    return selected
 
 def selectFeatures():
     """
@@ -143,41 +223,23 @@ def selectFeatures():
     columns = data.select_dtypes(include=[np.number]).columns.values.tolist()
     n_columns = len(columns)
 
+    # Exclude card code and label
     attributes = columns[1:-1]
     n_attributes = len(attributes)
 
-    # Exclude card code
+    # Get values for samples and labels
     samples = data[attributes].values
     labels = data[columns[-1]].values
 
-    print("---------------------- Analyze  correlations ----------------------")
-    scores_cr = _correlationAnalysis(data, columns, n_columns, attributes, n_attributes)
+    print("-------------------------- Run  analysis --------------------------")
+    scores = _analysis(data, samples, labels, columns, n_columns, attributes, n_attributes)
 
-    print("---------------------- Feature  importance ------------------------")
-    #TODO: run on several instances and average scores
-    scores_fi = _featureImportance(samples, labels, attributes, n_attributes)
+    print("--------------- Select best attributes per category ---------------")
+    selected = _selectBest(scores, attributes)
 
-    print("------------------------ Chi squared  test ------------------------")
-    # scores_c2 = _chi2(samples, labels, attributes, n_attributes)
 
-    print("----------------------------- ANOVA-F -----------------------------")
-    scores_fv = _anova(samples, labels, attributes, n_attributes)
-
-    print("------------------------ Domain  knowledge ------------------------")
-    scores_do = _domainKnowledge(attributes, n_attributes)
-
-    print("------------------------ Aggregate  scores ------------------------")
-    scores = [scores_cr, scores_fi, scores_fv, scores_do]#, scores_c2]
-    methods = ['correlation', 'importance', 'f-value', 'domain knowledge']#, 'chi2']
-
-    shared._stackedFeatureBar(scores, methods, n_attributes, attributes, 'Combined', 'scores')
-
-    print("------------------ Select best 25'%' attributes ------------------")
-    k = .25 * n_attributes
-    # smart choice, if on of something, off of something
 
     # cv = KFold(2)
-    # selection = SelectKBest(5)
     # Feature Union
 
 
