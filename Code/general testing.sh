@@ -14,12 +14,12 @@
 #                     --plot 'False' \
 #                     --sampleBy 'Trip'
 #
-# # FULL
-# python preparation.py --file 'sample data(50000)' \
-#                     --verbose 'False' \
-#                     --create_voc 'True' \
-#                     --plot 'False' \
-#                     --sampleBy 'False'
+# FULL
+python preparation.py --file 'sample data(50000)-parallel' \
+                    --verbose 'False' \
+                    --create_voc 'True' \
+                    --plot 'False' \
+                    --sampleBy 'False'
 
 # ############################### SAMPLE  BY CODE ###############################
 #

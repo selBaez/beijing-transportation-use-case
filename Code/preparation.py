@@ -10,12 +10,13 @@ import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 import random, cPickle, re, json, csv
+from datetime import datetime
+from multiprocessing import Pool, cpu_count
 
 import paths, shared
 
 ############ --- BEGIN default constants --- ############
-MIN_RECORDS_DEFAULT = 0
-MODES_DEFAULT = [u'轨道', u'公交', u'自行车']      # subway, bus, bike
+MODES_DEFAULT = ['轨道', '公交', '自行车']      # subway, bus, bike
 # NOTE change back to unicode to read real data
 ############ --- END default constants--- ############
 
@@ -24,7 +25,7 @@ def _loadData(fileName):
     Load csv data on pandas
     """
     # Ignore column 2 'DATA_LINK'
-    data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9], encoding='cp936')
+    data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9])#, encoding='cp936')
     print("{} records loaded".format(len(data.index)))
 
     return data
@@ -212,7 +213,6 @@ def _updateVocabularies(data, lines, stops):
     lines_off = data['OFF_LINE'][data['FLAG_OFF_LINE'].isnull()]
     stops_on = data['ON_STOP'][data['FLAG_ON_STOP'].isnull()]
     stops_off = data['OFF_STOP'][data['FLAG_OFF_STOP'].isnull()]
-    # print(lines_on, lines_off, stops_on, stops_off)
 
     # Create set to avoid duplicates
     newLines = set(lines_on.values)
@@ -265,10 +265,31 @@ def _updateVocabularies(data, lines, stops):
 
     return data
 
+def _replaceWithVocabularies(data):
+    """
+    Replace values from vocabulary and flag new ones
+    """
+    # Replace according to vocabularies
+    data['ON_LINE'].replace(to_replace=lines, inplace=True)
+    data['OFF_LINE'].replace(to_replace=lines, inplace=True)
+
+    data['ON_STOP'].replace(to_replace=stops, inplace=True)
+    data['OFF_STOP'].replace(to_replace=stops, inplace=True)
+
+    # Flag cases that were not replaced
+    data[['ON_LINE', 'FLAG_ON_LINE']] = data['ON_LINE'].str.split('-', expand=True)
+    data[['OFF_LINE', 'FLAG_OFF_LINE']] = data['OFF_LINE'].str.split('-', expand=True)
+    data[['ON_STOP', 'FLAG_ON_STOP']] = data['ON_STOP'].str.split('-', expand=True)
+    data[['OFF_STOP', 'FLAG_OFF_STOP']] = data['OFF_STOP'].str.split('-', expand=True)
+
+    return data
+
 def _parseTrips(data, createVoc):
     """
     Parse 'TRANSFER_DETAIL' column to get ON/OFF mode, line and stop tokenized information
     """
+    global lines, stops
+
     # Determine which vocabulary to use
     if createVoc == 'True':
         # Create vocabularies
@@ -285,19 +306,25 @@ def _parseTrips(data, createVoc):
     # Replace for clean format
     print('Formating trip')
 
-    # Replace line and stops : vocabularies
+    # Replace line and stops from vocabularies
+
+    # # Sequential
+    # df = data.copy()
+    # start = datetime.now()
+    # df = _replaceWithVocabularies(df)
+    # print("Sequential time: {}".format(datetime.now()-start))
+
     # In parallel
-    data['ON_LINE'].replace(to_replace=lines, inplace=True)
-    data['OFF_LINE'].replace(to_replace=lines, inplace=True)
+    start = datetime.now()
+    num_cores = cpu_count()
+    num_partitions = num_cores #8
 
-    data['ON_STOP'].replace(to_replace=stops, inplace=True)
-    data['OFF_STOP'].replace(to_replace=stops, inplace=True)
-
-    # Flag cases that were not replaced
-    data[['ON_LINE', 'FLAG_ON_LINE']] = data['ON_LINE'].str.split('-', expand=True)
-    data[['OFF_LINE', 'FLAG_OFF_LINE']] = data['OFF_LINE'].str.split('-', expand=True)
-    data[['ON_STOP', 'FLAG_ON_STOP']] = data['ON_STOP'].str.split('-', expand=True)
-    data[['OFF_STOP', 'FLAG_OFF_STOP']] = data['OFF_STOP'].str.split('-', expand=True)
+    pool = Pool(num_cores)
+    data_split = np.array_split(data, num_partitions)
+    data = pd.concat(pool.map(_replaceWithVocabularies, data_split))
+    pool.close()
+    pool.join()
+    print("Parallel time: {}, chunks: {}".format(datetime.now()-start, num_partitions))
 
     # If the vocabulary was created on this run, we do not need to update
     if createVoc != 'True':
@@ -410,7 +437,7 @@ def prepare():
 
     print("               ----------- Parsing  trip ------------              ")
     data = _parseTrips(data, FLAGS.create_voc)
-    #
+
     print("               ----- Creating time stamp bins ------               ")
     data = _to_time_bins(data)
 
