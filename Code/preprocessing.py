@@ -105,7 +105,7 @@ def _standardize(data):
 
     return data
 
-def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True', std='True'):
+def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True'):
     """
     3D structure per card code
     Dictionary has key = card code, value = [cube, label(optional)]
@@ -116,12 +116,11 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True',
         print('Creating dictionary for cubes')
         userStructures = {}
     else:
-        # Load existing corresponding cubes according to label, std
-        labelDirectory = 'labeled/' if labeled == 'True'  else 'all/'
-        stdDirectory = 'std/' if std == 'True' else 'original/'
-        directory = paths.CUBES_DIR_DEFAULT+labelDirectory+stdDirectory
+        # Load existing corresponding cubes according to label.
+        name = 'labeled/' if labeled == 'True'  else 'all'
+        directory = paths.CUBES_DIR_DEFAULT
 
-        with open(directory+'combined.pkl', 'r') as fp: userStructures = cPickle.load(fp)
+        with open(directory+name+'.pkl', 'r') as fp: userStructures = cPickle.load(fp)
 
     data = list(data.groupby('CARD_CODE'))
 
@@ -177,9 +176,6 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True',
             className = 'Unknown'
             print(className, ' with code: ', str(code))
 
-        # if FLAGS.verbose == 'True':
-        #     print(cube[:,:,0])
-
         if FLAGS.plot == 'True':
             # Plot several feature slices
             shared._featureSliceHeatmap(cube[:,:,0], 'Day', className, str(code))
@@ -210,7 +206,7 @@ def _buildVectors(userStructures, labeled= 'True'):
 
     return userStructures
 
-def _storeDataframe(data, labeled=True, std=True):
+def _storeDataframe(data, labeled=True):
     """
     Store pickle and csv data for use in model
     """
@@ -221,33 +217,19 @@ def _storeDataframe(data, labeled=True, std=True):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    stdDirectory = 'std/' if std else 'original/'
-
-    # Deal with folders that do not exist
-    directory = paths.PREPROCESSED_DIR_DEFAULT+labelDirectory+stdDirectory
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
     # data.to_pickle(directory+FLAGS.file+'.pkl')
     data.to_csv(directory+FLAGS.file+'.csv')
 
-def _storeStructures(structures, className='commuters', labeled='True', std='True'):
+def _storeStructures(structures, labeled='True'):
     """
     Store pickle
     """
     # Deal with folders that do not exist
-    labelDirectory = 'labeled/' if labeled == 'True'  else 'all/'
-    directory = paths.CUBES_DIR_DEFAULT+labelDirectory
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    name = 'labeled' if labeled == 'True'  else 'all'
+    directory = paths.CUBES_DIR_DEFAULT
 
-    stdDirectory = 'std/' if std == 'True' else 'original/'
-    directory = paths.CUBES_DIR_DEFAULT+labelDirectory+stdDirectory
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    print('writing to directory:', directory )
-
-    with open(directory+className+'.pkl', 'w') as fp: cPickle.dump(cubes, fp)
+    print('Writing to directory:', directory )
+    with open(directory+name+'.pkl', 'w') as fp: cPickle.dump(structures, fp)
 
 def preprocess():
     """
@@ -264,38 +246,31 @@ def preprocess():
         print("---------------------- Label and select data ----------------------")
         data = _labelData(data)
 
+        print("-------------------------- Standardizing --------------------------")
+        data = _standardize(data)
+
         print("------------------------ Storing dataframe ------------------------")
-        _storeDataframe(data, labeled=True, std=False)
-
-        if FLAGS.std == 'True':
-            print("-------------------------- Standardizing --------------------------")
-            data = _standardize(data)
-            print("------------------------ Storing dataframe ------------------------")
-            _storeDataframe(data, labeled=True, std=True)
-
-            if FLAGS.plot == 'True':
-                print("------------------- Visualize standardized data -------------------")
-                _visualize(data, 'standardized')
+        _storeDataframe(data, labeled=True)
 
     else: # do not select labeled data
-        if FLAGS.std == 'True':
-            print("-------------------------- Standardizing --------------------------")
-            data = _standardize(data)
-            print("------------------------ Storing dataframe ------------------------")
-            _storeDataframe(data, labeled=False, std=True)
+        print("-------------------------- Standardizing --------------------------")
+        data = _standardize(data)
 
-            if FLAGS.plot == 'True':
-                print("------------------- Visualize standardized data -------------------")
-                _visualize(data, 'standardized')
+        print("------------------------ Storing dataframe ------------------------")
+        _storeDataframe(data, labeled=False)
+
+    if FLAGS.plot == 'True':
+        print("------------------- Visualize standardized data -------------------")
+        _visualize(data, 'standardized')
 
     print("--------------------------- Build cubes ---------------------------")
-    userStructures = _buildCubes(data, (24,30,26), FLAGS.create_cubeDict, FLAGS.labeled, FLAGS.std)
+    userStructures = _buildCubes(data, (24,30,26), FLAGS.create_cubeDict, FLAGS.labeled)
 
     print("-------------------------- Flatten cubes --------------------------")
     userStructures = _buildVectors(userStructures, FLAGS.labeled)
 
     print("----------------------- Storing  structures -----------------------")
-    _storeStructures(userStructures, 'combined', FLAGS.labeled, FLAGS.std)
+    _storeStructures(userStructures, FLAGS.labeled)
 
 def print_flags():
     """
@@ -322,8 +297,6 @@ if __name__ == '__main__':
                         help='Boolean to decide if we plot distributions.')
     parser.add_argument('--labeled', type = str, default = 'True',
                         help='Choose records which labels are available.')
-    parser.add_argument('--std', type = str, default = 'True',
-                        help='Standardize features.')
     parser.add_argument('--scriptMode', type = str, default = 'short',
                         help='Run with long  or short dataset.')
     parser.add_argument('--create_cubeDict', type = str, default = 'True',
