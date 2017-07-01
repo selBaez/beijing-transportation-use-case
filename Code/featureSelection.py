@@ -237,6 +237,14 @@ def selectFeatures():
     print("--------------- Select best attributes per category ---------------")
     selected = _selectBest(scores, attributes)
 
+    print("--------------------------- Load  cubes ---------------------------")
+    # # Load label, std cubes
+    # labelDirectory = 'labeled/'
+    # stdDirectory = 'std/'
+    # directory = paths.CUBES_DIR_DEFAULT+labelDirectory+stdDirectory
+    #
+    # with open(directory+'combined.pkl', 'r') as fp: userStructures = cPickle.load(fp)
+
 
 
     # cv = KFold(2)
