@@ -1,26 +1,36 @@
 #!/bin/bash
 #SBATCH -n 1
-#SBATCH -p gpu
-#SBATCH -t 00:90:00
-#SBATCH -o ./Logs/preparation/das5/%A.output
-#SBATCH -e ./Logs/preparation/das5/%A.error
+#SBATCH -t 24:00:00
+#SBATCH -o ./Logs/preparation/%A.output
+#SBATCH -e ./Logs/preparation/%A.error
+#SBATCH --mail-type=END,FAIL # notifications for job done & fail
+#SBATCH --mail-user=selene.baezsantamaria@student.uva.nl # send-to address
 
-module load python/2.7.11
-module load cuda/7.5.18
-module load cudnn/7.5-v5
+
+module load python-extra/python2.7/r0.5.0
 
 # FIRST CREATES VOCABULARY
-srun -u python preparation.py --file 'de_cxl_cxtz20151115' \
+srun -u python preparation.py --file 'de_cxl_cxtz20151101' \
                     --verbose 'True' \
-                    --min_records 0 \
                     --create_voc 'True' \
                     --plot 'True' \
-                    --scriptMode 'long'
+                    --sampleBy 'False'
 
-# SUBSEQUENT WRITE IN EXISTING VOCABULARY
-srun -u python preparation.py --file 'de_cxl_cxtz20151116' \
-                    --verbose 'True' \
-                    --min_records 0 \
-                    --create_voc 'False' \
-                    --plot 'True' \
-                    --scriptMode 'long'
+# # USE EXISTING VOCABULARY
+# srun -u python preparation.py --file 'de_cxl_cxtz20151102' \
+#                     --verbose 'True' \
+#                     --create_voc 'False' \
+#                     --plot 'True' \
+#                     --sampleBy 'False'
+#
+# srun -u python preparation.py --file 'de_cxl_cxtz20151103' \
+#                     --verbose 'True' \
+#                     --create_voc 'False' \
+#                     --plot 'True' \
+#                     --sampleBy 'False'
+#
+# srun -u python preparation.py --file 'de_cxl_cxtz20151104' \
+#                     --verbose 'True' \
+#                     --create_voc 'False' \
+#                     --plot 'True' \
+#                     --sampleBy 'False'

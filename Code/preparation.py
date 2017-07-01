@@ -16,7 +16,7 @@ from multiprocessing import Pool, cpu_count
 import paths, shared
 
 ############ --- BEGIN default constants --- ############
-MODES_DEFAULT = ['轨道', '公交', '自行车']      # subway, bus, bike
+MODES_DEFAULT = [u'轨道', u'公交', u'自行车']      # subway, bus, bike
 # NOTE change back to unicode to read real data
 ############ --- END default constants--- ############
 
@@ -25,7 +25,7 @@ def _loadData(fileName):
     Load csv data on pandas
     """
     # Ignore column 2 'DATA_LINK'
-    data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9])#, encoding='cp936')
+    data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9], encoding='cp936')
     print("{} records loaded".format(len(data.index)))
 
     return data
@@ -237,7 +237,7 @@ def _updateVocabularies(data, lines, stops):
         data.loc[data['FLAG_OFF_LINE'].isnull(), 'OFF_LINE'] = lines_off
 
         # Fit new lines to format "-T"
-        newLines = {str(k)+'-T': v for k, v in newLines.items()}
+        newLines = {k: str(v)+'-T' for k, v in newLines.items()}
 
         # Update lines vocabulary
         lines.update(newLines)
@@ -255,7 +255,7 @@ def _updateVocabularies(data, lines, stops):
         data.loc[data['FLAG_OFF_STOP'].isnull(), 'OFF_STOP'] = stops_off
 
         # Fit new lines to format "-T"
-        newStops = {str(k)+'-T': v for k, v in newStops.items()}
+        newStops = {k: str(v)+'-T' for k, v in newStops.items()}
 
         # Update lines vocabulary
         stops.update(newStops)
