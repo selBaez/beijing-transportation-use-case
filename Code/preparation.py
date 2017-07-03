@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 import random, cPickle, re, json, csv
+from memory_profiler import profile
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
 
@@ -17,7 +18,7 @@ import paths, shared
 
 ############ --- BEGIN default constants --- ############
 MODES_DEFAULT = [u'轨道', u'公交', u'自行车']      # subway, bus, bike
-# NOTE change back to unicode to read real data
+# MODES_DEFAULT = ['轨道', '公交', '自行车']      # subway, bus, bike
 ############ --- END default constants--- ############
 
 def _loadData(fileName):
@@ -26,6 +27,7 @@ def _loadData(fileName):
     """
     # Ignore column 2 'DATA_LINK'
     data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9], encoding='cp936')
+    # data = pd.read_csv(fileName, index_col='ID', usecols= range(2)+range(3,23), parse_dates=[0,8,9])
     print("{} records loaded".format(len(data.index)))
 
     return data
@@ -203,11 +205,25 @@ def _createVocabularies(trips):
 
     return lines, stops
 
+def _replaceNewLines(data):
+    """
+    Replace values from new found lines vocabulary
+    """
+    data = data.apply(lambda x: newLines.get(x,x))
+    return data
+
+def _replaceNewStops(data):
+    """
+    Replace values from new found stops vocabulary
+    """
+    data = data.apply(lambda x: newStops.get(x,x))
+    return data
+
 def _updateVocabularies(data, lines, stops):
     """
     Find lines and routes that were not tokenized, and include them in vocabularies
     """
-    print('Updating vocabularies')
+    print('\nUpdating vocabularies')
     # Find cases to add
     lines_on = data['ON_LINE'][data['FLAG_ON_LINE'].isnull()]
     lines_off = data['OFF_LINE'][data['FLAG_OFF_LINE'].isnull()]
@@ -215,6 +231,8 @@ def _updateVocabularies(data, lines, stops):
     stops_off = data['OFF_STOP'][data['FLAG_OFF_STOP'].isnull()]
 
     # Create set to avoid duplicates
+    global newLines, newStops
+
     newLines = set(lines_on.values)
     newLines.update(lines_off.values)
     newStops = set(stops_on.values)
@@ -229,8 +247,21 @@ def _updateVocabularies(data, lines, stops):
         newLines =  dict(zip(newLines, map(str,range(len(lines)+1, len(lines)+1+len(newLines)))))
 
         # Replace cases with new lines vocabulary
-        lines_on.replace(to_replace=newLines, inplace=True)
-        lines_off.replace(to_replace=newLines, inplace=True)
+        # In parallel
+        start = datetime.now()
+        num_cores = cpu_count()
+        num_partitions = num_cores #8
+
+        pool = Pool(num_cores)
+        data_split = np.array_split(lines_on, num_partitions)
+        lines_on = pd.concat(pool.map(_replaceNewLines, data_split))
+
+        data_split = np.array_split(lines_off, num_partitions)
+        lines_off = pd.concat(pool.map(_replaceNewLines, data_split))
+        pool.close()
+        pool.join()
+
+        print("Parallel time: {}, chunks: {}".format(datetime.now()-start, num_partitions))
 
         # Assign new replacements to main dataframe
         data.loc[data['FLAG_ON_LINE'].isnull(), 'ON_LINE'] = lines_on
@@ -247,8 +278,21 @@ def _updateVocabularies(data, lines, stops):
         newStops =  dict(zip(newStops, map(str,range(len(stops)+1, len(stops)+1+len(newStops)))))
 
         # Replace cases with new stops vocabulary
-        stops_on.replace(to_replace=newStops, inplace=True)
-        stops_off.replace(to_replace=newStops, inplace=True)
+        # In parallel
+        start = datetime.now()
+        num_cores = cpu_count()
+        num_partitions = num_cores #8
+
+        pool = Pool(num_cores)
+        data_split = np.array_split(stops_on, num_partitions)
+        stops_on = pd.concat(pool.map(_replaceNewStops, data_split))
+
+        data_split = np.array_split(stops_off, num_partitions)
+        stops_off = pd.concat(pool.map(_replaceNewLines, data_split))
+        pool.close()
+        pool.join()
+
+        print("Parallel time: {}, chunks: {}".format(datetime.now()-start, num_partitions))
 
         # Assign new replacements to main dataframe
         data.loc[data['FLAG_ON_STOP'].isnull(), 'ON_STOP'] = stops_on
@@ -270,11 +314,18 @@ def _replaceWithVocabularies(data):
     Replace values from vocabulary and flag new ones
     """
     # Replace according to vocabularies
-    data['ON_LINE'].replace(to_replace=lines, inplace=True)
-    data['OFF_LINE'].replace(to_replace=lines, inplace=True)
+    # data['ON_LINE'].replace(to_replace=lines, inplace=True)
+    # data['OFF_LINE'].replace(to_replace=lines, inplace=True)
+    #
+    # data['ON_STOP'].replace(to_replace=stops, inplace=True)
+    # data['OFF_STOP'].replace(to_replace=stops, inplace=True)
 
-    data['ON_STOP'].replace(to_replace=stops, inplace=True)
-    data['OFF_STOP'].replace(to_replace=stops, inplace=True)
+    # Apply is less memory consumming
+    data['ON_LINE'] = data['ON_LINE'].apply(lambda x: lines.get(x,x))
+    data['OFF_LINE'] = data['OFF_LINE'].apply(lambda x: lines.get(x,x))
+
+    data['ON_STOP'] = data['ON_STOP'].apply(lambda x: stops.get(x,x))
+    data['OFF_STOP'] = data['OFF_STOP'].apply(lambda x: stops.get(x,x))
 
     # Flag cases that were not replaced
     data[['ON_LINE', 'FLAG_ON_LINE']] = data['ON_LINE'].str.split('-', expand=True)
@@ -282,8 +333,11 @@ def _replaceWithVocabularies(data):
     data[['ON_STOP', 'FLAG_ON_STOP']] = data['ON_STOP'].str.split('-', expand=True)
     data[['OFF_STOP', 'FLAG_OFF_STOP']] = data['OFF_STOP'].str.split('-', expand=True)
 
+    print("Evaluated {} rows".format(len(data)))
+
     return data
 
+@profile
 def _parseTrips(data, createVoc):
     """
     Parse 'TRANSFER_DETAIL' column to get ON/OFF mode, line and stop tokenized information
@@ -308,7 +362,7 @@ def _parseTrips(data, createVoc):
 
     # Replace line and stops from vocabularies
 
-    # # Sequential
+    # Sequential
     # df = data.copy()
     # start = datetime.now()
     # df = _replaceWithVocabularies(df)
@@ -411,7 +465,6 @@ def _store(data):
     else:
         fileName = paths.CLEAN_DIR_DEFAULT+FLAGS.file+'-full'
 
-    # data.to_pickle(fileName+'.pkl')
     data.to_csv(fileName+'.csv', encoding='utf-8')
 
 def prepare():
