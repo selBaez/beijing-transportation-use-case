@@ -134,7 +134,7 @@ def _featureSliceHeatmap(matrix, featureName, className, code):
     plt.savefig(directory+featureName+'.png', format='png')
     plt.close()
 
-def _plotDistributionCompare(sample1, sample2, variable_name, condition, fileName, labels, bins=None, xticks=None):
+def _plotDistributionCompare(sample1, sample2, variable_name, fileName, labels, bins=None, xticks=None):
     """
     Plot comparison of variables distribution with frequency histogram
     """
@@ -162,9 +162,6 @@ def _plotDistributionCompare(sample1, sample2, variable_name, condition, fileNam
 
     # Deal with folders that do not exist
     directory = paths.PLOT_DIR_DEFAULT+'histograms/'+variable_name+'/'
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    directory = paths.PLOT_DIR_DEFAULT+'histograms/'+variable_name+'/'+condition+'/'
     if not os.path.exists(directory):
         os.makedirs(directory)
 

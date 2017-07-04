@@ -69,18 +69,18 @@ def _visualize(data, condition, general=False):
     if general == True:
         # Plot general features
         print("Plotting general distributions")
-        shared._plotDistributionCompare(sample['START_HOUR'], sample['END_HOUR'], 'Hour of trip', 'general', FLAGS.file, \
+        shared._plotDistributionCompare(sample['START_HOUR'], sample['END_HOUR'], 'Hour of trip', FLAGS.file, \
         labels=['Start', 'End'], bins=24, xticks=[0, 24])
         shared._plotDistribution(sample['NUM_TRIPS'], 'Number of trips', 'general', FLAGS.file, bins='Auto', xticks=[0.0, 8.0])
-        shared._plotDistributionCompare(sample['ON_AREA'], sample['OFF_AREA'], 'District',  'general', FLAGS.file, \
+        shared._plotDistributionCompare(sample['ON_AREA'], sample['OFF_AREA'], 'District', FLAGS.file, \
         labels= ['Boarding', 'Alighting'], bins=18) #Range 1:18
-        shared._plotDistributionCompare(sample['ON_TRAFFIC'], sample['OFF_TRAFFIC'], 'Small traffic area',  'general', FLAGS.file, \
+        shared._plotDistributionCompare(sample['ON_TRAFFIC'], sample['OFF_TRAFFIC'], 'Small traffic area', FLAGS.file, \
         labels= ['Boarding', 'Alighting'], bins=20) #Range 1:1911
-        shared._plotDistributionCompare(sample['ON_MIDDLEAREA'], sample['OFF_MIDDLEAREA'], 'Middle traffic area',  'general', FLAGS.file, \
+        shared._plotDistributionCompare(sample['ON_MIDDLEAREA'], sample['OFF_MIDDLEAREA'], 'Middle traffic area', FLAGS.file, \
         labels= ['Boarding', 'Alighting'], bins=20) #Range 1:389
-        shared._plotDistributionCompare(sample['ON_BIGAREA'], sample['OFF_BIGAREA'], 'Big traffic area',  'general', FLAGS.file, \
+        shared._plotDistributionCompare(sample['ON_BIGAREA'], sample['OFF_BIGAREA'], 'Big traffic area', FLAGS.file, \
         labels= ['Boarding', 'Alighting'], bins=20) #Range 1:60
-        shared._plotDistributionCompare(sample['ON_RINGROAD'], sample['OFF_RINGROAD'], 'Ring road',  'general', FLAGS.file, \
+        shared._plotDistributionCompare(sample['ON_RINGROAD'], sample['OFF_RINGROAD'], 'Ring road', FLAGS.file, \
         labels= ['Boarding', 'Alighting'], bins=6) #Range 1:6
 
     # Plot features to be standardized

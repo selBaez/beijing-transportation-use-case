@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 import random, cPickle, re, json, csv
-from memory_profiler import profile
+# from memory_profiler import profile
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
 
@@ -333,11 +333,9 @@ def _replaceWithVocabularies(data):
     data[['ON_STOP', 'FLAG_ON_STOP']] = data['ON_STOP'].str.split('-', expand=True)
     data[['OFF_STOP', 'FLAG_OFF_STOP']] = data['OFF_STOP'].str.split('-', expand=True)
 
-    print("Evaluated {} rows".format(len(data)))
-
     return data
 
-@profile
+# @profile
 def _parseTrips(data, createVoc):
     """
     Parse 'TRANSFER_DETAIL' column to get ON/OFF mode, line and stop tokenized information
@@ -400,9 +398,9 @@ def _countTransfers(data):
     data['TRANSFER_TIME_AVG'] = np.where(data['TRANSFER_NUM'] > 0, data['TRANSFER_TIME_SUM'] / data['TRANSFER_NUM'], data['TRANSFER_NUM'])
 
     if FLAGS.plot == 'True':
-        shared._plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers', 'patch', FLAGS.file, \
+        shared._plotDistributionCompare(original['TRANSFER_NUM'], data['TRANSFER_NUM'], 'Number of transfers', FLAGS.file, \
         labels=['Original', 'Recalculation'], bins='Auto')
-        shared._plotDistributionCompare(original['TRANSFER_TIME_AVG'], data['TRANSFER_TIME_AVG'], 'Transfer average time', 'patch', FLAGS.file, \
+        shared._plotDistributionCompare(original['TRANSFER_TIME_AVG'], data['TRANSFER_TIME_AVG'], 'Transfer average time', FLAGS.file, \
         labels=['Original', 'Recalculation'], bins=20)
 
     return data
