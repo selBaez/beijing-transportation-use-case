@@ -16,21 +16,207 @@ srun -u python preparation.py --file 'de_cxl_cxtz20151101' \
                     --plot 'True' \
                     --sampleBy 'False'
 
-# # USE EXISTING VOCABULARY
-# srun -u python preparation.py --file 'de_cxl_cxtz20151102' \
-#                     --verbose 'True' \
-#                     --create_voc 'False' \
-#                     --plot 'True' \
-#                     --sampleBy 'False'
-#
-# srun -u python preparation.py --file 'de_cxl_cxtz20151103' \
-#                     --verbose 'True' \
-#                     --create_voc 'False' \
-#                     --plot 'True' \
-#                     --sampleBy 'False'
-#
-# srun -u python preparation.py --file 'de_cxl_cxtz20151104' \
-#                     --verbose 'True' \
-#                     --create_voc 'False' \
-#                     --plot 'True' \
-#                     --sampleBy 'False'
+# USE EXISTING VOCABULARY
+srun -u python preparation.py --file 'de_cxl_cxtz20151102' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151103' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151104' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151105' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151106' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151107' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151108' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151109' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151110' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151111' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151112' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151113' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151114' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151115' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151116' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151117' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151118' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151119-1' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151119-2' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151120-1' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151120-2' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151121' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151122' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151123-1' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151123-2' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151124-1' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151124-2' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151125-1' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151125-2' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151126' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151127' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151128' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151129' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
+
+srun -u python preparation.py --file 'de_cxl_cxtz20151130' \
+                    --verbose 'True' \
+                    --create_voc 'False' \
+                    --plot 'True' \
+                    --sampleBy 'False'
