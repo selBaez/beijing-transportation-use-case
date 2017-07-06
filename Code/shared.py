@@ -219,12 +219,9 @@ def _plotSeriesCorrelation(sample, variable1, variable2, name, condition, fileNa
     directory = paths.PLOT_DIR_DEFAULT+'scatter/'+name+'/'
     if not os.path.exists(directory):
         os.makedirs(directory)
-    directory = paths.PLOT_DIR_DEFAULT+'scatter/'+name+'/'+condition+'/'
-    if not os.path.exists(directory):
-        os.makedirs(directory)
 
     # Save
-    plt.savefig(directory+fileName+'.png', format='png')
+    plt.savefig(directory+fileName+'-'+condition+'.png', format='png')
     plt.close()
 
 def _plotPie(sizes, labels, name, fileName):
@@ -262,6 +259,31 @@ def _lowDimFeaturesScatter(feature_name, features, labels=None):
     plt.title('Low dimenasional features')
     plt.tight_layout()
     plt.savefig(paths.PLOT_DIR_DEFAULT+'scatter/'+feature_name+'.png', format='png')
+    plt.close()
+
+def _sampleWithStd(x, y, xlabel, ylabel, title):
+    """
+    Fill between plot according to mean and standard deviation
+    """
+    x, y, std = zip(*sorted((xVal, np.mean([yVal for a, yVal in zip(x, y) if xVal==a]), np.std([yVal for a, yVal in zip(x, y) if xVal==a])) for xVal in set(x)))
+
+    fig, ax = plt.subplots()
+    plt.fill_between(x, np.array(y) - np.array(std), np.array(y) + np.array(std), color="#578ac1")
+    plt.plot(x, y, color="#3F5D7D", lw=2)
+
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    ax.set_xticks(x)
+    plt.tight_layout()
+
+    # Deal with folders that do not exist
+    directory = paths.PLOT_DIR_DEFAULT+'histograms/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # Save
+    plt.savefig(directory+title+'.png', format='png')
     plt.close()
 
 
