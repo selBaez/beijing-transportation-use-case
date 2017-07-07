@@ -6,10 +6,11 @@ import pandas as pd
 import numpy as np
 import warnings
 warnings.simplefilter("ignore")
+import cPickle, random
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import chi2, f_classif, SelectKBest
-from sklearn.preprocessing import normalize
-from sklearn.model_selection import KFold
+# from sklearn.preprocessing import normalize
+# from sklearn.model_selection import KFold
 
 import paths, shared
 
@@ -173,22 +174,20 @@ def _selectBest(scores, attributes):
     """
     Select best attributes per category according to their scores
     """
-    #TODO change according to new position of num trips
-
     # Category: General
-    generalScores = scores[0:7]
+    generalScores = scores[0:8]
     print("General attributes: {}".format(len(generalScores)))
 
-    k = 2
+    k = 3
     selectedGeneral = np.argsort(generalScores)[-k:]
     print("Best {}: {}".format(k, np.array(attributes)[selectedGeneral]))
 
     # Category: Temporal
-    temporalScores = scores[7:9]
+    temporalScores = scores[8:10]
     print("\nTemporal attributes: {}".format(len(temporalScores)))
 
     k = 2
-    selectedTemporal = np.argsort(temporalScores)[-k:] + 7
+    selectedTemporal = np.argsort(temporalScores)[-k:] + 8
     print("Best {}: {}".format(k, np.array(attributes)[selectedTemporal]))
 
     # Category: Spatial
@@ -217,7 +216,7 @@ def selectFeatures():
     Performs training and reports evaluation (on training and validation sets)
     """
     print("---------------------------- Load data ----------------------------")
-    data = _loadData(paths.PREPROCESSED_DIR_DEFAULT+'labeled/'+FLAGS.directory)
+    data = _loadData(paths.PREPROCESSED_DIR_DEFAULT+'labeled')
 
     print("----------------------- Extract  attributes -----------------------")
     columns = data.select_dtypes(include=[np.number]).columns.values.tolist()
@@ -238,17 +237,15 @@ def selectFeatures():
     selected = _selectBest(scores, attributes)
 
     print("--------------------------- Load  cubes ---------------------------")
-    # # Load label, std cubes
-    # labelDirectory = 'labeled/'
-    # stdDirectory = 'std/'
-    # directory = paths.CUBES_DIR_DEFAULT+labelDirectory+stdDirectory
-    #
-    # with open(directory+'combined.pkl', 'r') as fp: userStructures = cPickle.load(fp)
+    # Load labeled cubes
+    with open(paths.CUBES_DIR_DEFAULT+'labeled.pkl', 'r') as fp: userStructures = cPickle.load(fp)
 
+    code, [cube, label] = random.choice(list(userStructures.items()))
+    className = 'Commuter' if label == 1.0 else 'Non-commuter'
 
-
-    # cv = KFold(2)
-    # Feature Union
+    print(className, ' with code: ', str(code))
+    cube = cube[:,:,selected]
+    print(cube.shape)
 
 
 def print_flags():
@@ -268,8 +265,6 @@ def main(_):
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--directory', type = str, default = 'original',
-                        help='Directory to get files: original or std')
     parser.add_argument('--plot', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
 
