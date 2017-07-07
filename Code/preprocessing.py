@@ -14,7 +14,7 @@ import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 import warnings
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
-import random, cPickle, os
+import random, cPickle, os, csv
 from sklearn.preprocessing import StandardScaler
 
 import paths, shared
@@ -23,9 +23,11 @@ def _loadData(fileName):
     """
     Load csv data on pandas
     """
-    # Ignore 'PATH_LINK', 'START_TIME', 'END_TIME', and 'TRIP_DETAILS'
-    data = pd.read_csv(fileName, index_col='ID', usecols= range(4)+range(5,10)+range(12,14)+range(15,32))
+    # Ignore 'PATH_LINK', 'START_TIME', 'END_TIME', and 'TRANSFER_DETAILS'
+    data = pd.read_csv(fileName, index_col='ID', usecols=range(5)+range(6,11)+range(13,15)+range(16,32))
     print("{} records loaded".format(len(data.index)))
+
+    print(data.columns.values)
 
     return data
 
@@ -44,6 +46,8 @@ def _labelData(data):
     """
     Get card codes whose label is available and return commuters and non-commuters datasets
     """
+    total = len(data.index)
+
     # Load label sets
     commutersCodes = np.loadtxt(paths.LABELS_DIR_DEFAULT+'commuterCardCodes.txt')
     nonCommutersCodes = np.loadtxt(paths.LABELS_DIR_DEFAULT+'nonCommuterCardCodes.txt')
@@ -56,6 +60,11 @@ def _labelData(data):
 
     if FLAGS.plot == 'True':
         shared._plotPie([numUnlabeled, len(data.index)], ['Unlabeled', 'Labeled'], 'unlabeled', FLAGS.file)
+
+    # Save day statistics
+    with open(paths.STAT_DIR_DEFAULT+'labeled.txt', 'a') as fp:
+        writer = csv.writer(fp, delimiter='\t')
+        writer.writerow([data['DAY'][0], total]+[numUnlabeled, len(data.index)])
 
     return data
 
@@ -97,11 +106,9 @@ def _standardize(data):
     """
     Rescale features to have mean 0 and std 1
     """
-    #TODO This method fits and transforms over all data, change parameters to allow fit train and transform test
     print("Standarize travel time and distance, transfer total and average time")
     scaler = StandardScaler()
     data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']] = scaler.fit_transform(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']])
-    # TODO categoical cannot go to one hot, so divide by range?
 
     return data
 
@@ -139,7 +146,6 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True')
             for index, trip in userTrips.iterrows():
                 y = trip['START_HOUR']
                 x = trip['DAY']
-                if FLAGS.verbose == 'True': print('coordinates: ',x, y)
 
                 details = trip[1:-1].values
                 userCube[y, x-1, :] = details
@@ -154,36 +160,34 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True')
             for index, trip in userTrips.iterrows():
                 y = trip['START_HOUR']
                 x = trip['DAY']
-                if FLAGS.verbose == 'True': print('coordinates: ',x, y)
 
                 details = trip[1:].values
                 userCube[y, x-1, :] = details
 
             userStructures[userCode] = [userCube]
 
-    if FLAGS.plot == 'True':
-        print('Plot slices: ', data[0][1].iloc[:, [1,3,4,5,11,12,21,22]].columns.values)
-
     for i in range(5):
         if labeled == 'True':
             # TODO: mechanism to sample one of each class
             code, [cube, label] = random.choice(list(userStructures.items()))
             className = 'Commuter' if label == 1.0 else 'Non-commuter'
-            print(className, ' with code: ', str(code))
+            if FLAGS.verbose == 'True': print(className, ' with code: ', str(code))
 
         else:
             code, [cube] = random.choice(list(userStructures.items()))
             className = 'Unknown'
-            print(className, ' with code: ', str(code))
+            if FLAGS.verbose == 'True': print(className, ' with code: ', str(code))
 
         if FLAGS.plot == 'True':
             # Plot several feature slices
+            print('Plot slices: ', data[0][1].iloc[:, [1,3,4,5,15,16,21,22]].columns.values)
+
             shared._featureSliceHeatmap(cube[:,:,0], 'Day', className, str(code))
-            shared._featureSliceHeatmap(cube[:,:,2], 'Time', className, str(code))
-            shared._featureSliceHeatmap(cube[:,:,3], 'Distance', className, str(code))
-            shared._featureSliceHeatmap(cube[:,:,4], 'Transfer numbers', className, str(code))
-            shared._featureSliceHeatmap(cube[:,:,10], 'On area', className, str(code))
-            shared._featureSliceHeatmap(cube[:,:,11], 'Off area', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,2], 'Number of trips', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,3], 'Time', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,4], 'Distance', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,14], 'On middle area', className, str(code))
+            shared._featureSliceHeatmap(cube[:,:,15], 'Off middle area', className, str(code))
             shared._featureSliceHeatmap(cube[:,:,20], 'On mode', className, str(code))
             shared._featureSliceHeatmap(cube[:,:,21], 'Off mode', className, str(code))
 
@@ -266,8 +270,8 @@ def preprocess():
     print("--------------------------- Build cubes ---------------------------")
     userStructures = _buildCubes(data, (24,30,26), FLAGS.create_cubeDict, FLAGS.labeled)
 
-    print("-------------------------- Flatten cubes --------------------------")
-    userStructures = _buildVectors(userStructures, FLAGS.labeled)
+    # print("-------------------------- Flatten cubes --------------------------")
+    # userStructures = _buildVectors(userStructures, FLAGS.labeled)
 
     print("----------------------- Storing  structures -----------------------")
     _storeStructures(userStructures, FLAGS.labeled)
