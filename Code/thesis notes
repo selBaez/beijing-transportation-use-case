@@ -4,15 +4,14 @@ preparation						cleaning																																							DONE
 											formatting																																						DONE
 
 preprocessing					label data																																						DONE
-											standardize																																						Refactor parameters
-											create user cubes/vectors																															DONE
+											standardize																																						DONE
+											create user cubes																																			DONE
 
-feature selection 		preprocessing -> label data																														DONE
-											preprocessing -> standardize                                                          DONE
+feature selection 		load and sample dataframes	                                                          IN PROGRESS
 											correlation tests (correlation, feature importance, chi2 and anova f value)						DONE
-											select k best																																					TODO
-											preprocessing -> create user cubes
-											preprocessing -> flatten cubes into vectors
+											select k best																																					DONE
+											load user cubes																																				DONE
+											flatten cubes into vectors
 											save vectors
 
 ensemble classifier 	create models (SVM, bayesian, random forest, mlp)
@@ -37,14 +36,8 @@ clustering 						k-means
 
 TODO:
 tsne plots for these
-
-normalize areas? keep as ordinal?
 num of transfer as pie chart
 fix start/end hour 0. change to 24?
-
-BIG ISSUE: vocabularies grow!!
-FIX ASAP: new lines in voc
-
 fix two trips one start -> merge trips?
 
 
@@ -60,7 +53,6 @@ Reconstructing individual mobility from smart card transactions: a collaborative
 
 Improvements to report:
 transfer time focus on tail
-thesis organization more technical, and methods per parts
 Mention hierarchy in traffic areas will cause correlation
 Attributes summary: numerical vs categorical
 Section: deal with categorical -> tokenize, encode, bins
@@ -69,3 +61,34 @@ random forests deal well with categorical (large node size), adaboost with missi
 feature selection by some sort of ensemble, voting system
 
 categorize mode, stop, line: zero cannot be used cause it means empty.
+
+STEP BY STEP:
+Preparation job
+		 records number plot
+		 vocabularies cummulative plot
+
+Preprocessing job
+    full: labeled, std -> dataframe, cubes
+    full: unlabeled, std -> cubes
+
+Feature selection code
+     (maybe?) load all labeled dataframes, sample 10k and discard rest from memory
+     Flatten -> vectors
+Feature selection job -> vectors
+
+Ensemble code
+     three classifiers: SVM, trees, bayesian -> individual accuracy (save in txt file)
+     adaboost ensemble -> accuracy (save in txt file)
+     link sample to code -> two txt, one for commuters one for non-commuters
+Ensemble job -> lists
+
+Feature extraction code
+     build autoencoder -> vectors
+Feature extraction job -> vectors
+
+Clustering code
+    read vectors
+    tune
+    evaluate
+    link sample
+Clustering job -> lists
