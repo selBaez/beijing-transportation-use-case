@@ -288,7 +288,7 @@ def _updateVocabularies(data, lines, stops):
         stops_on = pd.concat(pool.map(_replaceNewStops, data_split))
 
         data_split = np.array_split(stops_off, num_partitions)
-        stops_off = pd.concat(pool.map(_replaceNewLines, data_split))
+        stops_off = pd.concat(pool.map(_replaceNewStops, data_split))
         pool.close()
         pool.join()
 
