@@ -51,8 +51,6 @@ def _correlationAnalysis(data, columns, n_columns, attributes, n_attributes):
 
         shared._featureBar(scores, n_attributes, attributes, 'Correlation', 'to label')
 
-    # TODO: sets of attributes that overlap a lot?
-
     # Normalize
     total = np.nansum(scores)
     scores = scores/total
@@ -218,7 +216,9 @@ def _formatData(selectedSlices):
     with open(paths.CUBES_DIR_DEFAULT+'labeled.pkl', 'r') as fp: userStructures = cPickle.load(fp)
 
     # Array contains three columns: code, vector, label
-    data = []
+    codes = []
+    features = []
+    labels = []
 
     for code, [cube, label] in userStructures.items():
         # Select slices
@@ -226,18 +226,18 @@ def _formatData(selectedSlices):
         # Flatten
         flatCube = cube.flatten(order='F')
         # Format
-        data.append([code, flatCube, label])
+        codes.append(code)
+        features.append(flatCube)
+        labels.append(label)
 
-    data = np.asarray(data, dtype=object)
-
-    return data
+    return np.asarray(codes), np.asarray(features), np.asarray(labels)
 
 def _store(data):
     """
-    Store list
+    Store codes, features and labels
     """
     directory = paths.LOWDIM_DIR_DEFAULT
-    with open(directory+"supervised.txt", "w") as fp: fp.write(str(data))
+    with open(directory+"supervised.pkl", "w") as fp: cPickle.dump(data, fp)
 
 def selectFeatures():
     """
@@ -265,22 +265,15 @@ def selectFeatures():
     selectedSlices = _selectBest(scores, attributes)
 
     print("--------------------- Cube slices  to vectors ---------------------")
-    data = _formatData(selectedSlices)
+    codes, features, labels = _formatData(selectedSlices)
 
     print("---------------------------- Visualize ----------------------------")
-    featureVectors = data[:,1]
-    labels = data[:,2]
-
-    print(len(featureVectors), len(featureVectors[0]))
-
-    featureVectors.reshape(len(featureVectors), len(featureVectors[0]))
-
     manifold = TSNE(n_components=2, random_state=0)
-    mappedVectors = manifold.fit_transform(featureVectors)
+    mappedVectors = manifold.fit_transform(features)
     shared._tsneScatter('Selected features', mappedVectors, labels)
 
     print("------------------------------ Store ------------------------------")
-    _store(data)
+    _store([codes, features, labels])
 
 
 def print_flags():
