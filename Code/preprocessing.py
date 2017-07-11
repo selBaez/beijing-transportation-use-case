@@ -27,8 +27,6 @@ def _loadData(fileName):
     data = pd.read_csv(fileName, index_col='ID', usecols=range(5)+range(6,11)+range(13,15)+range(16,32))
     print("{} records loaded".format(len(data.index)))
 
-    print(data.columns.values)
-
     return data
 
 def _matchLabel(code, commutersCodes, nonCommutersCodes):
@@ -124,7 +122,7 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True')
         userStructures = {}
     else:
         # Load existing corresponding cubes according to label.
-        name = 'labeled/' if labeled == 'True'  else 'all'
+        name = 'labeled' if labeled == 'True'  else 'all'
         directory = paths.CUBES_DIR_DEFAULT
 
         with open(directory+name+'.pkl', 'r') as fp: userStructures = cPickle.load(fp)
@@ -148,7 +146,8 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True')
                 x = trip['DAY']
 
                 details = trip[1:-1].values
-                userCube[y, x-1, :] = details
+
+                userCube[int(y), int(x)-1, :] = details
 
             userStructures[userCode] = [userCube, userLabel]
 
@@ -162,13 +161,12 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True')
                 x = trip['DAY']
 
                 details = trip[1:].values
-                userCube[y, x-1, :] = details
+                userCube[int(y), int(x-1), :] = details
 
             userStructures[userCode] = [userCube]
 
     for i in range(5):
         if labeled == 'True':
-            # TODO: mechanism to sample one of each class
             code, [cube, label] = random.choice(list(userStructures.items()))
             className = 'Commuter' if label == 1.0 else 'Non-commuter'
             if FLAGS.verbose == 'True': print(className, ' with code: ', str(code))
@@ -221,7 +219,6 @@ def _storeDataframe(data, labeled=True):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    # data.to_pickle(directory+FLAGS.file+'.pkl')
     data.to_csv(directory+FLAGS.file+'.csv')
 
 def _storeStructures(structures, labeled='True'):
