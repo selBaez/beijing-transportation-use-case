@@ -14,6 +14,20 @@ import paths
 
 ################################################## Visualization ##################################################
 
+def _tsneScatter(feature_name, features, labels):
+    fig = plt.figure()
+    plt.clf()
+    plt.scatter(features[:,0], features[:,1], c=labels.astype(int))
+
+    plt.title(feature_name)
+    plt.tight_layout()
+
+    directory = paths.PLOT_DIR_DEFAULT+'scatter/TSNE/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    plt.savefig(directory+feature_name+'.png', format='png')
+
 def _stackedFeatureBar(scores, methods, n_features, features, testName, fileName):
     """
     Create stacked bar plot for feature selection

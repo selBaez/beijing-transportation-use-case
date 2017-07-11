@@ -9,8 +9,7 @@ warnings.simplefilter("ignore")
 import cPickle, random
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import chi2, f_classif, SelectKBest
-# from sklearn.preprocessing import normalize
-# from sklearn.model_selection import KFold
+from sklearn.manifold import TSNE
 
 import paths, shared
 
@@ -211,9 +210,38 @@ def _selectBest(scores, attributes):
 
     return selected
 
+def _formatData(selectedSlices):
+    """
+    Select relevant cube slices and flatten into vectors
+    """
+    # Load labeled cubes
+    with open(paths.CUBES_DIR_DEFAULT+'labeled.pkl', 'r') as fp: userStructures = cPickle.load(fp)
+
+    # Array contains three columns: code, vector, label
+    data = []
+
+    for code, [cube, label] in userStructures.items():
+        # Select slices
+        cube = cube[:,:,selectedSlices]
+        # Flatten
+        flatCube = cube.flatten(order='F')
+        # Format
+        data.append([code, flatCube, label])
+
+    data = np.asarray(data, dtype=object)
+
+    return data
+
+def _store(data):
+    """
+    Store list
+    """
+    directory = paths.LOWDIM_DIR_DEFAULT
+    with open(directory+"supervised.txt", "w") as fp: fp.write(str(data))
+
 def selectFeatures():
     """
-    Performs training and reports evaluation (on training and validation sets)
+    Selects features according to different scores, and formats data to feed to classifier
     """
     print("---------------------------- Load data ----------------------------")
     data = _loadData(paths.PREPROCESSED_DIR_DEFAULT+'labeled')
@@ -234,18 +262,25 @@ def selectFeatures():
     scores = _analysis(data, samples, labels, columns, n_columns, attributes, n_attributes)
 
     print("--------------- Select best attributes per category ---------------")
-    selected = _selectBest(scores, attributes)
+    selectedSlices = _selectBest(scores, attributes)
 
-    print("--------------------------- Load  cubes ---------------------------")
-    # Load labeled cubes
-    with open(paths.CUBES_DIR_DEFAULT+'labeled.pkl', 'r') as fp: userStructures = cPickle.load(fp)
+    print("--------------------- Cube slices  to vectors ---------------------")
+    data = _formatData(selectedSlices)
 
-    code, [cube, label] = random.choice(list(userStructures.items()))
-    className = 'Commuter' if label == 1.0 else 'Non-commuter'
+    print("---------------------------- Visualize ----------------------------")
+    featureVectors = data[:,1]
+    labels = data[:,2]
 
-    print(className, ' with code: ', str(code))
-    cube = cube[:,:,selected]
-    print(cube.shape)
+    print(len(featureVectors), len(featureVectors[0]))
+
+    featureVectors.reshape(len(featureVectors), len(featureVectors[0]))
+
+    manifold = TSNE(n_components=2, random_state=0)
+    mappedVectors = manifold.fit_transform(featureVectors)
+    shared._tsneScatter('Selected features', mappedVectors, labels)
+
+    print("------------------------------ Store ------------------------------")
+    _store(data)
 
 
 def print_flags():
