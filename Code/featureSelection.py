@@ -217,20 +217,32 @@ def _formatData(selectedSlices):
 
     # Array contains three columns: code, vector, label
     codes = []
+    original = []
     features = []
     labels = []
 
     for code, [cube, label] in userStructures.items():
+        # Flat whole
+        flatWhole = cube.flatten(order='F')
         # Select slices
         cube = cube[:,:,selectedSlices]
         # Flatten
         flatCube = cube.flatten(order='F')
         # Format
         codes.append(code)
+        original.append(flatWhole)
         features.append(flatCube)
         labels.append(label)
 
-    return np.asarray(codes), np.asarray(features), np.asarray(labels)
+    return np.asarray(codes), np.asarray(original), np.asarray(features), np.asarray(labels)
+
+def _tsne(name, features, labels):
+    """
+    Visualize high dimensional features in low (2) dimensional space
+    """
+    manifold = TSNE(n_components=2, random_state=0)
+    mappedVectors = manifold.fit_transform(features)
+    shared._tsneScatter(name, mappedVectors, labels)
 
 def _store(data):
     """
@@ -265,12 +277,12 @@ def selectFeatures():
     selectedSlices = _selectBest(scores, attributes)
 
     print("--------------------- Cube slices  to vectors ---------------------")
-    codes, features, labels = _formatData(selectedSlices)
+    codes, original, features, labels = _formatData(selectedSlices)
 
-    print("---------------------------- Visualize ----------------------------")
-    manifold = TSNE(n_components=2, random_state=0)
-    mappedVectors = manifold.fit_transform(features)
-    shared._tsneScatter('Selected features', mappedVectors, labels)
+    if FLAGS.plot == 'True':
+        print("---------------------------- Visualize ----------------------------")
+        _tsne('Selected features', features, labels)
+        _tsne('Original features', original, labels)
 
     print("------------------------------ Store ------------------------------")
     _store([codes, features, labels])

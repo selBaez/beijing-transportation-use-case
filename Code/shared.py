@@ -18,8 +18,8 @@ def _tsneScatter(feature_name, features, labels):
     fig = plt.figure()
     plt.clf()
 
-    cmap = plt.cm.get_cmap('jet',max(labels)-min(labels)+1)
-    plt.scatter(features[:,0], features[:,1], c=labels.astype(int), label=labels)
+    # cmap = plt.cm.get_cmap('spring',max(labels)-min(labels)+1)
+    plt.scatter(features[:,0], features[:,1], c=labels.astype(int), label=labels, cmap='Paired')
 
     plt.title(feature_name)
     plt.legend([0,1],['Non-commuter', 'Commuter'])
