@@ -156,7 +156,7 @@ For example, the city of Beijing faces a large imbalance between residential and
 % Improve individual and collective analysis
 Mobility patterns in metropolitan areas follow complex swarm behaviors. Based on individual travels and routines, travelers exhibit distinguishable characteristics on a larger scale. Both individual and collective levels of understanding are crucial for Transportation experts. In order to explore both levels, Metropolitan Transportation studies typically focus of the usage of surveys. These surveys are targeted to reach travelers on an individual level, while large scale indicators and aggregated data are taken to investigate their collective behavior. 
 
-These methods have several disadvantages. On the one hand, surveys are costly to implement, and in general have problems related to small non-representative samples. Even when these problems are escaped, the typical quality versus quantity trade off is present, reducing the confidence of the collected information. On the other hand, large scale measurements (i.e. total passenger flow) miss the interactions between individuals that cause the collective behavior.
+These methods have several disadvantages. On the one hand, surveys are costly to implement, and in general have problems related to small non-representative samples. Even when these problems are escaped, the usual quality versus quantity trade off is present, reducing the confidence of the collected information. On the other hand, large scale measurements (i.e. total passenger flow) miss the interactions between individuals that cause the collective behavior.
 
 On top of this, an important consideration on the Metropolitan Transportation domain is that the data collected by smart cards is unlabeled. This means that traveling behaviors are not assigned to known specific categories, making it hard to validate and evaluate. Typically, this issue is address by asking some sample users -via surveys- how they categorize themselves (for example, if they consider themselves to be commuters) and then extrapolating this profile to new users. However, self-reported data by itself has bias problems, therefore introducing noise or false patterns. 
 
@@ -178,14 +178,11 @@ Finally, we gather conclusions regarding the proposed representation. We compare
 
 \newpage
 \section{Literature review}
-In this section we look at studies within the last decade that are related to smart card transit data. First, we summarize the approach and the most relevant reproducible findings of each paper in order grasp a broad view of the Transportation domain. Secondly, we explore representations for spatiotemporal data and compare the way traveling behavior is usually represented in the Transportation domain, and other types of representations available in the Artificial Intelligence domain. Thirdly, we discuss two techniques for pattern recognition through supervised and unsupervised learning. Finally we explore some pioneer work in end-to-end learning. 
+In this section we look at studies within the last decade that are related to smart card transit data. First, we summarize the approach and the most relevant findings of each paper in order grasp a broad view of the Transportation domain. Secondly, we explore representations for spatiotemporal data and compare the way traveling behavior is usually represented in the Transportation domain, and other types of representations available in the Artificial Intelligence domain. Thirdly, we discuss techniques for pattern recognition through supervised and unsupervised learning. Finally we explore some pioneer work in end-to-end learning. 
 
 \subsection{Data mining on transit card data}
 % What questions and approaches are common. How do they interpret traveling behavior? What's the volume of data?
-With the introduction of smart card systems in large cities, several studies have aimed to extract knowledge from the large amounts of data collected. Traveling behavior is commonly interpreted as a spatiotemporal mobility pattern.
-
-Though different in their methodology, results concerning commuters are duplicated across studies. The spatial and temporal regularity of commuters' travel behavior is evident in their smart card data.
-
+With the introduction of smart card systems in large cities, several studies have aimed to extract knowledge from the large amounts of data collected. Many of this studies focus on analyzing traveling behavior, which is regarded as a spatiotemporal mobility pattern. Though different in their methodology, results concerning commuters are duplicated across studies. As the spatial and temporal regularity of commuters' travel behavior is evident in their smart card data, they pose an excellent opportunity of study.
 
 Morency et al. study spatio-temporal variability in Canadian smart card data. On the one hand, they examine spatial variability by measuring the number of distinct stops a smart card user visits, and the frequency of each stop. On the other hand, they examine temporal variability by clustering the boarding times of each type of smart card. Using these features, they observe the week to week variability for each of the five types of transit card available (Adult-interzone, Adult-express, Adult-regular, Elderly and Student). Their findings show that commuter types of cards visit a smaller range of bus stops compared to non-commuter types. Therefore, a small number of stops account for a high proportion of commuter's boardings. Additionally, commuters have the highest proportion of zero-boarding days on weekends \cite{morency2007measuring}.
 
@@ -737,7 +734,23 @@ The general trip features to be included in the representation are:
 \item Number of trips
 \end{enumerate}
 
+The attributes are of two types: numerical and categorical. Usually categorical should be done by one hot encoding. In this case it is not scalable.
+
 \subsection{User cubes}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/Commuter Day"}
+  \caption{Sample Day slice for random Commuter.}
+  \label{fig:preprocessing/commuter}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/Non-commuter Day"}
+  \caption{Sample Day slice for random Non-commuter.}
+  \label{fig:preprocessing/commuter}
+\end{figure}
 
 
 \newpage
@@ -753,16 +766,18 @@ The general trip features to be included in the representation are:
   \label{fig:classification/correlation}
 \end{figure}
 
-General
+\textbf{General}
 
-Temporal
+\textbf{Temporal}
 
-Spatial
+\textbf{Spatial}: Hierarchy in geographical areas causes correlation
 
 \subsection{Feature selection}
 Statistical correlation to label, f value of anova. chi 2 discarded because it focuses on times only
 machine learning through trees
 domain knowledge
+
+Aggregation system. Each method's scores are normalized to add up to 1. Each contribute with equal weight. 
 
 \begin{figure}[H]
   \centering
@@ -772,6 +787,13 @@ domain knowledge
 \end{figure}
 
 Choose middle area and mode. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/Selected features"}
+  \caption{Visualization of samples and their labels after feature selection.}
+  \label{fig:classification/tsne}
+\end{figure}
 
 \subsection{Model}
 Take slices of cubes and flatten. 
@@ -821,6 +843,8 @@ Accuracy: 98.24\%
 
 
 \subsection{Discussion}
+Random Forests deal well with categorical information. Adaboost deals well with missing information.
+
 Overfitting
 
 
@@ -864,6 +888,16 @@ Evaluation
 
 \newpage
 \section{Conclusion and future work}
+
+Faulty data. Missing data from 9 to 16. Gap in between.
+
+Zero values such as end hour, zero transfers and others. Same effect as "empty" bin. 
+
+Overlapping trips. So far one trip per bin/hour. Possible solutions are to concatenate.
+
+Standardization by day.
+
+Selection over trip -> label. 
 
 \newpage
 \bibliography{mybib}{}
