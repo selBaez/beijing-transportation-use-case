@@ -141,15 +141,13 @@ The area of Artificial Intelligence is able to provide dozens of prediction algo
 % description, prediction and preescription
 Identifying and analyzing mobility patterns may have different goals, from description, prediction or prescription, all of which affect their stakeholders directly. 
 
-A descriptive analysis determines how do people use the public transit. It can pinpoint chaotic hotspots in the city, peak hours, popular routes or other behaviors. A predictive analysis investigates how will people use the transit in the future or under new circumstances. For example, public transport usage projections in the years to come directly affects environmental models trying to improve air and water quality, energetic demand or other natural  and economic resources.
+A descriptive analysis determines how people use the public transit. It can pinpoint chaotic hotspots in the city, peak hours, popular routes or other behaviors. A predictive analysis investigates how will people use the transit in the future or under new circumstances. For example, public transport usage projections in the years to come directly affects environmental models trying to improve air and water quality, energetic demand or other natural  and economic resources.
 
 Finally, a prescriptive analysis focuses on how should the different stakeholders deal with mobility behaviors. For example, the government as well as transport management and operators would gain invaluable spatial and temporal insights regarding commuters' behaviors. This insight may lead to tangible results, including policies for increasing the efficiency of the public transit network, adjustable travel fares tailored to the most relevant mobility patterns, incentives to relieve peak hours and thus traffic congestion, urban planning for residential and industrial land use, and others.
 
 Given that Beijing has a widely spread data collection system, combined with formidable institutions capable of introducing new measures in their public transportation network, this city is an excellent use case where the results of an in-depth study can generate actionable plans and bring benefits in the short and long term.
 
-Furthermore, the social context of Beijing presents specific opportunities for improvements where the full power of data analysis and its impact can be tested. 
-
-For example, the city of Beijing faces a large imbalance between residential and working areas. Due to urban expansion, most residents have been forced to move to suburban areas due to the lack of affordable housing, regardless of having their work environments within the six Ring Roads \cite{zhou2014commuting}. Investigating and targeting this group could alleviate the pitfalls of long distance commuting. 
+Furthermore, the social context of Beijing presents specific opportunities for improvements where the full power of data analysis and its impact can be tested. For example, the city of Beijing faces a large imbalance between residential and working areas. Due to urban expansion, most residents have been forced to move to suburban areas due to the lack of affordable housing, regardless of having their work environments within the six Ring Roads \cite{zhou2014commuting}. Investigating and targeting this group could alleviate the pitfalls of long distance commuting. 
 
 
 \subsubsection{Scientific context}
@@ -172,7 +170,7 @@ We continue to describe the \textit{Methodology} thoroughly. This consists of an
 
 Following this, we identify three distinct stages of the project: \textit{Data preparation and preprocessing}, \textit{Commuters identification}, and \textit{Traveling behavior clustering}. In the \textit{Data preparation and preprocessing} section we describe the pipeline for processing raw data, extracting trip attributes and finally creating the proposed 3D representation of an user's traveling behavior. 
 
-The section on \textit{Commuters identification} describes a supervised learning approach to classifying labeled data, using feature selection and ensemble models. Its counterpart, the section on \textit{Traveling behavior clustering} describes an unsupervised  learning approach to recognize similar traveling behaviors, using feature extraction (by means of an autoencoder) and clustering algorithms. 
+The section on \textit{Commuters identification} describes a supervised learning approach for classifying labeled data, using feature selection and ensemble models. Its counterpart, the section on \textit{Traveling behavior clustering} describes an unsupervised  learning approach to recognize similar traveling behaviors, using feature extraction (by means of an autoencoder) and clustering algorithms. 
 
 Finally, we gather conclusions regarding the proposed representation. We compare both supervised and unsupervised approaches and explore future work opportunities. 
 
@@ -199,7 +197,7 @@ One of the latest work on the field corresponds to Ma et Al. The objective of th
 A common practice, as used by \cite{ma2017understanding}, \cite{langlois2016inferring}, and \cite{morency2007measuring} is to divide the day into -hourly or half-and-hour- time bins. Bhaskar et al. recognize this as a problem in the field, by pointing out that this design choice segregates journeys from 9:59 AM and 10:01 AM even though they intuitively belong to the same behavior. 
 
 \subsubsection{Volume of data}
-The volume of data collected by smart card systems is massive and is usually impossible to analyze all of it at once. The volume of the samples analyzed by previous work ranges from hundreds of smart cards to tens of millions of smart cards, leading to up to hundreds of millions of individual smart card transactions. The details are summarized in Table \ref{table:volumeData}.
+The volume of data collected by smart card systems is massive and is usually impossible to analyze all of it at once. The volume of the samples analyzed by previous work ranges from hundreds of smart cards to tens of millions of smart cards, leading to up to hundreds of millions of individual smart card transactions. The details of the revised literature are summarized in Table \ref{table:volumeData}.
  
 \begin{table}[H]
 \centering
@@ -207,12 +205,12 @@ The volume of data collected by smart card systems is massive and is usually imp
  \hline
  Authors & Year of publication & Records & Unique smart cards & Time span \\ [0.5ex] 
  \hline\hline
- Tu et al. \cite{tu2016impact} & 2016 & 8,067 & 978 & one week \\ 
  Morency et al. \cite{morency2007measuring} & 2007 & 2.2 million & 7,118 & 277 days \\
- Langlois et al. \cite{langlois2016inferring} & 2016 & 3 million & 33,026 & four weeks \\
- Bhaskar et al. \cite{bhaskar2015passenger} & 2015 & 34.8 million & 1 million & 4 months \\ %, working days only
  Ma et al. \cite{ma2013mining} & 2013 & Unknown & 3 million & one week \\
  Ortega \cite{ortega2013classification} & 2013 & 65 million & 5.7 million & one week \\
+ Bhaskar et al. \cite{bhaskar2015passenger} & 2015 & 34.8 million & 1 million & 4 months \\ %, working days only
+ Tu et al. \cite{tu2016impact} & 2016 & 8,067 & 978 & one week \\ 
+ Langlois et al. \cite{langlois2016inferring} & 2016 & 3 million & 33,026 & four weeks \\
  Ma et al. \cite{ma2017understanding} & 2017 & 364 million & 18 million & one month\\ [1ex] 
  \hline
 \end{tabular}
@@ -220,12 +218,18 @@ The volume of data collected by smart card systems is massive and is usually imp
 \label{table:volumeData}
 \end{table}
 
-Trade off between several cards and short period or few cards over long period. \selfnote{expand}
+Given the limit on how many records can be examined per study, researchers usually face the decision to reduce the dataset to a manageable size. As such, there exists a trade off between the number of unique smart cards and the time span of the collected data. Some researchers, like Ortega \cite{ortega2013classification}, decide to analyze a large population over short periods of time. Others, like  Bhaskar et al. \cite{bhaskar2015passenger} choose to explore long term behavior thus having to reduce the population size. 
+
+However, it is worth noting that the total number of records studied has increased overtime. This most likely is due to the trends of increased computational power and the design of optimized mining algorithms. A clear example is the study by Ma et al. \cite{ma2017understanding} published just this year that was able to include data of a significantly large population over a month. 
 
 \subsection{Representing spatiotemporal data}
+\label{sec:representations}
+As Marr puts it, representations make explicit different types of information implicit in entities \cite{marr1982computational}. Thus, representations mainly differ in the information they describe and the way they describe it. Usually, representations are generated to achieve a information processing goal. Thus, the value of a representation depends on the purpose of the task it will be used for. 
+
+Data representation is one of the fundamentals in data mining. Ideally, the representation of a data point is comprehensive of its underlying unique factors and leaves out unnecessary or noisy information. Furthermore, the format for the representation must be akin to the types of information that data mining algorithms can process. Therefore, finding suitable representations for complex concepts like space and time is not an easy task.
 
 \subsubsection{Traditional feature engineering}
-Human mobility is intrinsically tied to spatio-temporal properties. Still, the greatest amount of studies analyze public transit journeys by separating spatial features from temporal features. In general, scalar aggregated features are used for users characterization. Some examples are:
+Human mobility is intrinsically tied to spatio-temporal properties. Still, the greatest amount of studies analyze public transit journeys by separating spatial features from temporal features. Furthermore, in general scalar aggregated features are used for users characterization. Some examples are:
 
 \begin{itemize}
 \item \textbf{Frequency indicators:} number of traveled days \cite{bhaskar2015passenger} \cite{langlois2016inferring} \cite{ma2017understanding}, number of journeys \cite{bhaskar2015passenger}, number of times a stop was visited \cite{morency2007measuring}, number of days with zero boardings \cite{morency2007measuring}, most frequent home/work stop \cite{ma2017understanding}, most frequent home/work route \cite{ma2017understanding}, most frequent departure time from home/work \cite{ma2017understanding}, number of trips to the most frequent home/work stop\cite{ma2017understanding}, number of trips following the most frequent home/work route \cite{ma2017understanding}, number of trips during most frequent departure time from home/work \cite{ma2017understanding}
@@ -236,20 +240,27 @@ Human mobility is intrinsically tied to spatio-temporal properties. Still, the g
 
 \end{itemize}
 
+Though popular among the Transportation domain, hand engineered features may present great disadvantages. While these features are intuitive and semantically meaningful for Transportation specialists, they do not always represent distinctive properties of users or their public transit journeys. Therefore, the time invested in designing and producing features may not always payback in relevant findings. 
 
-\selfnote{disadvantages of hand engineered aggregated}
+This case can be compared with the trends seen in Computer Vision. A few decades ago, most approaches for Image Understanding were focusing on designing features to describe them (i.e. SIFT). However, after the rapid development of Neural Networks in the last years, the most successful Vision applications are based on learned features. As Nithin and Sivakumar explain, hand crafted features are time consuming, fragile and incomplete, thus being outperformed by automatically extracted features which learn better the underlying representations in images \cite{nithin2015generic}. 
 
 
 \subsubsection{Feature extraction}
-Automatically extracting features. Dimensionality reduction. 
+Feature extraction refers to the creation of features that represent the underlying characteristics of data. These features are automatically created, solely from the data, in either statistical or learned ways. One popular way for extracting features is by using methods for dimensionality reduction, which beyond finding representations further tackles the curse of dimensionality. 
 
 \textbf{Principal Component Analysis}
 
-Different from all of the above, Langlois et al. follow a unique methodology for engineering features. First, they represent the travel data per user using a three dimensional matrix where $x$ represents the day in the four week period, $y$ represents the hourly time bin, and $z$ represents the area where the inferred activity took place, encoded as a one hot vector. The authors perform Principal Component Analysis (PCA) for dimensionality reduction, based on Eagle and Pentland's eigenbehaviours \cite{eagle2009eigenbehaviors}. An analysis of the average correlation of the first 13 components, results in the selection of the first 8 components as the most informative and stable. The projections of a user sequence onto these components (called weights) constitute the features to be clustered using k-means. \cite{langlois2016inferring}
+One of the most robust algorithms for this is Principal Component Analysis (PCA) which is a mathematical tool used across several domains. By doing matrix manipulation, PCA extracts eigenvalues and eigenvectors from a given dataset. The top eigenvectors represent the ways in which the data points are more different from each other.
+
+An isolated work related to this was performed by Langlois et al. Following a unique methodology for engineering features, first they represent the travel data per user using a three dimensional matrix where $x$ represents the day in the four week period, $y$ represents the hourly time bin, and $z$ represents the area where the inferred activity took place, encoded as a one hot vector. The authors perform PCA for dimensionality reduction, based on Eagle and Pentland's eigenbehaviours \cite{eagle2009eigenbehaviors}. An analysis of the average correlation of the first 13 components, results in the selection of the first 8 components as the most informative and stable. The projections of a user sequence onto these components (called weights) constitute the features to be clustered using k-means. \cite{langlois2016inferring}
 
 \textbf{Autoencoders}
 
-Autoencoders map high dimensional data to low dimensional spaces 
+Following the same main principle as the first neural networks, autoencoders are highly connected networks that map high dimensional data to low dimensional spaces. Primarily used for images, the goal of an autoencoder is to deconstruct an input image onto a representation, and reconstructing the image again, with a minimum loss of information. Each of these are called the Encoder and Decoder modules, respectively. Together these are learning modules that tune its parameters until achieving sufficient performance. 
+
+Much research has been done on autoencoders, leading to several variations of them. Denoising autoencoders result in a more robust algorithm, since they get a corrupted image as input, but aim for reconstructing the original image. Therefore, the autoencoder does not simple map one instance to a representation, but truly learns the significant characteristics present in the data \cite{nithin2015generic}.  
+
+To the best of our knowledge, these techniques have not been introduced to the Transportation domain. 
 
 
 \subsection{Pattern recognition on spatiotemporal data}
@@ -269,7 +280,7 @@ Langlois et al. use agglomerative hierarchical clustering for areas clustering. 
 
 \textbf{Partitional clustering}
 
-K-means algorithm is the most widely used method for partitional clustering. It requires having a predefined number of clusters to fit the data to. 
+The K-means algorithm is the most widely used method for partitional clustering. It requires having a predefined number of clusters to fit the data to. 
 
 Morency et al. use K-means for clustering hourly boarding times according to card type. They apply Hamming distance (representing the percentage of data between two elements) and a combination of batch and online updates. Through empirical tuning, they select to find four clusters per card type. It is worth noting that by using a card-day unit, they allow a card to belong to a different cluster according to the day of travel. As every card type is composed of four boarding patterns, travelers are not restricted to follow a routine everyday, but can exhibit different behaviors on different days. For example, the Adult-regular card type contains a 9:00AM-and-5:00PM-boarding cluster and a no-boarding cluster. Thus, a user of this card could belong to the first cluster on weekdays and to the second cluster on weekends.  \cite{morency2007measuring}
 
@@ -291,24 +302,33 @@ As a conclusion, we note that while there has been research applying basic clust
 
 
 \subsection{End to end learning}
-Learned representations, and learned underlying structure (patterns)
+As mentioned in Section \ref{sec:representations}, the effectiveness of a representation depends on the task for which it is used. 
+Hence, it is reasonable to believe that if the representations are able to learn according to the task performance, then the representations will improve leading to an improvement in the task itself. This is an example of end to end learning, a principle applied in new popular areas such as Deep Learning for image classification.
 
-DEC with end to end learning. Propagate error from clustering
+Though applied to supervised learning tasks, end to end learning is yet to be studied for unsupervised tasks. While supervised learning has quantitative ways of evaluation (such as objective functions to be minimized), unsupervised learning cannot be evaluated in the same way due to the lack of labels. taking our case for pattern recognition tasks, the error in classification can easily be identified whereas there is no intuitive error to measure for clustering. 
+
+There exists a few pioneer studies that explore this idea. %TODO include notes from papers
+
+2017 Depict \cite{dizaji2017deep}
+
+2016 Jule \cite{yang2016joint}
+
+2016 DEC \cite{xie2016unsupervised}
 
 
 \newpage
 \section{Research framework}
-The underlying goal of this project is to find an accurate spatiotemporal representation for traveling behavior while accounting for big data constraints and the inherent data nature. The main two objectives are:
+The underlying goal of this project is to find an accurate spatiotemporal representation for public traveling behavior while accounting for big data constraints and the inherent data nature. The main two objectives are:
 
 \begin{description}
-\item[Objective 1] To identify commuters based on their routines. \label{eqn:obj1}
-\item[Objective 2] To identify popular travel behavior patterns. \label{eqn:obj2}
+\item[Objective 1] To identify commuters based on their routine patterns. \label{eqn:obj1}
+\item[Objective 2] To group users with similar travelling behaviors. \label{eqn:obj2}
 \end{description}
 
-Combined, these objectives identify and characterize commuters in the city of Beijing by using one month worth of smart card data. 
+Combined, these objectives characterize public transit users in the city of Beijing. For this project we decide to use one month worth of smart card data, since we believe it to be a long enough period to see different traveling patterns, while keeping the data at a manageable level. 
 
 \subsection{Research questions}
-The main objective is further broken down into answering the following research questions: 
+The main objectives is further broken down into answering the following research questions: 
 
 \begin{enumerate}
 
@@ -340,7 +360,7 @@ This project is divided three main stages:
 \item[PART I: Prepare and preprocess the data using Big Data techniques] In this part we focus on research question 1. Techniques for cleaning, knowledge extraction, categorization, patching and standardization are used and tailored to the data. From this, we build an appropriate 3 dimensional representation for each user's traveling behavior. This part corresponds to Section \ref{sec:partI}.
 
 
-\item[PART II: Classify commuters versus non-commuters by using an ensemble model]  In this part we focus on research questions 2 and 3. First, we perform feature selection in order to identify the most informative features and disregard redundant information. An extensive analysis of spatiotemporal properties is be done, combining transportation domain knowledge and statistical tools. Later, we create a classifier using ensemble models and discuss its performance. This part corresponds to Section \ref{sec:partII}
+\item[PART II: Classify commuters versus non-commuters by using an ensemble model]  In this part we focus on research questions 2 and 3. First, we perform feature selection in order to identify the most informative features and disregard redundant information. An extensive analysis of spatiotemporal properties is done, combining transportation domain knowledge, machine learning and statistical tools. Subsequently, we create a classifier using ensemble models and discuss its performance. This part corresponds to Section \ref{sec:partII}
 
 
 \item[PART III: Users clustering according to patterns in their travel behaviors.]  In this part we focus on research question 4. First, we do feature extraction with the goal of reducing the dimensionality of the data. This is done via a convolutional autoencoder. Finally, we cluster the low dimensional representation using k-means clustering and do cluster analysis to understand the underlying pattern of each cluster. This part corresponds to Section \ref{sec:partIII}
