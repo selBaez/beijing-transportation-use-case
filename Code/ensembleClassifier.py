@@ -6,14 +6,16 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import scipy.io as sio
 import numpy as np
-import matplotlib.pyplot as plt
-import pandas
-import seaborn as sns
+import warnings
+warnings.simplefilter("ignore")
+import cPickle
 from sklearn import svm, ensemble
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier
 from sklearn.metrics import average_precision_score, confusion_matrix
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.neural_network import MLPClassifier
+from sklearn.gaussian_process import GaussianProcessClassifier
 
 import paths, shared
 
@@ -23,7 +25,7 @@ MAX_STEPS_DEFAULT = 1500
 NUM_TREES_DEFAULT = 100
 DEPTH_TREES_DEFAULT = 10
 NUM_CLASSES = 2
-CLASSES = ['Commuters','Non-Commuters']
+CLASSES = ['Non-Commuters', 'Commuters']
 LABELS = [0, 1]
 ############ --- END default constants--- ############
 
@@ -31,9 +33,9 @@ def _loadData(fileName):
     """
     Load preprocessed data
     """
-    data = sio.loadmat(fileName)
+    with open(fileName, 'r') as fp: data = cPickle.load(fp)
 
-    return data['train_data'], data['train_labels'], data['test_data'], data['test_labels']
+    return data
 
 def _predict(name, predict_fn, test_data):
     """
@@ -41,10 +43,6 @@ def _predict(name, predict_fn, test_data):
     Return classes as ordinal, not one hot
     """
     predictions = predict_fn(test_data)
-
-    if len(predictions.shape) > 1:
-        print('Need to turn ', name,' predictions into categorical')
-        predictions = np.argmax(predictions, axis=1)
 
     return predictions
 
@@ -74,31 +72,42 @@ def _evaluate(name, labels, predictions):
     Confusion matrix and accuracy
     """
     accuracy = average_precision_score(labels, predictions)
-    print(name, " accuracy : ", accuracy)
+    print(name)
+    print("One split accuracy : %0.2f" % (accuracy))
 
-    _confusion_matrix(name, labels, predictions, n_classes=NUM_CLASSES, classes=CLASSES, labels=LABELS)
+    # _confusion_matrix(name, labels, predictions, n_classes=NUM_CLASSES, classes=CLASSES, labels=LABELS)
+
+def _crossVal(model, features, labels, cv=5):
+    """
+    Evaluate using cross validation
+    """
+    scores = cross_val_score(model, features, labels, cv=5)
+    print("Cross validation accuracy: %0.2f (+/- %0.2f) \n" % (scores.mean(), scores.std() * 2))
+
+    return scores.mean()
 
 def train():
     """
     Performs training and reports evaluation (on training and validation sets)
     """
     print("---------------------------- Load data ----------------------------")
-    train_data, train_labels, test_data, test_labels = _loadData(paths.PREVIOUS_DIR_DEFAULT+'dataset.mat')
+    [codes, features, labels] = _loadData(paths.LOWDIM_DIR_DEFAULT+"supervised.pkl")
 
-    print("-------------------------- Rename labels --------------------------")
-    train_labels[train_labels == -1] = 0
-    test_labels[test_labels == -1] = 0
-
-    #print("--------------------------- Create sets ---------------------------")
+    print("--------------------------- Create sets ---------------------------")
+    train_data, test_data, train_labels, test_labels = train_test_split(features, labels, test_size=0.4)
 
     print("--------------------------- Build model ---------------------------")
     #################### Individual classifiers ####################
     # Original SVM
     model_svm =  svm.SVC(C=0.1, cache_size=200, class_weight=None, coef0=0.0, degree=1,gamma='auto', kernel='linear', max_iter=-1, probability=False, random_state=None,shrinking=True, tol=0.001, verbose=False)
 
-    # Gaussian
+    # Gaussian Process
+    model_gp = GaussianProcessClassifier()
 
     # Bayes
+
+    # Perceptron
+    model_pct = MLPClassifier()
 
     #################### Ensemble from the box ####################
     # Random Forest
@@ -111,28 +120,57 @@ def train():
     # Bagging trees
     model_bag = ensemble.BaggingClassifier(n_estimators=FLAGS.num_trees)
 
-
-
-    # Ensemble perceptrons?
-
-
-
-
     print("---------------------- Forward pass  modules ----------------------")
     model_svm.fit(train_data, train_labels.ravel())
+    model_gp.fit(train_data, train_labels.ravel())
+    model_pct.fit(train_data, train_labels.ravel())
     model_rf.fit(train_data, train_labels.ravel())
     model_adb.fit(train_data, train_labels.ravel())
 
     print("---------------------------- Predict ------------------------------")
     predictions_svm = _predict('SVM', model_svm.predict, test_data)
+    predictions_gp = _predict('Gaussian Process', model_gp.predict, test_data)
+    predictions_pct = _predict('Perceptron', model_pct.predict, test_data)
     predictions_rf = _predict('Random forest', model_rf.predict, test_data)
     predictions_adb = _predict('AdaBoost of decision trees', model_adb.predict, test_data)
 
     print("---------------------------- Evaluate -----------------------------")
-    # TODO: cross validation
+    scores = []
+
     _evaluate('SVM', test_labels, predictions_svm)
+    avScore = _crossVal(model_svm, features, labels)
+    scores.append(['SVM', model_svm, avScore])
+
+    _evaluate('Gaussian Process', test_labels, predictions_gp)
+    avScore = _crossVal(model_gp, features, labels)
+    scores.append(['Gaussian Process', model_gp, avScore])
+
+    _evaluate('Perceptron', test_labels, predictions_pct)
+    avScore = _crossVal(model_pct, features, labels)
+    scores.append(['Perceptron', model_pct, avScore])
+
     _evaluate('Random forest', test_labels, predictions_rf)
+    avScore = _crossVal(model_rf, features, labels)
+    scores.append(['Random forest', model_rf, avScore])
+
     _evaluate('AdaBoost of decision trees', test_labels, predictions_adb)
+    avScore = _crossVal(model_adb, features, labels)
+    scores.append(['AdaBoost of decision trees', model_adb, avScore])
+
+    print("-------------------------- Select models --------------------------")
+    scores = np.array(scores)
+
+    k = 2
+    selectedModelIdx = np.argsort(scores[:,2])[-k:]
+    print("Best {}: {}".format(k, scores[:,0][selectedModelIdx]))
+
+    print("---------------------------- Ensemble ----------------------------")
+    estimators = scores[:,:2]
+    print(estimators)
+
+    model = VotingClassifier(estimators)
+    predictions = model.predict(features)
+    print(predictions.shape)
 
 def print_flags():
     """
