@@ -379,7 +379,7 @@ Figure \ref{fig:flowchart} displays a flowchart for the stages and their connect
 \section{Methodology}
 \subsection{The data}
 \label{sec:data}
-Every record in the data represents a trip performed by a specific smart card. As such, it contains the following data fields:
+The data used in this project is provided by government agency of Beijing Transportation Operations Coordination Center (TOCC), facilitated by the College of Metropolitan Transportation at Beijing University of Technology. Every record in the data represents a trip performed by a specific smart card. As such, it contains the following data fields:
 
 \begin{itemize}
 \item Data date: Year, month and day that the trip was made
@@ -403,7 +403,7 @@ Every record in the data represents a trip performed by a specific smart card. A
 
 Full privacy of card users is ensured, as there is no personal data linking card codes to specific individuals. 
 
-The traffic zones (small, middle and big areas) are divided by the Beijing Municipal Institute of City Planning and Design (BICP). They are specific in different degrees, as shown in Figure \ref{fig:data/traffic_zones}. In general, the division principles correspond to the geopolitical environment and administrative planning, for example roads, villages and others. The 6 ring road and 18 areas districts are divided by the Beijing Municipal Government. The division is unique in Beijing. The 18 districts and counties are shown in Figure \ref{fig:data/18areas}. According to domain expert PhD. Liang Quan, these divisions are sufficiently informative for traffic analysis \cite{liang}.
+The traffic zones (small, middle and big areas) are administrative divisions by the Beijing Municipal Institute of City Planning and Design (BICP). They are specific in different degrees, as shown in Figure \ref{fig:data/traffic_zones}. In general, the division principles correspond to the geopolitical environment and administrative planning, for example roads, villages and others. The 6 ring road and 18 areas districts are administrative divisions by the Beijing Municipal Government. The division is unique in Beijing. The 18 districts and counties are shown in Figure \ref{fig:data/18areas}. According to domain expert PhD. Liang Quan, these divisions are sufficiently informative for traffic analysis \cite{liang}.
 
 \begin{figure}[H]
   \centering
@@ -433,16 +433,18 @@ The traffic zones (small, middle and big areas) are divided by the Beijing Munic
   \label{fig:data/18areas}
 \end{figure}
 
-Every day, more than 13 million records are collected, with approximately 5 million corresponding to subway trips, 8 million corresponding to bus trips and 100,000 corresponding to bicycle trips.
+Every day, more than 13 million records are collected, with approximately 5 million corresponding to subway trips, 8 million corresponding to bus trips, and 100,000 corresponding to bicycle trips. All records corresponding to one day are saved in a single csv file. 
+
+In this project we examine one month worth of data, corresponding to November 2015. The month of November is chosen because it does not overlap with holidays and has a relatively stable weather, hence diminishing the variance between bicycle and bus/subway traveler preferences. As a result, the data to be analyzed is divided into 30 csv files, requiring a total storage space of 53GB.
 
 \subsubsection{Special considerations}
-The previous description corresponds to the data as delivered by the Beijing Transportation Research Centre. As such, it is the result from processing the raw records at the collecting phase. Some special considerations concerning this processing are explained below:
+The previous description corresponds to the data as delivered by the TOCC. As such, it is the result from processing the raw records at the collecting phase. Some special considerations concerning this processing are explained below:
 
 \begin{description}%[align=right,labelwidth=2cm]
 \item[Travel distance by bike:] Since bicycles do not have predefined routes, the distance cannot be directly recorded. However, it is inferred by using the travel time and a static average speed for cyclists. 
 
 \item[Subway transfer:] Transfers between subways lines of the same operator cannot be tracked since a single check-in gives access to the traveler to all the subway network. In order to infer the transfer detail, the A* algorithm is used to calculate the most likely transfer sequence, given the boarding and alighting stations. 
-Similarly to the bicycle missing information, the transfer time inside the subway system cannot be directly recorded. Using a static average walking speed and the known distance in transfer stations, the transfer time is calculated. 
+Furthermore, similarly to the bicycle missing information, the transfer time inside the subway system cannot be directly recorded. Using a static average walking speed and the known distance in transfer stations, the transfer time is calculated. 
 
 \item[Transfer information:] The path link and transfer number fields are extracted from the transfer detail field. Similarly, the transfer average time is calculated from the transfer total time and transfer number fields. 
 \end{description}
@@ -450,17 +452,17 @@ Similarly to the bicycle missing information, the transfer time inside the subwa
 
 \subsubsection{Labeled and unlabeled data}
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
-  \includegraphics[width=.6\linewidth]{"./images/unlabeled data"}
-  \caption{relation between labeled and unlabeled data.}
+  \includegraphics[width=.6\linewidth]{"./images/unlabeled data"} %TODO update image
+  \caption{Relation between labeled and unlabeled data.}
   \label{fig:method/unlabeled}
 \end{figure}
 
 
 \begin{description}%[align=right,labelwidth=2cm]
 \item[Commuter classification:]
-Classification is a supervised learning task, where every training data sample requires an associated label determining its true class. In case of commuter classification, this translates to having smart card codes associated with either a "commuter" or "non-commuter" label. Such data is expensive and limited since it can only be obtained by asking the users directly if they are commuters or not. Thus, in general, annotated data is not available, and labeling new records falls beyond the scope of this project. 
+Classification is a supervised learning task, where every training data sample requires an associated label determining its true class. In case of commuter classification, this translates to having smart card codes associated with either a "commuter" or "non-commuter" label. Such data is expensive to obtain and limited in principle, since it obtained by asking public transit users directly if they are commuters or not. Thus, in general, annotated data is not available, and labeling new records falls beyond the scope of this project. 
 
 As a solution for the above, we take advantage of the dataset used by Tu\cite{tu2016impact}. This dataset corresponds to trip records performed during a week in January 2015, and it contains labels for 978 smart cards, collected and validated via surveys. The original dataset distribution is composed by:
 
@@ -469,18 +471,24 @@ As a solution for the above, we take advantage of the dataset used by Tu\cite{tu
 \item 1628 records of 497 non-commuters
 \end{itemize}
 
-For this project, the Beijing Transportation Research Centre has provided us with one month worth of data, corresponding to January 2015. In order to construct an extended labeled dataset, we take these 978 labeled smart card IDs and search for their corresponding records in the one month sample. This dataset is used for Part I (Section \ref{sec:partI}) and Part II (Section \ref{sec:partII}) of this project. 
+As mentioned in Section \ref{sec:data}, this project considers data corresponding to November 2015. Since both datasets correspond to the same year, we believe the labels to be reasonably relevant for both datasets. As such, in order to construct an extended labeled dataset, we take the 978 labeled smart card codes from Tu's dataset, and search for their corresponding records in our dataset. As shown in Figure \ref{fig:method/unlabeled}, a great disadvatage of this is that it tremendously reduces the size of the dataset to less than 1\% of its original size. 
 
-\item[Commuter clustering:]
-In order to further cluster commuters, 100,000 smart card codes are sampled from data corresponding to November 2016. The month of November is chosen because it does not overlap with holidays and has a relatively stable weather thus diminishing the variance between bicycle and bus/subway traveler preferences. The year is chosen to reflect a more recent characterization of travelers. 
+The reduced labeled dataset is used for Part I (Section \ref{sec:partI}) and Part II (Section \ref{sec:partII}) of this project. 
 
+\item[Behavior clustering:]
+Clustering, being an unsupervised learning task, does not require labels. Therefore, for this task we are able to use the full dataset. Though rich in its contents, this poses some computational challenges which will be further explained in Section \ref{sec:partI}. %TODO section of DAS5
 \end{description}
 
-
-
 \subsection{Spatio-temporal representation}
+\label{sec:structure}
 % 3D locality, channels, bins
-In this work we propose a 3 dimensional data representation to contain the monthly travel information of a user. This is shown in Figure \ref{fig:data_mining/3D_structure}.
+One of the main contribution of this project is the novel representation of public transit travel behavior. We consider that the travel behavior of a public transit user is composed by a) the distribution of trips over time, and b) the spatial, temporal and general attributes of each of the trips. 
+
+On the one hand, the distribution of trips over time is a complex continuous distribution. However, according to the Transportation domain standard, it can be approximated in a discrete manner. For this purpose, we divide each day into one hour bins. Then, we consider that each bin can be "occupied" by a trip, or empty if there was no traveling at that moment. 
+
+On the other hand, each trip possesses different attributes of different nature. Fields like \textit{Travel time} and \textit{Travel distance}, for example, have continuous positive values within a reasonable range specific to the city of Beijing. In contrast, fields like \textit{Traffic areas} and \textit{Ring road}, for example, contain categorical values. Therefore, the information from smart card transactions is processed to extract relevant the attributes. 
+
+We propose a 3 dimensional data structure to contain the monthly travel information of a public transit user. The conceptualization is pictured in Figure \ref{fig:data_mining/3D_structure}.
 
 \begin{figure}[H]
   \centering
@@ -489,97 +497,115 @@ In this work we propose a 3 dimensional data representation to contain the month
   \label{fig:data_mining/3D_structure}
 \end{figure}
 
-Inspired by \cite{langlois2016inferring}, the x-y plane constructs a temporal structure between days of the month and hours of the day. The crucial advantage of this structure lies in its local properties. Similar to the case of image processing, in this representation a temporal pixel is simultaneously influenced by what happened in the previous/following hours (y axis), and on the previous/following days (x axis).
+Inspired by Langlois et al. \cite{langlois2016inferring}, the x-y plane of our representation constructs a temporal structure between days of the month and hours of the day. The crucial advantage of this structure lies in its local properties. Similar to the case of Image Processing, in this representation a temporal pixel is simultaneously influenced by what happened in the previous/following hours (y axis), and on the previous/following days (x axis).
 
-As for the z plane, each layer contains a trip feature. In Figure \ref{fig:data_mining/3D_structure} boarding spatial features are portrayed in green, alighting spatial are portrayed in red, and other types of features (such as travel time, travel distance, transfer number, transfer total time, etc) are portrayed in yellow. 
+%TODO maybe redo image to reflect spatial, temporal and general
+As for the z axis, each layer contains a trip attribute. In Figure \ref{fig:data_mining/3D_structure} boarding spatial attributes are portrayed in green, alighting spatial attributes are portrayed in red, and other types of general attributes (such as travel time, travel distance, transfer number, transfer total time, etc) are portrayed in yellow. 
 
-Therefore, each temporal pixel may contain a trip feature vector, which expands several layers deep. Considering that even regular public transport users do not perform more than 6 trips a day as shown by the number of trips distribution in Figure \ref{fig:preprocessing/num_trips}, the proposed representation is sparse, since only a few time pixels are populated with trips.  
+Therefore, each temporal pixel may contain a trip feature vector, which expands several layers deep. Considering that even regular public transport users do not usually perform more than 6 trips a day, the proposed representation is sparse, since only a few time pixels are populated with trips.  
 
 
 \subsection{Dimensionality reduction}
-Considering there are about 26 attributes in a trip, we have $24 \times 30 \times 26 = 18,790$ temporal pixels per user. Given the high dimensionality and the sparsity of the structure, we will perform dimensionality reduction. 
+The proposed representation is directly proportional to the number of attributes used to describe a trip. As it is explain in Section \ref{sec:attributes}, we extract 26 attributes in a trip. Considering we have 30 days worth of data, and 24 hourly time bins in a day, this leads to $24 \times 30 \times 26 = 18,790$ temporal pixels to represent one user. Given the high dimensionality and the sparsity of the structure, we need perform dimensionality reduction in order to avoid the typicl effects of the curse of dimensionality. 
 
 \subsubsection{Feature selection}
-techniques for choosing best k
+One of the simplest ways for reducing the number of attributes in a dataset is to perform feature selection. This technique consists of evaluating each feature's influence in making predictions or classifying samples. The strongest features are then selected to be part of the final dataset, while the least informative or redundant features are disregarded. 
 
-Statistical such as correlation, chi squared, anova
-Machine learning such as trees
-Domain knowledge
+When performing feature selection, there are two main choices to be made: the amount of features to be kept and the approaches to evaluate each feature. In this project, the first aspect is tackled using the \textit{Best k} algorithm, which fixes the amount of features to be kept to \textit{k}, regardless of the initial number of features present in the data. The second aspect is tackled via an assortment of algorithms, from statistical tests -such as correlation tests, and ANOVA f-test-, machine learning techniques -such as Trees classifiers-, to domain knowledge from Transportation domain specialists. 
 
 \subsubsection{Feature extraction}
-Mapping between high dimensional and low dimensional through autoencoders. 
+An alternative way of performing dimensionality reduction is by mapping high dimensional spaces to a low dimensional space. Though in most cases the mapping causes some loss of information, there exists mathematical transformations optimized for reducing the loss. Two of the most common techniques to do so are performing single value decomposition, as used by PCA, or work under the Universal Approximation Aroblem, as neural networks. 
 
+In this project, we perform the mapping through an autoncoder. Autoencoders follow the principles of neural networks, and focus on the task of encoding and decoding an image minimizing the loss but not abstracting the noise. As a network, autoencoders may become as complex as needed, allowing for any number of layers and any types of activation functions. 
 
-Taking advantage of the local properties of the proposed structure, we can apply convolutional filters \technicalDoubt{CNN chosen because of local properties, is PCA also local?} to reduce the dimensionality to a more manageable number. The end result will be used as features for clustering commuters in Part III (Section \ref{sec:partIII}) of this project. 
+Taking advantage of the local properties of the proposed representation, we decide to apply stacked convolutional filters followed by a final fully conencted layer that outputs features of a more manageable dimensionality. The end result will be used as features for clustering commuters in Part III (Section \ref{sec:partIII}) of this project. 
+
+%TODO re read starting from here
 
 \subsection{Pattern recognition}
 
-\subsubsection{Ensemble models}
-Ensemble models benefit from combining non-correlated prediction methods. Weak classifiers might correct each other in specific hard cases. Ensemble models are chosen for this project because of its robustness and modularity. Starting from a few simple classifiers, assembled via aggregation methods, the model can grow larger or more complex as needed.
+\subsubsection{Ensemble models for classification}
+There is a large variety of algorithms for performing classification tasks. Each algorithm may focus on different samples when learning the task, and so has strengths and weaknesses different from one another. 
 
-\textbf{Supervised learning}
-As proven by Tu \cite{tu2016impact}, weak classifiers like an SVM prove to be sufficient to identify commuters. This hints to extend the ensemble model with other similar weak classifiers like decision trees, Bayesian classifiers or multilayer perceptron. Bagging will be used to ensemble their predictions.
+Ensemble models explore the idea of combining several non-correlated prediction methods that might correct each other in order to reach a better classification accuracy. Furthermore, ensemble models are robust and modular. Therefore, starting from a few weak classifiers, assembled via aggregation methods, the model can grow larger or more complex as needed.
 
-\subsubsection{Clustering}
-K means 
+This project constructs an ensemble model for classifying commuters. As proven by Tu \cite{tu2016impact}, weak classifiers like a Support Vector Machines (SVM) is sufficient to identify commuting behavior up to a 94\% accuracy. Aiming to increase accuracy, but aiming to avoid overfitting, this project extends Tu's model with other similar weak classifiers such as decision trees, a Bayesian classifier, a Gaussian process, and a multilayer perceptron. Bagging will be used to ensemble their predictions. %TODO bagging or majority vote?
 
+\subsubsection{Clustering} 
+For the third part of this project we perform behavior clustering. To this end, we apply the \textit{K means} algorithm on the low dimensional features extracted by the autoencoder. \textit{Kmeans} is the standard algorithm used in the Transportation domain, and it consistently achieves satisfactory results. 
+
+\subsection{Big Data considerations}
+The amount of data gathered for this project require specific computational resources. While programming the tasks, measures are taken to optimize the code. For example, the code is written in modules that work with one day file at the time, and save checkpoints at every relevant step. Additionally, the code is compatible with cluster computing and SLUM jobs are created for its processing.
+
+Furthermore, parallel computing techniques are implemented wherever the whole dataset goes into memory. As shown in Figure \ref{fig:bigdata/parallel}, the time required for applying a single filter reduces drastically if the number of tasks equals the number of cores in the machine used. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.6\linewidth]{"./images/Parallel implementation"}
+  \caption{Number of tasks.}
+  \label{fig:bigdata/parallel}
+\end{figure}
+
+The computational resources are provided by Vrije Universiteit Amsterdam. The results of this project are obtained by using DAS5 (The Distributed ASCI Supercomputer 5) \cite{bal2016medium}. 
 
 \newpage
 \section{Data preparation and preprocessing}
 \label{sec:partI}
+The data acquired for this project corresponds to November 2015. However, due to defective collection methods, the data from November 9 to November 14 is not available. This may have significant effects in the results of the project, as discussed in Section \ref{sec:conclusion}
 
 \subsection{Cleaning}
-As first step for preprocessing the data, we eliminate faulty records. The different filters are:
+As first step for preparing the data for its mining, we eliminate faulty records. To this end, we apply the following four filters:
 
 \begin{enumerate}
-\item Eliminate records with missing data: ~10.93\% records eliminated
-\item Eliminate records with missing travel details: ~1.58\% records eliminated
-\item Eliminate records with travel time <= 0: <0.01\% records eliminated
-\item Eliminate records with travel distance <= 0: ~9.82\% records eliminated
+\item Eliminate records with empty fields: \~10.93\% records eliminated
+\item Eliminate records with incomplete travel details: \~1.58\% records eliminated
+\item Eliminate records with travel time $<= 0$: <0.01\% records eliminated
+\item Eliminate records with travel distance $<= 0$: \~9.82\% records eliminated
 \end{enumerate}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.6\linewidth]{"./images/faulty data"}
+  \includegraphics[width=.6\linewidth]{"./images/faulty data"} %TODO run on whole
   \caption{Reasons for eliminating records.}
   \label{fig:preprocessing/faulty}
 \end{figure}
 
-The first four filters aim to eliminate records with missing fields, which already reduces the dataset to ~77.66\% of its original size. \selfnote{explain figure} 
+The percentage of data eliminated by each filter is shown in Figure \ref{fig:preprocessing/faulty}. We see removing faulty data reduces the dataset to \~77.66\% of its original size. 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.8\linewidth]{"./images/Number of trips_hist"}
+  \includegraphics[width=.6\linewidth]{"./images/Number of trips_hist"}
   \caption{Number of trips distribution. 2500 record sample.}
   \label{fig:preprocessing/num_trips}
 \end{figure}
 
-Figure \ref{fig:preprocessing/num_trips} shows the distribution of number of days in a single day. Its shows that most people perform two trips per day. Fixing the minimal number of trips to 60, which is equivalent to an average of two trips per day, the final dataset contains ~51.76\% records available for usage.  
+Figure \ref{fig:preprocessing/num_trips} shows the distribution of number of days in a single day. Its shows that most people perform two trips per day. %TODO find better place to put this 
 
 \subsection{Extraction}
 
 \subsubsection{Time bins}
-Regardless of its criticism, using hourly time bins is standard practice in the field and has shown sufficient to examine temporal data \cite{langlois2016inferring} \cite{ma2017understanding} \cite{morency2007measuring}. Therefore, in this project we follow the same technique and extract only the hour of the start and end of each trip.
+Regardless of its criticism, using hourly time bins is standard practice in the field and has proven sufficient to examine temporal data \cite{langlois2016inferring} \cite{ma2017understanding} \cite{morency2007measuring}. Therefore, in this project we follow the same technique and extract the hour of the start and end of each trip.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.8\linewidth]{"./images/Hour of trip_hist"}
+  \includegraphics[width=.6\linewidth]{"./images/Hour of trip_hist"}
   \caption{Distribution of start/end hours for trips. 2500 records sample.}
-  \label{fig:preprocessing/start_end_hour}
+  \label{fig:preprocessing/start_end_hour}%TODO rerun in general, or one weekday and one weekend
 \end{figure}
 
-From Figure \ref{fig:preprocessing/start_end_hour}, we note that our data follows the expected distribution for the domain, showing clear morning and evening peaks. Furthermore, we note that boarding and alighting patterns during the peaks hours are shifted by one hour. This is explained by the previous finding, that the mean travel time is almost one hour.
+From Figure \ref{fig:preprocessing/start_end_hour}, we note that our data follows the expected distribution for the domain, showing clear morning and evening peaks. Furthermore, we note that boarding and alighting patterns during the peaks hours are shifted by one hour. %TODO revise this
 
 \subsubsection{Trip parsing} 
 \label{sec:tripParsing}
-The trip details obtained from the records are given in Chinese, with descriptors containing a combination of numbers and text. In order to extract boarding/alighting route features, the descriptors must be parsed. 
+The trip details obtained from the records are in Chinese, with descriptors containing a combination of numbers and text. In order to extract boarding/alighting route features, the descriptors must be parsed. 
 
-We parse the trip details using a combination of two techniques: regular expressions and tokenization. 
+We parse the trip details using a combination of two techniques: regular expressions and the construction of an ID vocabulary. 
 
-\textbf{Regular expression}
+\textbf{Regular expressions}
+
 Since a trip may include transfers, we define a trip to be composed of one or many rides. Each ride is carried out in a single travel mode. 
 
-In order to obtain the elements of each ride we look at the pattern per travel mode.
+In order to obtain the elements of each ride we look at the descriptor pattern according to its travel mode.
 
     \begin{align*}
     BIKE &= (bike.STOP-STOP) \\
@@ -599,12 +625,13 @@ Unifying the mode-specific patterns, we describe a ride and a trip using regular
 	
 where elements surrounded by squared brackets and followed by a question mark (e.g. $[ELEMENT]?$) correspond to optional elements. We note that when parsing bus details, we disregard the route direction. This decision is motivated to fit both subway lines and bus routes to a single pattern, noting that the direction of the route does not affect the path of the route itself.
 
-\textbf{Tokenization}
-Once the elements of a trip are extracted, they must be substituted with numerical IDs. These IDs are not available from the Beijing Institute of Transportation, thus three different vocabularies are created for subway lines, bus routes and combined stops correspondingly. 
+\textbf{ID Vocabulary}
 
-Usually, bus routes are identified by a number. However, in Beijing a single bus route number can be associated to different paths. Such is the case of night, express and special cases of a bus route, which follow different paths even if they are described with the same number. For this reason we create a vocabulary with all unique parsed routes according to their full description and not only their number.  
+Once the elements of a trip are extracted, they must be labeled by unique numerical IDs. These IDs are not available from the TOCC, we labeled them using our own system. Two different vocabularies are created, the first one for subway lines/bus routes, and the second one for stops. 
 
-Examples of cleaned routes are shown in Figure \ref{fig:preprocessing/parsed_routes}
+Usually, bus routes are identified by a number. However, in Beijing a single bus route number can be associated to different paths. For example, night buses, express buses and other special cases of a bus route may follow different paths even if they are described with the same number. For this reason we create a vocabulary with all unique parsed routes according to their full description and not only their number.  
+
+Examples of clean routes are shown in Figure \ref{fig:preprocessing/parsed_routes}. %TODO chinese latex!
 
 \begin{figure}[H]
   \centering
@@ -627,32 +654,36 @@ Examples of cleaned routes are shown in Figure \ref{fig:preprocessing/parsed_rou
   	\label{fig:preprocessing/parsed_routes}
 \end{figure}
 
-
+\subsubsection{Calendar-based information} %TODO rephrase
+We also extract two attributes from the date of the trip. Day is a number of on the month, from 1 to 30. Weekday is a number from 1 to 7 corresponding to the day of the week, starting on Monday.
 
 \subsection{Data patching}
-We note that the number of transfers and the path link fields of some records do not correspond to the information in their trip details. According to domain expert PhD. Tu Qiang, this must be recalculated \cite{tommy}. Figure \ref{fig:preprocessing/num_transfers} shows the distribution of the number of transfers per trip before and after patching. \selfnote{piechart might be better?}
-
+\label{sec:patching}
+We note that the number of transfers and the path link fields of some records do not correspond to the information in their trip details. According to domain expert PhD. Tu Qiang, this must be recalculated \cite{tommy}. 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.8\linewidth]{"./images/Number of transfers_hist"}
+  \includegraphics[width=.6\linewidth]{"./images/Number of transfers_hist"}
   \caption{Transfer number distribution before and after recalculation.}
   \label{fig:preprocessing/num_transfers}
 \end{figure}
 
-Our distribution shows that most trips are performed without transfers, which is consistent with other studies findings \cite{bhaskar2015passenger}.
+Figure \ref{fig:preprocessing/num_transfers} shows the distribution of the number of transfers per trip before and after patching. The patched distribution shows that most trips are performed without transfers, which is consistent with other studies findings \cite{bhaskar2015passenger}.
 
 \subsection{Standardization} 
-In data mining, it is a standard practice to perform whitening. This technique eliminates correlations between features, which is desirable in most cases. However, the domain of Metropolitan Transportation some of these correlations are highly important, and should not be discarded. This is the case of total travel time and distance, as shown in Figure \ref{fig:preprocessing/distance_time_correlation}. For this reason, we choose to only standardize the features and keep the correlations. 
+
+\textbf{Continuous values}
+
+In data mining, it is a standard practice to perform whitening. This technique eliminates correlations between features, which is desirable in most cases. However, for the domain of Metropolitan Transportation some of these correlations are highly important and should not be discarded. This is the case of total travel time and distance, as shown in Figure \ref{fig:preprocessing/distance_time_correlation}. For this reason, we choose to only standardize the attribute but keep the correlations. 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.8\linewidth]{./images/distance_vs_time.png}
+  \includegraphics[width=.6\linewidth]{./images/distance_vs_time.png}
   \caption{Travel distance vs travel time. 2500 record sample.}
   \label{fig:preprocessing/distance_time_correlation}
 \end{figure}
 
-Travel time, travel distance, total transfer time and average transfer time where standardized by subtracting the mean of each distribution and forcing a unit standard deviation.
+Travel time, travel distance, total transfer time and average transfer time are standardized by subtracting the mean of each distribution and forcing a unit standard deviation.
 
 \begin{figure}[H]
   \centering
@@ -686,7 +717,7 @@ Travel time, travel distance, total transfer time and average transfer time wher
   	\label{fig:preprocessing/distance}
 \end{figure}
 
-Figure \ref{fig:preprocessing/time} and \ref{fig:preprocessing/distance} show travel time and distance follow a truncated Gaussian distribution $\mathcal{N}(\mu = 1, \sigma^2 = 1)$. Since the nature of the data prevents negative values (time and distance must be positive), the original distribution is truncated at 0. Standardization maintains the shape of the distribution, but shifts and contracts it to be closer to zero values.
+Figure \ref{fig:preprocessing/time} and \ref{fig:preprocessing/distance} show distributions for travel time and distance. Since the nature of the data prevents negative values (time and distance must be positive), the original distribution is truncated at 0. Standardization maintains the shape of the distribution, but shifts and contracts it to be closer to zero values.
 
 The mean travel time is ~55 minutes, and the mean travel distance is ~10 kilometers.  
  
@@ -722,55 +753,74 @@ The mean travel time is ~55 minutes, and the mean travel distance is ~10 kilomet
   	\label{fig:preprocessing/transfer_avg}
 \end{figure}
 
-Figure \ref{fig:preprocessing/transfer_time} and \ref{fig:preprocessing/transfer_avg} show that transfer times, both total and average, follow distributions with very long tails. As mentioned before, most trips are performed without transfers, which explains that most of the trips have transfer times equal to zero. \selfnote{do not include transfer 0. focus on tail behavior}
+Figure \ref{fig:preprocessing/transfer_time} and \ref{fig:preprocessing/transfer_avg} show that transfer times, both total and average, follow distributions with very long tails. As mentioned before, most trips are performed without transfers, which explains that most of the trips have transfer times equal to zero. %TODO remove top, examine tail
+
+\textbf{Categorical values}
+
+As mentioned in Section \ref{sec:structure}, a trip contains both continuous and categorical attributes. Usually categorical values are to be transformed into one hot encoding. However, in this case that option is not scalable and we do not apply it.
 
 
 \subsection{Attributes}
-The spatial features to be included in the representation are:
+\label{sec:attributes}
+After the data is preprocessed, we collect 26 attributes that describe a trip. We divide them onto three categories: general attributes, temporal attributes and spatial attributes. 
+
+The general trip attributes are: 
 
 \begin{enumerate}
-\item Small traffic area
-\item Middle traffic area
-\item Big traffic area
-\item Ring road
-\item District
-\item Mode
-\item Line/Route
-\item Stop
-\end{enumerate}
-
-These are repeated for boarding and alighting information.
-
-The general trip features to be included in the representation are: 
-
-\begin{enumerate}
+\item Number of day
+\item Weekday
+\item Number of trips
 \item Travel time
 \item Travel distance
-\item Transfer number
+\item Number of transfers
 \item Transfer total time
 \item Transfer average time
-\item Start hour
-\item End hour
-\item Number of trips
 \end{enumerate}
 
-The attributes are of two types: numerical and categorical. Usually categorical should be done by one hot encoding. In this case it is not scalable.
+The temporal trip attributes are:
+ 
+\begin{enumerate}
+\item Start hour
+\item End hour
+\end{enumerate}
+
+finally, the spatial attributes are:
+
+\begin{enumerate}
+\item On/Off District
+\item On/Off Small traffic area
+\item On/Off Middle traffic area
+\item On/Off Big traffic area
+\item On/Off Ring road
+\item On/Off Mode
+\item On/Off Line/Route
+\item On/Off Stop
+\end{enumerate}
 
 \subsection{User cubes}
+%TODO add weekdays of missing dates
+Figure \ref{fig:preprocessing/cubes} shows the first slice for a random Commuter and a random Non-commuter
+
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.9\linewidth]{"./images/Commuter Day"}
-  \caption{Sample Day slice for random Commuter.}
-  \label{fig:preprocessing/commuter}
+  \begin{subfigure}[b]{.7\textwidth}
+  	\centering
+	\includegraphics[width=\linewidth]{"./images/Commuter Day"}
+  	\caption{Sample Day slice for random Commuter.}
+  \end{subfigure}
+  \begin{subfigure}[b]{.7\textwidth}
+  	\centering
+	\includegraphics[width=\linewidth]{"./images/Non-commuter Day"}
+  	\caption{Sample Day slice for random Non-commuter.}
+  \end{subfigure}
+  \caption{Sample cube slices.}
+  	\label{fig:preprocessing/cubes} %TODO crop
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=.9\linewidth]{"./images/Non-commuter Day"}
-  \caption{Sample Day slice for random Non-commuter.}
-  \label{fig:preprocessing/commuter}
-\end{figure}
+For the case of the Commuter, we identify a pattern between the 15th and 20th of November. We observe several trips at 6:am and 5:00pm suggesting a typical working schedule. The Non-commuter, in contrast, has an irregular distribution of trips. 
+
+It is important to note that, as mentioned before, the data between November 9th and November 14th is missing. Thus, both cases show a gap in records during these days. However, we note that the gaps are not restricted to these days, and that the behavior is very irregular, even for the case labeled as commuter. 
 
 
 \newpage
@@ -788,16 +838,25 @@ The attributes are of two types: numerical and categorical. Usually categorical 
 
 \textbf{General}
 
+Travel time and travel distance are highly correlated. This is due to the lack of express trips available in the public transit. (example, train stations within Amsterdam that are 1 hour away by bus or 10 minutes away by train)
+
+Transfer average and total time are also highly correlated. As examined in Section \ref{sec:patching}, most trips are have few transfers. 
+
 \textbf{Temporal}
 
-\textbf{Spatial}: Hierarchy in geographical areas causes correlation
+Start and end hour are almost identical. Explained by the fact that most trips are completed within the hour. 
+
+\textbf{Spatial}
+
+Boarding attributes share a stronger connection among themselves than with alighting attributes. Furthermore, traffic areas are hierarchical, thus having a high correlation. Ring road and traffic areas maintain a similar relationship, thus correlating strongly. Line and stops are also strongly related. 
 
 \subsection{Feature selection}
-Statistical correlation to label, f value of anova. chi 2 discarded because it focuses on times only
-machine learning through trees
-domain knowledge
+From the correlation matrix we note that some attributes are redundant. Hence, feature selection can help to disregard those which are the least informative. 
 
-Aggregation system. Each method's scores are normalized to add up to 1. Each contribute with equal weight. 
+
+We evaluate each attribute via its correlation to the true class label, its importance according to an ExtraTrees classifier, its ANOVA f-value, and the jugdment of usefulness according to domain expert PhD. Liang Qu. Initially, a Chi Squared test was also performed, but was abandoned since it had significant bias in favor of continuous attributes over categorical attributes. 
+
+Each method's scores are normalized to sum up to 1. Then, we aggregate them and calculate the final score. The results are shown in Figure \ref{fig:classification/scores}. 
 
 \begin{figure}[H]
   \centering
@@ -806,29 +865,32 @@ Aggregation system. Each method's scores are normalized to add up to 1. Each con
   \label{fig:classification/scores}
 \end{figure}
 
-Choose middle area and mode. 
+For selection, we take a fixed amount of attributes from each category, in order to maintain a balanced set. From the \textit{General attributes}, we select the best 3: Number of trips, Weekday, and Travel time. From the \textit{Temporal attributes} we decide to keep them all, since it is a small set. Thus, we select the best 2: Start hour and End hour. 
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=.9\linewidth]{"./images/Selected features"}
-  \caption{Visualization of samples and their labels after feature selection.}
-  \label{fig:classification/tsne}
-\end{figure}
+For the \textit{Spatial attributes} selection, we design a system for pair selection, meaning that if an attribute is selected, its boarding/alighting counterpart is also selected. As such, we select the best 2: On/Off mode, and On/Off line. 
+
+A final set of 9 features is created, resulting in \~66\% reduction. Finally, the cube slices corresponding to the selected features are kept in the user cubes, and the rest disregarded. The cubes are flatten in order for them to be fed into different weak classifiers. 
 
 \subsection{Model}
-Take slices of cubes and flatten. 
+As suggested by Tu \cite{tu2016impact} results, the data is almost linearly separable thus simple classifiers such as decision trees may suffice.
 
-We compare a single SVM, ensembled random forests. 
-
-As suggested by Tu \cite{tu2016impact} results, the data is almost linearly separable thus simple classifiers such as decision trees may suffice. 
-
+We train an SVM, a random forest, a perceptron, a Gaussian Process, and a Bayesian net as weak individual classifiers. Other out of the box ensemble models are trained such as AdaBoost using decision trees. 
+ 
+The six classifiers are evaluated, and the best 4 are kept for ensemble. The final class is calculated using a majority vote rule. 
 
 
 \subsection{Experiments}
+The classifiers performance is reported by its accuracy (True positives rate) on two experiments: one run on a single train/test division of the dataset, and b) average of cross validation over 5 folds. 
 
-\textbf{SVM}
-
-Accuracy: 94.66\%
+\centering %TODO make table pretty
+\begin{tabular}{|c|c|c|}
+\textbf{Classifier} & \textbf{Single run accuracy} & \textbf{Cross validation accuracy} \\
+SVM & 88\% & 70\% (+/- 14)\\
+Gaussian process & 78\% & 45\% (+/- 9)\\
+Perceptron & 87\% & 72\% (+/- 18)\\
+Random Forest & 88\% & 71\% (+/- 8)\\
+Adaboost of decision trees & 86\% & 68\% (+/- 12)\\
+\end{tabular}
 
 \begin{figure}[H]
   \centering
@@ -836,10 +898,6 @@ Accuracy: 94.66\%
   \caption{SVM confusion matrix.}
   \label{fig:classification/svm_confusion}
 \end{figure}
-  
-\textbf{Random Forest}  
-
-Accuracy: 97.54\%
 
 \begin{figure}[H]
   \centering
@@ -847,11 +905,6 @@ Accuracy: 97.54\%
   \caption{Random forest confusion matrix.}
   \label{fig:classification/rf_confusion}
 \end{figure}
-
-
-\textbf{AdaBoost}  
-
-Accuracy: 98.24\%
 
 
 \begin{figure}[H]
@@ -865,8 +918,17 @@ Accuracy: 98.24\%
 \subsection{Discussion}
 Random Forests deal well with categorical information. Adaboost deals well with missing information.
 
-Overfitting
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/Selected features"}
+  \caption{Visualization of samples and their labels after feature selection.}
+  \label{fig:classification/tsne}
+\end{figure}
+
+Figure \ref{fig:classification/tsne} shows the data samples by class, represented on its lower dimensional space (after feature selection). It is clear that the classes are not linearly separable, contrary what was expected as suggested by Tu. 
+
+Therefore, the most likely explanation for the classifiers performance is overfitting. 
 
 
 \newpage
@@ -897,7 +959,7 @@ A neural network is constructed to apply the convolutional filter. After the con
 TSNE results 
 
 \subsection{Clustering}
-Tuning
+Tuning via DB-index
 
 Evaluation
 
@@ -908,6 +970,7 @@ Evaluation
 
 \newpage
 \section{Conclusion and future work}
+\label{sec:conclusion}
 
 Faulty data. Missing data from 9 to 16. Gap in between.
 
