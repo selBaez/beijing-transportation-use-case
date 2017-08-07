@@ -7,35 +7,35 @@ preprocessing					label data																																						DONE
 											standardize																																						DONE
 											create user cubes																																			DONE
 
-feature selection 		load and sample dataframes	                                                          IN PROGRESS
+feature selection 		load dataframes							                                                          DONE
 											correlation tests (correlation, feature importance, chi2 and anova f value)						DONE
 											select k best																																					DONE
 											load user cubes																																				DONE
-											flatten cubes into vectors
-											save vectors
+											flatten cubes into vectors																														DONE
+											visualize low dimensional data																												DONE
+											save vectors																																					DONE
 
-ensemble classifier 	create models (SVM, bayesian, random forest, mlp)
-											train using K-fold with replacement
-											ensemble (adaboost or bagging)
-											test
-											save model
-											predict
-											save card codes and their labels
+ensemble classifier 	create models (SVM, bayesian, random forest, mlp)																			Details to be finished
+											train using K-fold with replacement 																									DONE
+											ensemble (adaboost or bagging)																												TO DO
+											test																																									TO DO
+											save model																																						TO DO
+											predict																																								TO DO
+											save card codes and their labels																											TO DO
 
-feature engineering 	preprocessing -> standardize
-											preprocessing -> create user cubes
-											create convolutional autoencoder																												Needs to be tested
-											train encoder																																						Needs to be tested
-											encode samples																																					Needs to be tested
-											visualize low dimensional data																													Needs to be tested
-											save data																																								DONE
+feature engineering 	Load cubes																																						DONE
+											create convolutional autoencoder																											DONE
+											train encoder																																					Needs to be tuned
+											save model 																																						TO DO
+											encode samples																																				DONE
+											visualize low dimensional data																												DONE
+											save data																																							DONE
 
-clustering 						k-means
-											cluster analysis (silhouettes samples for cluster membership)
+clustering 						k-means																																								Details
+											cluster analysis (silhouettes samples for cluster membership)													TO DO
 
 
 TODO:
-tsne plots for these
 num of transfer as pie chart
 fix start/end hour 0. change to 24?
 fix two trips one start -> merge trips?
@@ -68,16 +68,10 @@ Preparation job
 		 vocabularies cummulative plot
 
 Preprocessing job
-    full: labeled, std -> dataframe, cubes
     full: unlabeled, std -> cubes
 
-Feature selection code
-     (maybe?) load all labeled dataframes, sample 10k and discard rest from memory
-     Flatten -> vectors
-Feature selection job -> vectors
-
 Ensemble code
-     three classifiers: SVM, trees, bayesian -> individual accuracy (save in txt file)
+     classifiers: bayesian -> individual accuracy (save in txt file)
      adaboost ensemble -> accuracy (save in txt file)
      link sample to code -> two txt, one for commuters one for non-commuters
 Ensemble job -> lists
@@ -87,7 +81,6 @@ Feature extraction code
 Feature extraction job -> vectors
 
 Clustering code
-    read vectors
     tune
     evaluate
     link sample
