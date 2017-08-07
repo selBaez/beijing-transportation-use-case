@@ -14,7 +14,7 @@ import os
 
 # Plot sequential vs parallel times
 # times = np.loadtxt('Logs/preparation/parallelTimes.txt')
-# shared._sampleWithStd(times[:,0], times[:,1], 'Number of cores', 'Time (s)', 'Parallel implementation')
+# shared._sampleCalculateStd(times[:,0], times[:,1], 'Number of cores', 'Time (s)', 'Parallel implementation')
 
 # Plot volume of data
 
