@@ -1,6 +1,8 @@
 """
 This module builds a CNN and runs the user cubes through it to produce feature maps for clustering.
 """
+from __future__ import print_function
+
 import argparse
 import numpy as np
 import random, cPickle
@@ -62,7 +64,7 @@ def _buildModel():
     print('encoded:', encoded)
 
     print('\n\n')
-    # at this point the representation is (4, 5, 8) i.e. 96-dimensional
+    # at this point the representation is (4, 5, 8) i.e. 160-dimensional
 
     x = Conv2D(8, (3, 3), activation='relu', padding='same')(encoded)
     print(x)
@@ -99,7 +101,7 @@ def _train(autoencoder, x_train, x_test):
     Train the autoencoder
     """
     autoencoder.fit(x_train, x_train,
-                    epochs=10,
+                    epochs=100,
                     batch_size=128,
                     shuffle=True,
                     validation_data=(x_test, x_test),
@@ -120,26 +122,21 @@ def _visualize(encodedData):
     Visualize data with TSNE
     """
     manifold = TSNE(n_components=2, random_state=0)
-    print(encodedData.shape)
-
-    encodedData = encodedData.reshape((len(encodedData), np.prod(encodedData.shape[1:])))
-    print(encodedData.shape)
-
     features = manifold.fit_transform(encodedData)
-    shared._lowDimFeaturesScatter('Encoded', features)
+    shared._tsneScatter('Encoded', features)
 
 def _store(encodedData):
     """
     Store pickle
     """
-    with open(paths.LOWDIM_DIR_DEFAULT+'.pkl', 'w') as fp: cPickle.dump(encodedData, fp)
+    with open(paths.LOWDIM_DIR_DEFAULT+'unsupervised.pkl', 'w') as fp: cPickle.dump(encodedData, fp)
 
 def featureEngineering():
     print("---------------------------- Load data ----------------------------")
     [codes, cubes, labels] = _loadData()
 
     print("--------------------------- Create sets ---------------------------")
-    train_data, test_data, train_labels, test_labels = train_test_split(cubes, labels, test_size=0.4)
+    train_data, test_data = train_test_split(cubes, test_size=0.4)
 
     print("--------------------------- Build model ---------------------------")
     autoencoder, encoder = _buildModel()
@@ -150,11 +147,19 @@ def featureEngineering():
     print("------------------------- Evaluate  model -------------------------")
     encoded_samples = _encode(encoder, cubes)  # Test data ideally
 
-    print("----------------------- Visualize  features -----------------------")
-    _visualize(encoded_samples)
+    # TODO save model
+
+    print("------------------------ Flatten  features ------------------------")
+    print(encoded_samples.shape)
+    encoded_samples = encoded_samples.reshape((len(encoded_samples), np.prod(encoded_samples.shape[1:])))
+    print('Flatten to', encoded_samples.shape)
+
+    if FLAGS.plot == 'True':
+        print("----------------------- Visualize  features -----------------------")
+        _visualize(encoded_samples)
 
     print("-------------------------- Save features --------------------------")
-    _store(encoded_samples)
+    _store([codes, encoded_samples])
 
 
 def print_flags():
@@ -174,12 +179,8 @@ def main(_):
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--verbose', type = str, default = 'False',
-                        help='Display parse route details.')
-    parser.add_argument('--plot_distr', type = str, default = 'False',
+    parser.add_argument('--plot', type = str, default = 'False',
                         help='Boolean to decide if we plot distributions.')
-    parser.add_argument('--scriptMode', type = str, default = 'long',
-                        help='Run with long  or short dataset.')
 
     FLAGS, unparsed = parser.parse_known_args()
     main(None)
