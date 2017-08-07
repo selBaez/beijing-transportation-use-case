@@ -10,20 +10,27 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import random, os
 
+import warnings
+warnings.simplefilter("ignore")
+
 import paths
 
 ################################################## Visualization ##################################################
 
-def _tsneScatter(feature_name, features, labels):
+def _tsneScatter(feature_name, features, labels=None):
+    """
+    Scatter plot representing the low dimensional features
+    """
     fig = plt.figure()
     plt.clf()
 
-    # cmap = plt.cm.get_cmap('spring',max(labels)-min(labels)+1)
-    plt.scatter(features[:,0], features[:,1], c=labels.astype(int), label=labels, cmap='Paired')
+    if labels is None:
+        plt.scatter(features[:,0], features[:,1])
+    else:
+        plt.scatter(features[:,0], features[:,1], c=labels.astype(int), label=labels, cmap='Paired')
+        plt.legend([0,1],['Non-commuter', 'Commuter'])
 
     plt.title(feature_name)
-    plt.legend([0,1],['Non-commuter', 'Commuter'])
-    # plt.colorbar()
     plt.tight_layout()
 
     directory = paths.PLOT_DIR_DEFAULT+'scatter/TSNE/'
@@ -31,6 +38,7 @@ def _tsneScatter(feature_name, features, labels):
         os.makedirs(directory)
 
     plt.savefig(directory+feature_name+'.png', format='png')
+    plt.close()
 
 def _stackedFeatureBar(scores, methods, n_features, features, testName, fileName):
     """
@@ -262,31 +270,14 @@ def _plotPie(sizes, labels, name, fileName):
     plt.savefig(directory+fileName+'.png', format='png')
     plt.close()
 
-def _lowDimFeaturesScatter(feature_name, features, labels=None):
-    """
-    Scatter plot representing the low dimensional features
-    """
-    fig, ax = plt.subplots()
-
-    if labels == None:
-        plt.scatter(features[:,0], features[:,1])
-    else:
-        plt.scatter(features[:,0], features[:,1], c=labels.astype(int))
-
-
-    plt.title('Low dimenasional features')
-    plt.tight_layout()
-    plt.savefig(paths.PLOT_DIR_DEFAULT+'scatter/'+feature_name+'.png', format='png')
-    plt.close()
-
-def _sampleWithStd(x, y, xlabel, ylabel, title):
+def _sampleCalculateStd(x, y, xlabel, ylabel, title):
     """
     Fill between plot according to mean and standard deviation
     """
     x, y, std = zip(*sorted((xVal, np.mean([yVal for a, yVal in zip(x, y) if xVal==a]), np.std([yVal for a, yVal in zip(x, y) if xVal==a])) for xVal in set(x)))
 
     fig, ax = plt.subplots()
-    plt.fill_between(x, np.array(y) - np.array(std), np.array(y) + np.array(std), color="#578ac1")
+    plt.fill_between(x, np.array(y) - np.array(std), np.array(y) + np.array(std), color="#629cdb")
     plt.plot(x, y, color="#3F5D7D", lw=2)
 
     plt.xlabel(xlabel)
@@ -296,7 +287,30 @@ def _sampleWithStd(x, y, xlabel, ylabel, title):
     plt.tight_layout()
 
     # Deal with folders that do not exist
-    directory = paths.PLOT_DIR_DEFAULT+'histograms/'
+    directory = paths.PLOT_DIR_DEFAULT+'fillBetween/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # Save
+    plt.savefig(directory+title+'.png', format='png')
+    plt.close()
+
+def _sampleWithStd(x, y, std, xlabel, ylabel, title):
+    """
+    Fill between plot according to mean and standard deviation
+    """
+    fig, ax = plt.subplots()
+    plt.fill_between(x, np.array(y) - np.array(std), np.array(y) + np.array(std), color="#629cdb")
+    plt.plot(x, y, color="#3F5D7D", lw=2)
+
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    ax.set_xticks(x)
+    plt.tight_layout()
+
+    # Deal with folders that do not exist
+    directory = paths.PLOT_DIR_DEFAULT+'fillBetween/'
     if not os.path.exists(directory):
         os.makedirs(directory)
 
