@@ -16,6 +16,7 @@ from sklearn.metrics import average_precision_score, confusion_matrix
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.naive_bayes import GaussianNB
 
 import paths, shared
 
@@ -29,11 +30,11 @@ CLASSES = ['Non-Commuters', 'Commuters']
 LABELS = [0, 1]
 ############ --- END default constants--- ############
 
-def _loadData(fileName):
+def _loadData():
     """
     Load preprocessed data
     """
-    with open(fileName, 'r') as fp: data = cPickle.load(fp)
+    with open(paths.LOWDIM_DIR_DEFAULT+"supervised.pkl", 'r') as fp: data = cPickle.load(fp)
 
     return data
 
@@ -91,7 +92,7 @@ def train():
     Performs training and reports evaluation (on training and validation sets)
     """
     print("---------------------------- Load data ----------------------------")
-    [codes, features, labels] = _loadData(paths.LOWDIM_DIR_DEFAULT+"supervised.pkl")
+    [codes, features, labels] = _loadData()
 
     print("--------------------------- Create sets ---------------------------")
     train_data, test_data, train_labels, test_labels = train_test_split(features, labels, test_size=0.4)
@@ -99,19 +100,19 @@ def train():
     print("--------------------------- Build model ---------------------------")
     #################### Individual classifiers ####################
     # Original SVM
-    model_svm =  svm.SVC(C=0.1, cache_size=200, class_weight=None, coef0=0.0, degree=1,gamma='auto', kernel='linear', max_iter=-1, probability=False, random_state=None,shrinking=True, tol=0.001, verbose=False)
+    model_svm =  svm.SVC(C=0.1, degree=1, kernel='linear', tol=0.001)
 
     # Gaussian Process
     model_gp = GaussianProcessClassifier()
 
-    # Bayes
+    # Naive Bayes
+    model_gnb = GaussianNB()
 
     # Perceptron
     model_pct = MLPClassifier()
 
     #################### Ensemble from the box ####################
     # Random Forest
-    # TODO, test bootstrap = True
     model_rf = ensemble.RandomForestClassifier(n_estimators=FLAGS.num_trees, max_depth=FLAGS.depth_trees)
 
     # AdaBoost with trees
@@ -123,18 +124,23 @@ def train():
     print("---------------------- Forward pass  modules ----------------------")
     model_svm.fit(train_data, train_labels.ravel())
     model_gp.fit(train_data, train_labels.ravel())
+    model_gnb.fit(train_data, train_labels.ravel())
     model_pct.fit(train_data, train_labels.ravel())
     model_rf.fit(train_data, train_labels.ravel())
     model_adb.fit(train_data, train_labels.ravel())
+    model_bag.fit(train_data, train_labels.ravel())
 
     print("---------------------------- Predict ------------------------------")
     predictions_svm = _predict('SVM', model_svm.predict, test_data)
     predictions_gp = _predict('Gaussian Process', model_gp.predict, test_data)
+    predictions_gnb = _predict('Gaussian Naive Bayes', model_gnb.predict, test_data)
     predictions_pct = _predict('Perceptron', model_pct.predict, test_data)
     predictions_rf = _predict('Random forest', model_rf.predict, test_data)
     predictions_adb = _predict('AdaBoost of decision trees', model_adb.predict, test_data)
+    predictions_bag = _predict('Bagging of decision trees', model_bag.predict, test_data)
 
     print("---------------------------- Evaluate -----------------------------")
+    # TODO refactor
     scores = []
 
     _evaluate('SVM', test_labels, predictions_svm)
@@ -144,6 +150,10 @@ def train():
     _evaluate('Gaussian Process', test_labels, predictions_gp)
     avScore = _crossVal(model_gp, features, labels)
     scores.append(['Gaussian Process', model_gp, avScore])
+
+    _evaluate('Gaussian Naive Bayes', test_labels, predictions_gnb)
+    avScore = _crossVal(model_gnb, features, labels)
+    scores.append(['Gaussian Naive Bayes', model_gnb, avScore])
 
     _evaluate('Perceptron', test_labels, predictions_pct)
     avScore = _crossVal(model_pct, features, labels)
@@ -157,20 +167,33 @@ def train():
     avScore = _crossVal(model_adb, features, labels)
     scores.append(['AdaBoost of decision trees', model_adb, avScore])
 
+    _evaluate('Bagging of decision trees', test_labels, predictions_bag)
+    avScore = _crossVal(model_bag, features, labels)
+    scores.append(['Bagging of decision trees', model_bag, avScore])
+
     print("-------------------------- Select models --------------------------")
+    # TODO histogram plot
     scores = np.array(scores)
 
-    k = 2
+    k = 3
     selectedModelIdx = np.argsort(scores[:,2])[-k:]
     print("Best {}: {}".format(k, scores[:,0][selectedModelIdx]))
 
     print("---------------------------- Ensemble ----------------------------")
-    estimators = scores[:,:2]
-    print(estimators)
+    estimators = scores[selectedModelIdx,:2]
+    print(estimators.shape)
 
     model = VotingClassifier(estimators)
+    avScore = _crossVal(model, features, labels)
+
+    # TODO Save model
+
+    print("----------------------------- Predict -----------------------------")
+    model.fit(features, labels)
     predictions = model.predict(features)
-    print(predictions.shape)
+
+    # TODO Save card codes and labels
+
 
 def print_flags():
     """
