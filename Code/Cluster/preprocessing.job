@@ -19,242 +19,242 @@ python preprocessing.py --file 'de_cxl_cxtz20151101-full' \
                     --scriptMode 'long' \
                     --create_cubeDict 'True'
 
-# SUBSEQUENT WRITE IN EXISTING CUBES
-python preprocessing.py --file 'de_cxl_cxtz20151102-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151103-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151104-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151105-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151106-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151107-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151108-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151109-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151110-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151111-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151112-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151113-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151114-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151115-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151116-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151117-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151118-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151119-1-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151119-2-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151120-1-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151120-2-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151121-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151122-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151123-1-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151123-2-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151124-1-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151124-2-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151125-1-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151125-2-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151126-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151127-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151128-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-python preprocessing.py --file 'de_cxl_cxtz20151129-full' \
-                    --verbose 'False' \
-                    --plot 'False' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
-
-# PLOT LAST ONE
-python preprocessing.py --file 'de_cxl_cxtz20151130-full' \
-                    --verbose 'False' \
-                    --plot 'True' \
-                    --labeled 'False' \
-                    --scriptMode 'long' \
-                    --create_cubeDict 'False'
+# # SUBSEQUENT WRITE IN EXISTING CUBES
+# python preprocessing.py --file 'de_cxl_cxtz20151102-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151103-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151104-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151105-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151106-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151107-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151108-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151109-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151110-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151111-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151112-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151113-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151114-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151115-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151116-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151117-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151118-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151119-1-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151119-2-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151120-1-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151120-2-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151121-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151122-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151123-1-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151123-2-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151124-1-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151124-2-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151125-1-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151125-2-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151126-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151127-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151128-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# python preprocessing.py --file 'de_cxl_cxtz20151129-full' \
+#                     --verbose 'False' \
+#                     --plot 'False' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
+#
+# # PLOT LAST ONE
+# python preprocessing.py --file 'de_cxl_cxtz20151130-full' \
+#                     --verbose 'False' \
+#                     --plot 'True' \
+#                     --labeled 'False' \
+#                     --scriptMode 'long' \
+#                     --create_cubeDict 'False'
