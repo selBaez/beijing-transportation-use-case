@@ -236,7 +236,7 @@ def _formatData(selectedSlices):
 
     return np.asarray(codes), np.asarray(original), np.asarray(features), np.asarray(labels)
 
-def _tsne(name, features, labels):
+def _visualize(name, features, labels):
     """
     Visualize high dimensional features in low (2) dimensional space
     """
@@ -281,8 +281,8 @@ def selectFeatures():
 
     if FLAGS.plot == 'True':
         print("---------------------------- Visualize ----------------------------")
-        _tsne('Selected features', features, labels)
-        _tsne('Original features', original, labels)
+        _visualize('Selected features', features, labels)
+        _visualize('Original features', original, labels)
 
     print("------------------------------ Store ------------------------------")
     _store([codes, features, labels])
