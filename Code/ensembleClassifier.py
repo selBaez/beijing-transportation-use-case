@@ -38,15 +38,6 @@ def _loadData():
 
     return data
 
-def _predict(name, predict_fn, test_data):
-    """
-    Predict class using model's prefictive function
-    Return classes as ordinal, not one hot
-    """
-    predictions = predict_fn(test_data)
-
-    return predictions
-
 def _confusion_matrix(name, true, predicted, n_classes, classes, labels):
     """
     Create heat confusion matrix
@@ -70,34 +61,81 @@ def _confusion_matrix(name, true, predicted, n_classes, classes, labels):
 
 def _evaluate(name, labels, predictions):
     """
-    Confusion matrix and accuracy
+    Accuracy on test set and confusion matrix
     """
     accuracy = average_precision_score(labels, predictions)
     print(name)
     print("One split accuracy : %0.2f" % (accuracy))
 
-    # _confusion_matrix(name, labels, predictions, n_classes=NUM_CLASSES, classes=CLASSES, labels=LABELS)
+    if FLAGS.plot == 'True':
+        _confusion_matrix(name, labels, predictions, n_classes=NUM_CLASSES, classes=CLASSES, labels=LABELS)
 
 def _crossVal(model, features, labels, cv=5):
     """
     Evaluate using cross validation
     """
     scores = cross_val_score(model, features, labels, cv=5)
-    print("Cross validation accuracy: %0.2f (+/- %0.2f) \n" % (scores.mean(), scores.std() * 2))
+    print("Cross validation accuracy: %0.2f (+/- %0.2f) \n" % (scores.mean(), scores.std()))
 
-    return scores.mean()
+    return scores.mean(), scores.std()
+
+def _individualClassifier(name, model):
+    """
+    Train and test an individual classifier
+    """
+    model.fit(train_data, train_labels.ravel())
+    predictions = model.predict(test_data)
+
+    _evaluate(name, test_labels, predictions)
+    avScore, stdScore = _crossVal(model, features, labels)
+
+    return [name, model, avScore]
+
+def _ensembleClassifiers(individualScores):
+    """
+    Build ensemble models gradually increasing the number of classifiers included
+    """
+    ensembleScores = []
+
+    for k in range(2, len(individualScores)+1):
+        # Select best classifiers
+        selectedModelIdx = np.argsort(individualScores[:,2])[-k:]
+        estimators = individualScores[selectedModelIdx,:2]
+        print("Best {}: {}".format(k, individualScores[:,0][selectedModelIdx]))
+
+        # Ensemble and evaluate
+        model = VotingClassifier(estimators)
+        avScore, stdScore = _crossVal(model, features, labels)
+        ensembleScores.append([model, avScore])
+
+    ensembleScores = np.array(ensembleScores)
+
+    return ensembleScores
+
+
+def _save(model, commuters, nonCommuters):
+    """
+    Save trained model
+    """
+    directory = paths.MODELS_DIR_DEFAULT
+    with open(directory+"ensembleClassifier.pkl", "w") as fp: cPickle.dump(model, fp)
+
+    np.savetxt(paths.LABELS_DIR_DEFAULT+'classifiedCommuters.txt', commuters, '%5.0f')
+    np.savetxt(paths.LABELS_DIR_DEFAULT+'classifiedNonCommuters.txt', nonCommuters, '%5.0f')
 
 def train():
     """
     Performs training and reports evaluation (on training and validation sets)
     """
     print("---------------------------- Load data ----------------------------")
+    global features, labels
     [codes, features, labels] = _loadData()
 
     print("--------------------------- Create sets ---------------------------")
+    global train_data, test_data, train_labels, test_labels
     train_data, test_data, train_labels, test_labels = train_test_split(features, labels, test_size=0.4)
 
-    print("--------------------------- Build model ---------------------------")
+    print("--------------------- Build weak  classifiers ---------------------")
     #################### Individual classifiers ####################
     # Original SVM
     model_svm =  svm.SVC(C=0.1, degree=1, kernel='linear', tol=0.001)
@@ -121,78 +159,39 @@ def train():
     # Bagging trees
     model_bag = ensemble.BaggingClassifier(n_estimators=FLAGS.num_trees)
 
-    print("---------------------- Forward pass  modules ----------------------")
-    model_svm.fit(train_data, train_labels.ravel())
-    model_gp.fit(train_data, train_labels.ravel())
-    model_gnb.fit(train_data, train_labels.ravel())
-    model_pct.fit(train_data, train_labels.ravel())
-    model_rf.fit(train_data, train_labels.ravel())
-    model_adb.fit(train_data, train_labels.ravel())
-    model_bag.fit(train_data, train_labels.ravel())
-
-    print("---------------------------- Predict ------------------------------")
-    predictions_svm = _predict('SVM', model_svm.predict, test_data)
-    predictions_gp = _predict('Gaussian Process', model_gp.predict, test_data)
-    predictions_gnb = _predict('Gaussian Naive Bayes', model_gnb.predict, test_data)
-    predictions_pct = _predict('Perceptron', model_pct.predict, test_data)
-    predictions_rf = _predict('Random forest', model_rf.predict, test_data)
-    predictions_adb = _predict('AdaBoost of decision trees', model_adb.predict, test_data)
-    predictions_bag = _predict('Bagging of decision trees', model_bag.predict, test_data)
-
     print("---------------------------- Evaluate -----------------------------")
-    # TODO refactor
-    scores = []
+    individualScores = []
 
-    _evaluate('SVM', test_labels, predictions_svm)
-    avScore = _crossVal(model_svm, features, labels)
-    scores.append(['SVM', model_svm, avScore])
+    individualScores.append(_individualClassifier('SVM', model_svm))
+    individualScores.append(_individualClassifier('Gaussian Process', model_gp))
+    individualScores.append(_individualClassifier('Gaussian Naive Bayes', model_gnb))
+    individualScores.append(_individualClassifier('Perceptron', model_pct))
+    individualScores.append(_individualClassifier('Random forest', model_rf))
+    individualScores.append(_individualClassifier('AdaBoost of decision trees', model_adb))
+    individualScores.append(_individualClassifier('Bagging of decision trees', model_bag))
 
-    _evaluate('Gaussian Process', test_labels, predictions_gp)
-    avScore = _crossVal(model_gp, features, labels)
-    scores.append(['Gaussian Process', model_gp, avScore])
+    individualScores = np.array(individualScores)
 
-    _evaluate('Gaussian Naive Bayes', test_labels, predictions_gnb)
-    avScore = _crossVal(model_gnb, features, labels)
-    scores.append(['Gaussian Naive Bayes', model_gnb, avScore])
+    print("---------------------- Build ensemble models ----------------------")
+    ensembleScores = _ensembleClassifiers(individualScores)
 
-    _evaluate('Perceptron', test_labels, predictions_pct)
-    avScore = _crossVal(model_pct, features, labels)
-    scores.append(['Perceptron', model_pct, avScore])
-
-    _evaluate('Random forest', test_labels, predictions_rf)
-    avScore = _crossVal(model_rf, features, labels)
-    scores.append(['Random forest', model_rf, avScore])
-
-    _evaluate('AdaBoost of decision trees', test_labels, predictions_adb)
-    avScore = _crossVal(model_adb, features, labels)
-    scores.append(['AdaBoost of decision trees', model_adb, avScore])
-
-    _evaluate('Bagging of decision trees', test_labels, predictions_bag)
-    avScore = _crossVal(model_bag, features, labels)
-    scores.append(['Bagging of decision trees', model_bag, avScore])
-
-    print("-------------------------- Select models --------------------------")
-    # TODO histogram plot
-    scores = np.array(scores)
-
-    k = 3
-    selectedModelIdx = np.argsort(scores[:,2])[-k:]
-    print("Best {}: {}".format(k, scores[:,0][selectedModelIdx]))
-
-    print("---------------------------- Ensemble ----------------------------")
-    estimators = scores[selectedModelIdx,:2]
-    print(estimators.shape)
-
-    model = VotingClassifier(estimators)
-    avScore = _crossVal(model, features, labels)
-
-    # TODO Save model
+    print("------------------------ Select best model ------------------------")
+    selectedModelIdx = np.argsort(ensembleScores[:,1])[-1:]
+    model = ensembleScores[selectedModelIdx,0][0]
+    print("Final model contains the top {} weak classifiers".format(selectedModelIdx+2))
 
     print("----------------------------- Predict -----------------------------")
     model.fit(features, labels)
-    predictions = model.predict(features)
+    print(model.estimators_)
+    predictions = model.predict(features) # TODO predict on all
 
-    # TODO Save card codes and labels
+    print("------------------------ Match card  codes ------------------------")
+    commuters = codes[predictions == 1]
+    nonCommuters = codes[predictions == 0]
+
+    print("------------------------------  Save ------------------------------")
+    _save(model, commuters, nonCommuters)
+
 
 
 def print_flags():
@@ -213,6 +212,8 @@ def main(_):
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument('--plot', type = str, default = 'True',
+                        help='Boolean to decide if we plot distributions.')
     parser.add_argument('--batch_size', type = int, default = BATCH_SIZE_DEFAULT,
                         help='Batch size to run trainer.')
     parser.add_argument('--max_steps', type = int, default = MAX_STEPS_DEFAULT,

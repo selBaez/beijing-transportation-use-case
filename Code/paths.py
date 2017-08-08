@@ -11,6 +11,9 @@ RAW_DIR_DEFAULT = '../Data/sets/raw/'
 CLEAN_DIR_DEFAULT = '../Data/sets/clean/'
 PREPROCESSED_DIR_DEFAULT = '../Data/sets/preprocessed/'
 
+# Models
+MODELS_DIR_DEFAULT = '../Data/models/'
+
 # Vocabularies
 VOC_DIR_DEFAULT = '../Data/vocabularies/fullVocabulary'
 

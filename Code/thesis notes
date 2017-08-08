@@ -15,13 +15,13 @@ feature selection 		load dataframes							                                      
 											visualize low dimensional data																												DONE
 											save vectors																																					DONE
 
-ensemble classifier 	create models (SVM, bayesian, random forest, mlp)																			Details to be finished
+ensemble classifier 	create models (SVM, bayesian, random forest, mlp)																			DONE
 											train using K-fold with replacement 																									DONE
-											ensemble (adaboost or bagging)																												TO DO
-											test																																									TO DO
-											save model																																						TO DO
-											predict																																								TO DO
-											save card codes and their labels																											TO DO
+											ensemble (adaboost or bagging)																												DONE
+											evaluate																																							DONE
+											save model																																						DONE
+											predict																																								Details
+											save card codes and their labels																											DONE
 
 feature engineering 	Load cubes																																						DONE
 											create convolutional autoencoder																											DONE
