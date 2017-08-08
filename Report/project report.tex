@@ -451,6 +451,7 @@ Furthermore, similarly to the bicycle missing information, the transfer time ins
 
 
 \subsubsection{Labeled and unlabeled data}
+\label{sec:datasets}
 
 \begin{figure}[h]
   \centering
@@ -473,10 +474,10 @@ As a solution for the above, we take advantage of the dataset used by Tu\cite{tu
 
 As mentioned in Section \ref{sec:data}, this project considers data corresponding to November 2015. Since both datasets correspond to the same year, we believe the labels to be reasonably relevant for both datasets. As such, in order to construct an extended labeled dataset, we take the 978 labeled smart card codes from Tu's dataset, and search for their corresponding records in our dataset. As shown in Figure \ref{fig:method/unlabeled}, a great disadvatage of this is that it tremendously reduces the size of the dataset to less than 1\% of its original size. 
 
-The reduced labeled dataset is used for Part I (Section \ref{sec:partI}) and Part II (Section \ref{sec:partII}) of this project. 
+The reduced labeled dataset is used for Part II (Section \ref{sec:partII}) of this project. 
 
 \item[Behavior clustering:]
-Clustering, being an unsupervised learning task, does not require labels. Therefore, for this task we are able to use the full dataset. Though rich in its contents, this poses some computational challenges which will be further explained in Section \ref{sec:partI}. %TODO section of DAS5
+Clustering, being an unsupervised learning task, does not require labels. Therefore, for this task we are able to use the full dataset. Though rich in its contents, this poses some computational challenges which will be further explained in Section \ref{sec:partI}. 
 \end{description}
 
 \subsection{Spatio-temporal representation}
@@ -826,8 +827,10 @@ It is important to note that, as mentioned before, the data between November 9th
 \newpage
 \section{Commuters identification}
 \label{sec:partII}
+In this part of the project we focus on the task of classifying public transit users into one of two categories: Commuter or Non commuter. To do so, we reduce the dimensionality of the original user cubes by selecting the most informative slices. Subsequently, several weak classifiers are trained. The best classifiers are incrementally selected to be part of an ensemble model, which is the final classifier.
 
-\subsection{Attributes correlation}
+\subsection{Attributes correlation} %TODO how many samples
+First, we perform an exploratory study of the relationships among all the attributes of a trip. We calculate the correlation matrix of the trip attributes using the labeled dataset refer to in Section \ref{sec:datasets}.
 
 \begin{figure}[H]
   \centering
@@ -880,16 +883,18 @@ The six classifiers are evaluated, and the best 4 are kept for ensemble. The fin
 
 
 \subsection{Experiments}
-The classifiers performance is reported by its accuracy (True positives rate) on two experiments: one run on a single train/test division of the dataset, and b) average of cross validation over 5 folds. 
+The classifiers performance is reported by its accuracy (True positives rate) on two experiments: a) one run on a single train/test division of the dataset, and b) average of cross validation over 5 folds. 
 
-\centering %TODO make table pretty
+%TODO make table pretty
 \begin{tabular}{|c|c|c|}
 \textbf{Classifier} & \textbf{Single run accuracy} & \textbf{Cross validation accuracy} \\
 SVM & 88\% & 70\% (+/- 14)\\
 Gaussian process & 78\% & 45\% (+/- 9)\\
+Gaussian Naive Bayes & 78\% & 45\% (+/- 9)\\
 Perceptron & 87\% & 72\% (+/- 18)\\
 Random Forest & 88\% & 71\% (+/- 8)\\
 Adaboost of decision trees & 86\% & 68\% (+/- 12)\\
+Bagging of decision trees & 86\% & 68\% (+/- 12)\\
 \end{tabular}
 
 \begin{figure}[H]
@@ -910,7 +915,7 @@ Adaboost of decision trees & 86\% & 68\% (+/- 12)\\
 \begin{figure}[H]
   \centering
   \includegraphics[width=.9\linewidth]{"./images/AdaBoost of decision trees_Heatmap"}
-  \caption{Random forest confusion matrix.}
+  \caption{Adaboost confusion matrix.}
   \label{fig:classification/adb_confusion}
 \end{figure}
 
@@ -934,36 +939,74 @@ Therefore, the most likely explanation for the classifiers performance is overfi
 \newpage
 \section{Commuters clustering}
 \label{sec:partIII}
+In this part of the project we perform an unsupervised learning task to cluster public transit users according to patterns in their travel behavior. This time we perform dimensionality reduction by passing the original user cubes through an autoencoder. Then, we tune cluster the user features and analyze each cluster. 
 
 \subsection{Feature extraction}
-The features to be fed into the clustering algorithms are obtained by dimensionality reduction. As mentioned before, convolutional filters can exploit local information.
+As mentioned in Section \ref{sec:structure}, the proposed representation is sparse, hence dimensionality reduction has the potential to extract the relevant information and disregard the noise. Furthermore, the proposed representation is local, in the same sense as images are. Combining these two characteristics, it is natural to think of convolutional filters as a tool to extract features from the user cubes. 
 
 \subsubsection{Convolutional filters}
-In order to examine weekly patterns, our the first layer of convolutional filters will have an x dimension of 7 with a stride of 7. Assuming that only the hour previous and after a trip affects the trip, the filter will have a y dimension of 3 with a stride of 1. We do not perform padding, since this would have significant implications in the travel behavior of the user. 
+We apply two dimensional filters to the three dimensional user cubes. Therefore, the x and y dimensions of the filter align with the day and time dimensions of the structures. Similarly, each of the feature planes is considered a channel. 
 
-Following this formula:
+The size of the filters is fixed to $3 \times 3$, since it leads to the best performance according to literature. The stride is set to 1 and we perform padding in order for the dimensionalities of the network to be suitable.
 
-\begin{align*}
-	output = \frac{input - filter}{stride} +1
-\end{align*}
-
-We find that the output size after the first convolution is $4 \times 22$. Considering 15 features, this reduces the dimensionality to $4 \times 22 \times 15 = 1320$
-
-Goal is to have a $ 4 \times 3 \times 3 = 36$ structure
-
-\technicalDoubt{what about depth? can I have a filter that is 8 units deep, with 8 stride (features are divided as 8 spatial boarding, 8 spatial alighting and 8 transfer related)? How could this be applied?}
 
 \subsubsection{Autoencoder}
-A neural network is constructed to apply the convolutional filter. After the convolution layer, ReLU is applied as activation function. 
+%TODO network structure
+Using Keras and Tensorflow as backend, we create an autoencoder. 
 
-TSNE results 
+The network structure is shown below:
+
+%TODO make table pretty
+\begin{tabular}{|c|c|c|c|c|c|}
+\textbf{Type of layer} & \textbf{Filter size} & \textbf{Filter units} & \textbf{Stride} & \textbf{Activation function} & \textbf{Output dimensions} \\
+\\
+Input & None & None & None & None  & [24, 30, 26]\\
+Convolutional & [3, 3] & 16 & 1 & ReLU  & [24, 30, 16]\\
+Max Pooling & [2, 2] & 16 & 1 & None  & [12, 15, 16]\\
+Convolutional & [3, 3] & 8 & 1 & ReLU  & [12, 15, 8]\\
+Max Pooling & [3, 3] & 8 & 1 & None  & [4, 5, 8]\\
+\\\\
+Convolutional & [3, 3] & 8 & 1 & ReLU  & [4, 5, 8]\\
+Up sampling & [3, 3] & 8 & 1 & None  & [12, 15, 8]\\
+Convolutional & [3, 3] & 16 & 1 & ReLU  & [12, 15, 16]\\
+Up sampling & [2, 2] & 16 & 1 & None  & [24, 30, 16]\\
+Convolutional & [3, 3] & 26 & 1 & Sigmoid  & [12, 15, 26]\\
+\end{tabular}
+
+The dimensionality of the encoded features is $4 \times 5 \times 8 = 160$. This represents more than 110\% compression. 
+
+We evaluate the autoencoder using the binary crossentropy loss between the original user cube and the reconstructed user cube. As an optimizer we use Adadelta. We train on 60\% of the data and validate on 40\% of the data for 100 iterations. The loss over the validation set is shown in Figure \ref{fig:clustering/loss}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/autoencoder loss"}
+  \caption{Loss over validation set.}
+  \label{fig:clustering/loss}
+\end{figure}
 
 \subsection{Clustering}
-Tuning via DB-index
+%TODO what is the silhouette score
+The K means algorithm has only one parameter: the number of clusters in which to allocate the data. As such, we split the data into train and test sets and tune K parameter via the silhouette score. The silhouette score is determine using the mean intra-cluster distance and the nearest cluster distance (which the sample does not belong to). The score is measured per sample, and average over all the set. 
 
-Evaluation
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/Tuning for k"}
+  \caption{Silhouette average scores and their standard deviation.}
+  \label{fig:clustering/tuning}
+\end{figure}
+
+From Figure \ref{fig:clustering/tuning} we see that the average score peaks at 5 clusters. Therefore, we select 5 as the optimal number of clusters. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/Clustered"}
+  \caption{Visualization of samples and their labels according to clustering.}
+  \label{fig:clustering/tsne}
+\end{figure}
 
 \subsection{Cluster analysis}
+
+
 
 \subsection{Discussion}
 
@@ -981,6 +1024,8 @@ Overlapping trips. So far one trip per bin/hour. Possible solutions are to conca
 Standardization by day.
 
 Selection over trip -> label. 
+
+investigate the effects of 3D convolutions
 
 \newpage
 \bibliography{mybib}{}
