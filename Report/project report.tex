@@ -530,7 +530,7 @@ There is a large variety of algorithms for performing classification tasks. Each
 
 Ensemble models explore the idea of combining several non-correlated prediction methods that might correct each other in order to reach a better classification accuracy. Furthermore, ensemble models are robust and modular. Therefore, starting from a few weak classifiers, assembled via aggregation methods, the model can grow larger or more complex as needed.
 
-This project constructs an ensemble model for classifying commuters. As proven by Tu \cite{tu2016impact}, weak classifiers like a Support Vector Machines (SVM) is sufficient to identify commuting behavior up to a 94\% accuracy. Aiming to increase accuracy, but aiming to avoid overfitting, this project extends Tu's model with other similar weak classifiers such as decision trees, a Bayesian classifier, a Gaussian process, and a multilayer perceptron. Bagging will be used to ensemble their predictions. %TODO bagging or majority vote?
+This project constructs an ensemble model for classifying commuters. As proven by Tu \cite{tu2016impact}, weak classifiers like a Support Vector Machines (SVM) are sufficient to identify commuting behavior up to a 94\% accuracy. Aiming to increase accuracy, but preventing overfitting, this project extends Tu's model with other similar weak classifiers such as decision trees, Bayesian classifiers, Gaussian Processes, multilayer perceptrons, and others. Their individual predictions are ensembled bia majority vote. 
 
 \subsubsection{Clustering} 
 For the third part of this project we perform behavior clustering. To this end, we apply the \textit{K means} algorithm on the low dimensional features extracted by the autoencoder. \textit{Kmeans} is the standard algorithm used in the Transportation domain, and it consistently achieves satisfactory results. 
@@ -558,10 +558,10 @@ The data acquired for this project corresponds to November 2015. However, due to
 As first step for preparing the data for its mining, we eliminate faulty records. To this end, we apply the following four filters:
 
 \begin{enumerate}
-\item Eliminate records with empty fields: \~10.93\% records eliminated
-\item Eliminate records with incomplete travel details: \~1.58\% records eliminated
+\item Eliminate records with empty fields: \textasciitilde 10.93\% records eliminated
+\item Eliminate records with incomplete travel details: \textasciitilde 1.58\% records eliminated
 \item Eliminate records with travel time $<= 0$: <0.01\% records eliminated
-\item Eliminate records with travel distance $<= 0$: \~9.82\% records eliminated
+\item Eliminate records with travel distance $<= 0$: \textasciitilde 9.82\% records eliminated
 \end{enumerate}
 
 \begin{figure}[H]
@@ -571,7 +571,7 @@ As first step for preparing the data for its mining, we eliminate faulty records
   \label{fig:preprocessing/faulty}
 \end{figure}
 
-The percentage of data eliminated by each filter is shown in Figure \ref{fig:preprocessing/faulty}. We see removing faulty data reduces the dataset to \~77.66\% of its original size. 
+The percentage of data eliminated by each filter is shown in Figure \ref{fig:preprocessing/faulty}. We see removing faulty data reduces the dataset to \textasciitilde 77.66\% of its original size. 
 
 \begin{figure}[H]
   \centering
@@ -583,9 +583,12 @@ The percentage of data eliminated by each filter is shown in Figure \ref{fig:pre
 Figure \ref{fig:preprocessing/num_trips} shows the distribution of number of days in a single day. Its shows that most people perform two trips per day. %TODO find better place to put this 
 
 \subsection{Extraction}
+From the raw records, we can further extract attributes to complement the trip information. For example, taking the date of the travel we can further obtain two important attributes. The "Day" attribute, corresponding to the number of day on the month, from 1 to 31. The "Weekday" attribute is a number from 1 to 7 corresponding to the day of the week, starting on Monday.
+
+Other fields, such as "Start/End time" and "Trip details" require more specialized algorithms for attribute extraction.
 
 \subsubsection{Time bins}
-Regardless of its criticism, using hourly time bins is standard practice in the field and has proven sufficient to examine temporal data \cite{langlois2016inferring} \cite{ma2017understanding} \cite{morency2007measuring}. Therefore, in this project we follow the same technique and extract the hour of the start and end of each trip.
+Using hourly time bins is standard practice in the field and has proven sufficient to examine temporal data \cite{langlois2016inferring} \cite{ma2017understanding} \cite{morency2007measuring}. Therefore, in this project we follow the same technique and extract the hour of the start and end of each trip.
 
 \begin{figure}[H]
   \centering
@@ -655,9 +658,6 @@ Examples of clean routes are shown in Figure \ref{fig:preprocessing/parsed_route
   	\label{fig:preprocessing/parsed_routes}
 \end{figure}
 
-\subsubsection{Calendar-based information} %TODO rephrase
-We also extract two attributes from the date of the trip. Day is a number of on the month, from 1 to 30. Weekday is a number from 1 to 7 corresponding to the day of the week, starting on Monday.
-
 \subsection{Data patching}
 \label{sec:patching}
 We note that the number of transfers and the path link fields of some records do not correspond to the information in their trip details. According to domain expert PhD. Tu Qiang, this must be recalculated \cite{tommy}. 
@@ -720,7 +720,7 @@ Travel time, travel distance, total transfer time and average transfer time are 
 
 Figure \ref{fig:preprocessing/time} and \ref{fig:preprocessing/distance} show distributions for travel time and distance. Since the nature of the data prevents negative values (time and distance must be positive), the original distribution is truncated at 0. Standardization maintains the shape of the distribution, but shifts and contracts it to be closer to zero values.
 
-The mean travel time is ~55 minutes, and the mean travel distance is ~10 kilometers.  
+The mean travel time is \textasciitilde 55 minutes, and the mean travel distance is \textasciitilde 10 kilometers.  
  
 \begin{figure}[H]
   \centering
@@ -756,9 +756,12 @@ The mean travel time is ~55 minutes, and the mean travel distance is ~10 kilomet
 
 Figure \ref{fig:preprocessing/transfer_time} and \ref{fig:preprocessing/transfer_avg} show that transfer times, both total and average, follow distributions with very long tails. As mentioned before, most trips are performed without transfers, which explains that most of the trips have transfer times equal to zero. %TODO remove top, examine tail
 
+
 \textbf{Categorical values}
 
-As mentioned in Section \ref{sec:structure}, a trip contains both continuous and categorical attributes. Usually categorical values are to be transformed into one hot encoding. However, in this case that option is not scalable and we do not apply it.
+As mentioned in Section \ref{sec:structure}, a trip contains both continuous and categorical attributes. generally, categorical values are to be transformed into one hot encoding. 
+
+In the context of this project we find that a trip contains at least 12 categorical attributes. Furthermore, each of these contains its own range, with some of them having up hundreds or thousands of categories (i.e. Middle and Small traffic areas). For these reasons, one hot encoding is not a scalable option for this project.
 
 
 \subsection{Attributes}
@@ -821,7 +824,7 @@ Figure \ref{fig:preprocessing/cubes} shows the first slice for a random Commuter
 
 For the case of the Commuter, we identify a pattern between the 15th and 20th of November. We observe several trips at 6:am and 5:00pm suggesting a typical working schedule. The Non-commuter, in contrast, has an irregular distribution of trips. 
 
-It is important to note that, as mentioned before, the data between November 9th and November 14th is missing. Thus, both cases show a gap in records during these days. However, we note that the gaps are not restricted to these days, and that the behavior is very irregular, even for the case labeled as commuter. 
+It is important to note that as the data between November 9th and November 14th is missing. Thus, both cases show a gap in records during these days. However, we note that the gaps are not restricted to these days, and that the behavior is very irregular, even for the case labeled as commuter. 
 
 
 \newpage
@@ -830,7 +833,7 @@ It is important to note that, as mentioned before, the data between November 9th
 In this part of the project we focus on the task of classifying public transit users into one of two categories: Commuter or Non commuter. To do so, we reduce the dimensionality of the original user cubes by selecting the most informative slices. Subsequently, several weak classifiers are trained. The best classifiers are incrementally selected to be part of an ensemble model, which is the final classifier.
 
 \subsection{Attributes correlation} %TODO how many samples
-First, we perform an exploratory study of the relationships among all the attributes of a trip. We calculate the correlation matrix of the trip attributes using the labeled dataset refer to in Section \ref{sec:datasets}.
+First, we perform an exploratory study of the relationships among all the attributes of a trip. We calculate the correlation matrix of the trip attributes using the labeled dataset refer to in Section \ref{sec:datasets}. This set contains 12,584 trips corresponding to labeled card codes.
 
 \begin{figure}[H]
   \centering
@@ -839,7 +842,7 @@ First, we perform an exploratory study of the relationships among all the attrib
   \label{fig:classification/correlation}
 \end{figure}
 
-\textbf{General}
+\textbf{General} %TODO !!!
 
 Travel time and travel distance are highly correlated. This is due to the lack of express trips available in the public transit. (example, train stations within Amsterdam that are 1 hour away by bus or 10 minutes away by train)
 
@@ -854,8 +857,7 @@ Start and end hour are almost identical. Explained by the fact that most trips a
 Boarding attributes share a stronger connection among themselves than with alighting attributes. Furthermore, traffic areas are hierarchical, thus having a high correlation. Ring road and traffic areas maintain a similar relationship, thus correlating strongly. Line and stops are also strongly related. 
 
 \subsection{Feature selection}
-From the correlation matrix we note that some attributes are redundant. Hence, feature selection can help to disregard those which are the least informative. 
-
+Feature selection is the process of selecting features that aid in the learning task at hand, and disregarding the information that is not helpful. From the correlation matrix we note that some attributes are redundant. Hence, feature selection can help to disregard those which are the least informative and reduce the dimensionality.
 
 We evaluate each attribute via its correlation to the true class label, its importance according to an ExtraTrees classifier, its ANOVA f-value, and the jugdment of usefulness according to domain expert PhD. Liang Qu. Initially, a Chi Squared test was also performed, but was abandoned since it had significant bias in favor of continuous attributes over categorical attributes. 
 
@@ -868,18 +870,30 @@ Each method's scores are normalized to sum up to 1. Then, we aggregate them and 
   \label{fig:classification/scores}
 \end{figure}
 
-For selection, we take a fixed amount of attributes from each category, in order to maintain a balanced set. From the \textit{General attributes}, we select the best 3: Number of trips, Weekday, and Travel time. From the \textit{Temporal attributes} we decide to keep them all, since it is a small set. Thus, we select the best 2: Start hour and End hour. 
+For the final set selection, we take a fixed amount of attributes from each category, in order to maintain a balanced set. 
 
-For the \textit{Spatial attributes} selection, we design a system for pair selection, meaning that if an attribute is selected, its boarding/alighting counterpart is also selected. As such, we select the best 2: On/Off mode, and On/Off line. 
+\begin{itemize}
 
-A final set of 9 features is created, resulting in \~66\% reduction. Finally, the cube slices corresponding to the selected features are kept in the user cubes, and the rest disregarded. The cubes are flatten in order for them to be fed into different weak classifiers. 
+\item From the \textit{General attributes}, we select the best 3 out of 8: Number of trips, Weekday, and Travel time. 
 
-\subsection{Model}
-As suggested by Tu \cite{tu2016impact} results, the data is almost linearly separable thus simple classifiers such as decision trees may suffice.
+\item Given that the size of the set is already reduced, we keep all the \textit{Temporal attributes}. Formally speaking, we select the best 2 out of 2: Start hour and End hour. 
+
+\item For the \textit{Spatial attributes}, we design a system for pair selection. This mechanism ensures that if an attribute is selected, its boarding/alighting counterpart is also selected. As such, we select the best 2: On/Off mode, and On/Off line. The cubes are flatten in order for them to be fed into different weak classifiers. 
+
+\end{itemize}
+
+A final set of 9 features is created. The cube slices corresponding to the selected features are kept in the user cubes and the rest disregarded, resulting in \textasciitilde 66\% reduction. 
+
+\subsection{Model} %TODO 
+As suggested by Tu's results \cite{tu2016impact}, the data is almost linearly separable thus simple classifiers such as decision trees may suffice.
 
 We train an SVM, a random forest, a perceptron, a Gaussian Process, and a Bayesian net as weak individual classifiers. Other out of the box ensemble models are trained such as AdaBoost using decision trees. 
  
-The six classifiers are evaluated, and the best 4 are kept for ensemble. The final class is calculated using a majority vote rule. 
+The seven classifiers are evaluated separately. 
+
+
+ and the best 4 are kept for ensemble. The final class is calculated using a majority vote rule. 
+
 
 
 \subsection{Experiments}
@@ -931,18 +945,20 @@ Random Forests deal well with categorical information. Adaboost deals well with 
   \label{fig:classification/tsne}
 \end{figure}
 
-Figure \ref{fig:classification/tsne} shows the data samples by class, represented on its lower dimensional space (after feature selection). It is clear that the classes are not linearly separable, contrary what was expected as suggested by Tu. 
+Figure \ref{fig:classification/tsne} shows the data samples by class, represented on its lower dimensional space (after feature selection). It is clear that the classes are not linearly separable, contrary to what was expected as suggested by Tu. 
 
 Therefore, the most likely explanation for the classifiers performance is overfitting. 
+
+Tu's representation is simpler, including only three spatial features.
 
 
 \newpage
 \section{Commuters clustering}
 \label{sec:partIII}
-In this part of the project we perform an unsupervised learning task to cluster public transit users according to patterns in their travel behavior. This time we perform dimensionality reduction by passing the original user cubes through an autoencoder. Then, we tune cluster the user features and analyze each cluster. 
+In this part of the project we perform an unsupervised learning task to cluster public transit users according to patterns in their travel behavior. This time we perform dimensionality reduction by passing the original user cubes through an autoencoder. Then, we cluster the user features and analyze each cluster. 
 
 \subsection{Feature extraction}
-As mentioned in Section \ref{sec:structure}, the proposed representation is sparse, hence dimensionality reduction has the potential to extract the relevant information and disregard the noise. Furthermore, the proposed representation is local, in the same sense as images are. Combining these two characteristics, it is natural to think of convolutional filters as a tool to extract features from the user cubes. 
+As mentioned in Section \ref{sec:structure}, the proposed representation is sparse, hence dimensionality reduction has the potential to extract the relevant information and disregard noise. Furthermore, the proposed representation is local, in the same sense as images are. Combining these two characteristics, it is natural to think of convolutional filters as a tool to extract features from the user cubes. 
 
 \subsubsection{Convolutional filters}
 We apply two dimensional filters to the three dimensional user cubes. Therefore, the x and y dimensions of the filter align with the day and time dimensions of the structures. Similarly, each of the feature planes is considered a channel. 
