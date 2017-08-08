@@ -112,7 +112,6 @@ def _ensembleClassifiers(individualScores):
 
     return ensembleScores
 
-
 def _save(model, commuters, nonCommuters):
     """
     Save trained model
@@ -130,6 +129,7 @@ def train():
     print("---------------------------- Load data ----------------------------")
     global features, labels
     [codes, features, labels] = _loadData()
+    print(len(codes), " records loaded")
 
     print("--------------------------- Create sets ---------------------------")
     global train_data, test_data, train_labels, test_labels
@@ -182,7 +182,6 @@ def train():
 
     print("----------------------------- Predict -----------------------------")
     model.fit(features, labels)
-    print(model.estimators_)
     predictions = model.predict(features) # TODO predict on all
 
     print("------------------------ Match card  codes ------------------------")
@@ -191,8 +190,6 @@ def train():
 
     print("------------------------------  Save ------------------------------")
     _save(model, commuters, nonCommuters)
-
-
 
 def print_flags():
     """
