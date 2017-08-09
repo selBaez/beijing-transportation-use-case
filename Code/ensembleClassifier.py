@@ -21,8 +21,6 @@ from sklearn.naive_bayes import GaussianNB
 import paths, shared
 
 ############ --- BEGIN default constants --- ############
-BATCH_SIZE_DEFAULT = 200
-MAX_STEPS_DEFAULT = 1500
 NUM_TREES_DEFAULT = 100
 DEPTH_TREES_DEFAULT = 10
 NUM_CLASSES = 2
@@ -211,10 +209,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--plot', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
-    parser.add_argument('--batch_size', type = int, default = BATCH_SIZE_DEFAULT,
-                        help='Batch size to run trainer.')
-    parser.add_argument('--max_steps', type = int, default = MAX_STEPS_DEFAULT,
-                        help='Number of steps to run trainer.')
     parser.add_argument('--num_trees', type = int, default = NUM_TREES_DEFAULT,
                         help='Number of trees in random forest.')
     parser.add_argument('--depth_trees', type = int, default = DEPTH_TREES_DEFAULT,
