@@ -17,6 +17,7 @@ import os
 # shared._sampleCalculateStd(times[:,0], times[:,1], 'Number of cores', 'Time (s)', 'Parallel implementation')
 
 # Plot volume of data
-
+# volume = np.loadtxt('Logs/preparation/dataVolume.txt')
+# shared._volumeBar(volume, 'Daily volume of records')
 
 # Plot cummulative vocabulary

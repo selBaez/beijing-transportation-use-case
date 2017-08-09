@@ -318,6 +318,38 @@ def _sampleWithStd(x, y, std, xlabel, ylabel, title):
     plt.savefig(directory+title+'.png', format='png')
     plt.close()
 
+def _volumeBar(volumeArray, fileName):
+    """
+    Create bar plot for scoring attributes
+    """
+    n_days = len(volumeArray)
+    days = volumeArray[:,0]
+    weekdayClass = volumeArray[:,1]
+    volumes = volumeArray[:,2]
+
+    fig, ax = plt.subplots()
+
+    colors = sns.color_palette("husl", 7)
+    weekdays = {0:'Monday', 1:'Tuesday', 2:'Wednesday', 3:'Thursday', 4:'Friday', 5:'Saturday', 6:'Sunday'}
+
+    for numWeekday, nameWeekday in weekdays.items():
+        condition = weekdayClass == numWeekday
+        plt.bar(days[condition]-1, volumes[condition], color=colors[numWeekday], label=nameWeekday)
+
+    plt.xticks(range(n_days), days, rotation=70, ha='center', fontsize=8)
+    plt.xlabel('Days')
+    plt.ylabel('Volume of records')
+    plt.legend(numpoints=1, loc="upper left")
+    plt.title(fileName)
+    plt.tight_layout()
+
+    # Deal with folders that do not exist
+    directory = paths.PLOT_DIR_DEFAULT+'bar/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    plt.savefig(directory+fileName+'.png', format='png')
+    plt.close()
 
 ###################################################### Pandas ######################################################
 
