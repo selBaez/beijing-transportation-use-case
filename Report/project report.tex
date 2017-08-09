@@ -433,9 +433,9 @@ The traffic zones (small, middle and big areas) are administrative divisions by 
   \label{fig:data/18areas}
 \end{figure}
 
-Every day, more than 13 million records are collected, with approximately 5 million corresponding to subway trips, 8 million corresponding to bus trips, and 100,000 corresponding to bicycle trips. All records corresponding to one day are saved in a single csv file. 
+Every day, more than 13 million trips are performed, with approximately 5 million corresponding to subway trips, 8 million corresponding to bus trips, and 100,000 corresponding to bicycle trips. All records corresponding to one day are saved in a single csv file. 
 
-In this project we examine one month worth of data, corresponding to November 2015. The month of November is chosen because it does not overlap with holidays and has a relatively stable weather, hence diminishing the variance between bicycle and bus/subway traveler preferences. As a result, the data to be analyzed is divided into 30 csv files, requiring a total storage space of 53GB.
+In this project we examine one month worth of data, corresponding to November 2015. The month of November is chosen because it does not overlap with holidays and has a relatively stable weather, hence diminishing the variance between bicycle and bus/subway traveler preferences. this, we hypothesize, will maximize the data quality. As a result, the data to be analyzed is divided into 30 csv files, requiring a total storage space of 53GB.
 
 \subsubsection{Special considerations}
 The previous description corresponds to the data as delivered by the TOCC. As such, it is the result from processing the raw records at the collecting phase. Some special considerations concerning this processing are explained below:
@@ -455,7 +455,7 @@ Furthermore, similarly to the bicycle missing information, the transfer time ins
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=.6\linewidth]{"./images/unlabeled data"} %TODO update image
+  \includegraphics[width=.8\linewidth]{"./images/unlabeled data"} %TODO update image
   \caption{Relation between labeled and unlabeled data.}
   \label{fig:method/unlabeled}
 \end{figure}
@@ -521,29 +521,27 @@ In this project, we perform the mapping through an autoncoder. Autoencoders foll
 
 Taking advantage of the local properties of the proposed representation, we decide to apply stacked convolutional filters followed by a final fully conencted layer that outputs features of a more manageable dimensionality. The end result will be used as features for clustering commuters in Part III (Section \ref{sec:partIII}) of this project. 
 
-%TODO re read starting from here
-
 \subsection{Pattern recognition}
 
 \subsubsection{Ensemble models for classification}
-There is a large variety of algorithms for performing classification tasks. Each algorithm may focus on different samples when learning the task, and so has strengths and weaknesses different from one another. 
+There is a large variety of algorithms for performing classification tasks. Each algorithm may focus on different samples when learning the task, and so it has strengths and weaknesses different from one another. 
 
 Ensemble models explore the idea of combining several non-correlated prediction methods that might correct each other in order to reach a better classification accuracy. Furthermore, ensemble models are robust and modular. Therefore, starting from a few weak classifiers, assembled via aggregation methods, the model can grow larger or more complex as needed.
 
-This project constructs an ensemble model for classifying commuters. As proven by Tu \cite{tu2016impact}, weak classifiers like a Support Vector Machines (SVM) are sufficient to identify commuting behavior up to a 94\% accuracy. Aiming to increase accuracy, but preventing overfitting, this project extends Tu's model with other similar weak classifiers such as decision trees, Bayesian classifiers, Gaussian Processes, multilayer perceptrons, and others. Their individual predictions are ensembled bia majority vote. 
+This project constructs an ensemble model for classifying commuters. As proven by Tu \cite{tu2016impact}, weak classifiers, like a Support Vector Machines (SVM), are sufficient to identify commuting behavior up to a 94\% accuracy. Aiming to increase accuracy, but preventing overfitting, this project extends Tu's model with other similar weak classifiers such as decision trees, Bayesian classifiers, Gaussian Processes, multilayer perceptrons, and others. Their individual predictions are ensembled via the majority vote rule. 
 
 \subsubsection{Clustering} 
-For the third part of this project we perform behavior clustering. To this end, we apply the \textit{K means} algorithm on the low dimensional features extracted by the autoencoder. \textit{Kmeans} is the standard algorithm used in the Transportation domain, and it consistently achieves satisfactory results. 
+For the third part of this project we perform behavior clustering. To this end, we apply the \textit{K means} algorithm on low dimensional features extracted by a convolutional autoencoder. The \textit{K means} algorithm is the standard algorithm used in the Transportation domain, and it consistently achieves satisfactory results. 
 
 \subsection{Big Data considerations}
-The amount of data gathered for this project require specific computational resources. While programming the tasks, measures are taken to optimize the code. For example, the code is written in modules that work with one day file at the time, and save checkpoints at every relevant step. Additionally, the code is compatible with cluster computing and SLUM jobs are created for its processing.
+The amount of data gathered for this project requires specific computational resources. While programming the learning tasks, measures are taken to optimize the code. For example, the code is written in modules that work with one day file at the time, and save checkpoints at every relevant step. Additionally, the code is compatible with cluster computing and SLUM jobs are created for its processing.
 
-Furthermore, parallel computing techniques are implemented wherever the whole dataset goes into memory. As shown in Figure \ref{fig:bigdata/parallel}, the time required for applying a single filter reduces drastically if the number of tasks equals the number of cores in the machine used. 
+Furthermore, parallel computing techniques are implemented wherever the whole dataset goes into memory, for example when extracting trip attributes from the records. As shown in Figure \ref{fig:bigdata/parallel}, the time required for applying a single filter reduces drastically if the number of parallel workers equals the number of cores in the machine used. 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.6\linewidth]{"./images/Parallel implementation"}
-  \caption{Number of tasks.}
+  \includegraphics[width=.9\linewidth]{"./images/Parallel implementation"}
+  \caption{Performance in parallel computing.}
   \label{fig:bigdata/parallel}
 \end{figure}
 
@@ -552,8 +550,22 @@ The computational resources are provided by Vrije Universiteit Amsterdam. The re
 \newpage
 \section{Data preparation and preprocessing}
 \label{sec:partI}
-The data acquired for this project corresponds to November 2015. However, due to defective collection methods, the data from November 9 to November 14 is not available. This may have significant effects in the results of the project, as discussed in Section \ref{sec:conclusion}
+The data acquired for this project corresponds to November 2015. Figure \ref{fig:preprocessing/volume} shows the volume of records per day, color coded by day of the week. 
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/Daily volume of records"}
+  \caption{Performance in parallel computing.}
+  \label{fig:preprocessing/volume}
+\end{figure}
+
+The figure also illustrates that, in general, Saturday and Sunday have less records compared to their own week. For example, for the first week of the month corresponding to days between the 2nd and the 8th, the weekend days (7th and 8th) have only about 4.5 million records, while the weekdays (from the 2nd to the 6th) have at least 6.5 millions each. The fourth week of the month, from the 23rd to the 29th, shows similar behavior. 
+
+Yet, the pattern for the third week of the month is more complex. While the weekdays (21st and 22nd) have less records than the previous couple weekdays (Thursday 19th and Friday 20th), the first three weekdays are not as strong, with Monday having only 5 million records.  
+
+With regards to the second week of the month, from this plot we note a gap of six days with 0 records collected. Due to defective collection methods, the data from November 9 to November 14 is not available. 
+
+%TODO revise from here
 \subsection{Cleaning}
 As first step for preparing the data for its mining, we eliminate faulty records. To this end, we apply the following four filters:
 
@@ -833,31 +845,33 @@ It is important to note that as the data between November 9th and November 14th 
 In this part of the project we focus on the task of classifying public transit users into one of two categories: Commuter or Non commuter. To do so, we reduce the dimensionality of the original user cubes by selecting the most informative slices. Subsequently, several weak classifiers are trained. The best classifiers are incrementally selected to be part of an ensemble model, which is the final classifier.
 
 \subsection{Attributes correlation} %TODO how many samples
-First, we perform an exploratory study of the relationships among all the attributes of a trip. We calculate the correlation matrix of the trip attributes using the labeled dataset refer to in Section \ref{sec:datasets}. This set contains 12,584 trips corresponding to labeled card codes.
+First, we perform an exploratory study of the relationships among all the attributes of a trip. We calculate the correlation matrix of the trip attributes using the labeled dataset refer to in Section \ref{sec:datasets}. This set contains 12,584 trips corresponding to 639 labeled card codes.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.9\linewidth]{"./images/General correlation"}
-  \caption{Attributes correlation to each other and to label.}
+  \includegraphics[width=\linewidth]{"./images/General correlation"}
+  \caption{Attributes correlation to each other and to label. Color bar indicates the direction and magnitude of correlation.}
   \label{fig:classification/correlation}
 \end{figure}
 
+From Figure \ref{fig:classification/correlation} we note distinguishable blocks with specific patterns. We perform an analysis by category in order to better understand the interdependence among attributes.
+
 \textbf{General} %TODO !!!
 
-Travel time and travel distance are highly correlated. This is due to the lack of express trips available in the public transit. (example, train stations within Amsterdam that are 1 hour away by bus or 10 minutes away by train)
-
-Transfer average and total time are also highly correlated. As examined in Section \ref{sec:patching}, most trips are have few transfers. 
+It is clear that travel time and travel distance are highly correlated. Rationally, this may be explained by the reduced offer for express trips in the public transit network of Beijing. As a counterexample, in Amsterdam it is possible to travel significant distances within the city in a fast manner by using the train. 
+ 
+Furthermore, the transfer average and total times are also highly correlated. As examined in Section \ref{sec:patching}, most trips are have one transfer, which makes the relationship between average and total transfer time linear.
 
 \textbf{Temporal}
 
-Start and end hour are almost identical. Explained by the fact that most trips are completed within the hour. 
+In this block we see a very high positive correlation, represented by a dark red color. This indicates that the start and end hour for most trips are identical. Given that most trips are completed within the hour, this finding is coherent the data exploratory findings. 
 
 \textbf{Spatial}
 
 Boarding attributes share a stronger connection among themselves than with alighting attributes. Furthermore, traffic areas are hierarchical, thus having a high correlation. Ring road and traffic areas maintain a similar relationship, thus correlating strongly. Line and stops are also strongly related. 
 
 \subsection{Feature selection}
-Feature selection is the process of selecting features that aid in the learning task at hand, and disregarding the information that is not helpful. From the correlation matrix we note that some attributes are redundant. Hence, feature selection can help to disregard those which are the least informative and reduce the dimensionality.
+Feature selection is the process of choosing features that aid in the learning task at hand, and disregarding the information that is not helpful. From the correlation matrix we note that some attributes are redundant. Hence, feature selection can help to disregard those which are the least informative and reduce the dimensionality.
 
 We evaluate each attribute via its correlation to the true class label, its importance according to an ExtraTrees classifier, its ANOVA f-value, and the jugdment of usefulness according to domain expert PhD. Liang Qu. Initially, a Chi Squared test was also performed, but was abandoned since it had significant bias in favor of continuous attributes over categorical attributes. 
 
@@ -884,43 +898,88 @@ For the final set selection, we take a fixed amount of attributes from each cate
 
 A final set of 9 features is created. The cube slices corresponding to the selected features are kept in the user cubes and the rest disregarded, resulting in \textasciitilde 66\% reduction. 
 
-\subsection{Model} %TODO 
-As suggested by Tu's results \cite{tu2016impact}, the data is almost linearly separable thus simple classifiers such as decision trees may suffice.
+\subsection{Model} 
+As suggested by Tu's results \cite{tu2016impact}, the data is almost linearly separable thus weak classifiers such as decision trees may suffice.
 
-We train an SVM, a random forest, a perceptron, a Gaussian Process, and a Bayesian net as weak individual classifiers. Other out of the box ensemble models are trained such as AdaBoost using decision trees. 
- 
-The seven classifiers are evaluated separately. 
+We train one linear SVM, one Gaussian Process, one Gaussian Naive Bayes classifier, and one multilayer perceptron. We also train three simple ensemble models based on decision trees: a random forest, a model using the adaboost algorithm, and a model using bagging. The parameters for each classifier are shown in Table \ref{table:classifiersParam}
 
+\begin{table}[H]
+\centering
+\begin{tabular}{||c|c||}
+\hline
+\textbf{Classifier} & \textbf{Parameters} \\ [0.5ex] 
+\hline \hline
+SVM & Linear kernel \\
+Gaussian process & RBF kernel\\
+Gaussian Naive Bayes & Prior probabilities set according to data \\
+Multilayer perceptron & 100 layers, ReLu activation function \\
+Random Forest & 100 trees, max depth of 10 \\
+Adaboost of decision trees & 100 trees \\
+Bagging of decision trees & 100 trees\\ [1ex]
+\hline 
+\end{tabular}
+\caption{Accuracy for weak classifiers}
+\label{table:classifiersParam}
+\end{table}
 
- and the best 4 are kept for ensemble. The final class is calculated using a majority vote rule. 
+The seven weak classifiers are trained and evaluated separately. The dataset to be used contains 639 user cubes to be classified into one of the two categories. We flatten the reduced user cubes since most of the classifiers require the data to be represented as vectors. For evaluation we split the dataset into 60\% for training and 40\% for testing, as evaluated by Tu. Furthermore, we evaluated via cross validation over 5 folds.  
 
+We proceed to build an ensemble model based on a Majority Vote aggregation method. This method takes the prediction from each individual classifier, and select the class which was predicted by the most classifiers. When facing a tie among classes, the model selects the class based on ascending order. Since we perform binary classification, that means the default category is Non-Commuter. 
+%TODO soft voting?
 
+Incrementally, we incorporating the best $k$ classifiers and evaluate at each step. The final model is selected according to the largest accuracy using cross validation over 5 folds. 
 
 \subsection{Experiments}
-The classifiers performance is reported by its accuracy (True positives rate) on two experiments: a) one run on a single train/test division of the dataset, and b) average of cross validation over 5 folds. 
+The weak classifiers performance is reported by its accuracy (True positives rate) on two experiments: a) one run on a single train/test division of the dataset, and b) average of cross validation over 5 folds. Table \ref{table:weakClassifiers} summarizes the results. 
 
-%TODO make table pretty
-\begin{tabular}{|c|c|c|}
-\textbf{Classifier} & \textbf{Single run accuracy} & \textbf{Cross validation accuracy} \\
-SVM & 88\% & 70\% (+/- 14)\\
-Gaussian process & 78\% & 45\% (+/- 9)\\
-Gaussian Naive Bayes & 78\% & 45\% (+/- 9)\\
-Perceptron & 87\% & 72\% (+/- 18)\\
-Random Forest & 88\% & 71\% (+/- 8)\\
-Adaboost of decision trees & 86\% & 68\% (+/- 12)\\
-Bagging of decision trees & 86\% & 68\% (+/- 12)\\
+\begin{table}[H]
+\centering
+\begin{tabular}{||c|c|c||}
+\hline
+\textbf{Classifier} & \textbf{Single run accuracy} & \textbf{Cross validation accuracy} \\ [0.5ex] 
+\hline \hline
+SVM & 78\% & 62\% (+/- 4)\\
+Gaussian process & 79\% & 45\% (+/- 0)\\
+Gaussian Naive Bayes & 77\% & 66\% (+/- 7)\\
+Multilayer perceptron & 77\% & 66\% (+/- 5)\\
+Random Forest & 85\% & 74\% (+/- 7)\\
+Adaboost of decision trees & 80\% & 69\% (+/- 5)\\
+Bagging of decision trees & 83\% & 73\% (+/- 8)\\ [1ex]
+\hline 
 \end{tabular}
+\caption{Accuracy for weak classifiers}
+\label{table:weakClassifiers}
+\end{table}
+
+With 74\% accuracy, the Random Forest is the strongest classifier. This is reasonable since random Forests are generally competent when dealing with categorical information. Given that 6 out of the 9 trip features we kept are categorical, this method adapts smoothly to our data. 
+
+The incremental ensemble model performance is reported by its average accuracy using cross validation over 5 folds. 
+
+\begin{table}[H]
+\centering
+\begin{tabular}{||c|c|c||}
+\hline
+\textbf{Number of classifiers included} & \textbf{Name of classifiers included} & \textbf{Cross validation accuracy} \\ [0.5ex] 
+\hline \hline
+Best 2 & {Bagging of decision trees, Random forest} & 76\% (+/- 6)\\
+Best 3 & Previous set $+$ {Adaboost of decision trees} & 73\% (+/- 8)\\
+Best 4 & Previous set $+$ {Multilayer perceptron} & 74\% (+/- 8)\\
+Best 5 & Previous set $+$ {Gaussian Naive Bayes} & 73\% (+/- 8)\\
+Best 6 & Previous set $+$ {SVM} & 72\% (+/- 8)\\
+Best 7 & Previous set $+$ {Gaussian Process} & 74\% (+/- 8)\\ [1ex]
+\hline 
+\end{tabular}
+\caption{Accuracy for incremental ensemble model}
+\label{table:ensembleModels}
+\end{table}
+
+The model with highest 
+
+In order to investigate how the two selected classifiers help each other, we take a look at their confusion matrices. 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.9\linewidth]{"./images/SVM_Heatmap"}
-  \caption{SVM confusion matrix.}
-  \label{fig:classification/svm_confusion}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=.9\linewidth]{"./images/Random forest_Heatmap"}
+  \includegraphics[width=.6\linewidth]{"./images/Random forest_Heatmap"}
   \caption{Random forest confusion matrix.}
   \label{fig:classification/rf_confusion}
 \end{figure}
@@ -928,14 +987,20 @@ Bagging of decision trees & 86\% & 68\% (+/- 12)\\
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.9\linewidth]{"./images/AdaBoost of decision trees_Heatmap"}
+  \includegraphics[width=.6\linewidth]{"./images/AdaBoost of decision trees_Heatmap"}
   \caption{Adaboost confusion matrix.}
   \label{fig:classification/adb_confusion}
 \end{figure}
 
 
 \subsection{Discussion}
-Random Forests deal well with categorical information. Adaboost deals well with missing information.
+
+All ensemble models perform at least as well and the best weak classifier. 
+
+Including more classifiers does not necessarily increase the accuracy.
+
+Final model had two classifiers. since we use majority vote, when they disagree then the category is non commuter by default. 
+
 
 
 \begin{figure}[H]
@@ -949,7 +1014,7 @@ Figure \ref{fig:classification/tsne} shows the data samples by class, represente
 
 Therefore, the most likely explanation for the classifiers performance is overfitting. 
 
-Tu's representation is simpler, including only three spatial features.
+Tu's representation is simpler, including only three spatial features and one week data.
 
 
 \newpage
@@ -968,28 +1033,33 @@ The size of the filters is fixed to $3 \times 3$, since it leads to the best per
 
 \subsubsection{Autoencoder}
 %TODO network structure
-Using Keras and Tensorflow as backend, we create an autoencoder. 
+Using Keras and Tensorflow as backend, we create an autoencoder. The network structure is shown below:
 
-The network structure is shown below:
-
-%TODO make table pretty
-\begin{tabular}{|c|c|c|c|c|c|}
+\begin{table}[H]
+\centering
+\begin{tabular}{||c|c|c|c|c|c||}
+\hline
 \textbf{Type of layer} & \textbf{Filter size} & \textbf{Filter units} & \textbf{Stride} & \textbf{Activation function} & \textbf{Output dimensions} \\
-\\
+[0.5ex] 
+\hline \hline
 Input & None & None & None & None  & [24, 30, 26]\\
 Convolutional & [3, 3] & 16 & 1 & ReLU  & [24, 30, 16]\\
 Max Pooling & [2, 2] & 16 & 1 & None  & [12, 15, 16]\\
 Convolutional & [3, 3] & 8 & 1 & ReLU  & [12, 15, 8]\\
 Max Pooling & [3, 3] & 8 & 1 & None  & [4, 5, 8]\\
-\\\\
+\hline
 Convolutional & [3, 3] & 8 & 1 & ReLU  & [4, 5, 8]\\
 Up sampling & [3, 3] & 8 & 1 & None  & [12, 15, 8]\\
 Convolutional & [3, 3] & 16 & 1 & ReLU  & [12, 15, 16]\\
 Up sampling & [2, 2] & 16 & 1 & None  & [24, 30, 16]\\
-Convolutional & [3, 3] & 26 & 1 & Sigmoid  & [12, 15, 26]\\
+Convolutional & [3, 3] & 26 & 1 & Sigmoid  & [12, 15, 26]\\ [1ex]
+\hline 
 \end{tabular}
+\caption{Autoencoder network structure}
+\label{table:autoencoderStructure}
+\end{table}
 
-The dimensionality of the encoded features is $4 \times 5 \times 8 = 160$. This represents more than 110\% compression. 
+The first block corresponds to the encoder, and the second block corresponds to the decoder modules. The dimensionality of the encoded features is $4 \times 5 \times 8 = 160$. This represents more than 110\% compression. 
 
 We evaluate the autoencoder using the binary crossentropy loss between the original user cube and the reconstructed user cube. As an optimizer we use Adadelta. We train on 60\% of the data and validate on 40\% of the data for 100 iterations. The loss over the validation set is shown in Figure \ref{fig:clustering/loss}
 
@@ -1030,16 +1100,19 @@ From Figure \ref{fig:clustering/tuning} we see that the average score peaks at 5
 \newpage
 \section{Conclusion and future work}
 \label{sec:conclusion}
+Pros:
+As seen from the volume of data, taking one month against one week shows more complex behaviors. However, the data quality may be sacrificed since data might be faulty. This was the case for the missing data from November 9th to November 16th. 
 
-Faulty data. Missing data from 9 to 16. Gap in between.
-
+Cons:
 Zero values such as end hour, zero transfers and others. Same effect as "empty" bin. 
-
-Overlapping trips. So far one trip per bin/hour. Possible solutions are to concatenate.
 
 Standardization by day.
 
 Selection over trip -> label. 
+
+
+Future:
+Overlapping trips. So far one trip per bin/hour. Possible solutions are to concatenate.
 
 investigate the effects of 3D convolutions
 
