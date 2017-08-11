@@ -351,6 +351,32 @@ def _volumeBar(volumeArray, fileName):
     plt.savefig(directory+fileName+'.png', format='png')
     plt.close()
 
+def _vocabCum(vocabularyFile, fileName):
+    """
+    Create bar plot for scoring attributes
+    """
+    n_days = len(vocabularyFile)
+    days = vocabularyFile[:,0]
+    cummulative = np.cumsum(vocabularyFile[:,1])
+
+    fig, ax = plt.subplots()
+
+    plt.plot(days, cummulative, color='r')
+
+    plt.xticks(range(n_days), days, rotation=70, ha='center', fontsize=8)
+    plt.xlabel('Days')
+    plt.ylabel('Size of vocabulary')
+    plt.title(fileName)
+    plt.tight_layout()
+
+    # Deal with folders that do not exist
+    directory = paths.PLOT_DIR_DEFAULT+'scatter/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    plt.savefig(directory+fileName+'.png', format='png')
+    plt.close()
+
 ###################################################### Pandas ######################################################
 
 def _filter(data, condition, motivation):
