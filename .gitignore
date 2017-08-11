@@ -109,6 +109,7 @@ Report/images/*
 Code/Plots/*
 Code/Logs/*
 Data/vocabularies/*
+Data/models/*
 
 # Notes to operate cluster
 Code/Cluster/das5 notes.txt
