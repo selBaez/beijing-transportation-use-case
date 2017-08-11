@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 24:00:00
+#SBATCH -o ./Logs/ensembleClassifier/%A.output
+#SBATCH -e ./Logs/ensembleClassifier/%A.error
+#SBATCH --mail-type=END,FAIL # notifications for job done & fail
+#SBATCH --mail-user=selene.baezsantamaria@student.uva.nl # send-to address
+
+
+module load python-extra/python2.7/r0.5.0
+
+python ensembleClassifier.py --plot 'True'
