@@ -27,9 +27,14 @@ def _tsneScatter(feature_name, features, labels=None):
     if labels is None:
         plt.scatter(features[:,0], features[:,1])
     else:
-        plt.scatter(features[:,0], features[:,1], c=labels.astype(int), label=labels, cmap='Paired')
-        plt.legend([0,1],['Non-commuter', 'Commuter'])
+        typesLabel = list(set(labels))
+        colors = sns.color_palette("husl", len(typesLabel))
 
+        for typeL in typesLabel:
+            condition = labels == typeL
+            plt.scatter(features[condition,0], features[condition,1], color = colors[int(typeL)], label=str(int(typeL)))
+
+    plt.legend(numpoints=1, loc="upper left")
     plt.title(feature_name)
     plt.tight_layout()
 
