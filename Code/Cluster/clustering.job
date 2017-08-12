@@ -1,15 +1,12 @@
 #!/bin/bash
 #SBATCH -n 1
 #SBATCH -t 24:00:00
-#SBATCH -o ./Logs/featureEngineering/%A.output
-#SBATCH -e ./Logs/featureEngineering/%A.error
+#SBATCH -o ./Logs/clustering/%A.output
+#SBATCH -e ./Logs/clustering/%A.error
 #SBATCH --mail-type=END,FAIL # notifications for job done & fail
 #SBATCH --mail-user=selene.baezsantamaria@student.uva.nl # send-to address
 
 
 module load python-extra/python2.7/r0.5.0
-module load keras/python2.7/r2.0.2
-module load tensorflow/python2.7/cpu/r1.1.0-py2
 
-
-python featureEngineering.py --plot 'True'
+python clustering.py --plot 'True'
