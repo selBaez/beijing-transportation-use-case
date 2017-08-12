@@ -104,6 +104,8 @@ def _standardize(data):
     """
     Rescale features to have mean 0 and std 1
     """
+    print(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']].mean(axis=0))
+
     print("Standarize travel time and distance, transfer total and average time")
     scaler = StandardScaler()
     data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']] = scaler.fit_transform(data[['TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_TIME_SUM', 'TRANSFER_TIME_AVG']])
