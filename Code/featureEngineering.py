@@ -52,14 +52,9 @@ def _buildModel():
     print(x)
     x = MaxPooling2D((2, 2), padding='same')(x)
     print(x)
-
-    # x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
-    # print(x)
-    # x = MaxPooling2D((2, 2), padding='same')(x)
-    # print(x)
-
     x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
     print(x)
+
     encoded = MaxPooling2D((3, 3), padding='same')(x)
     print('encoded:', encoded)
 
@@ -70,12 +65,6 @@ def _buildModel():
     print(x)
     x = UpSampling2D((3, 3))(x)
     print(x)
-
-    # x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
-    # print(x)
-    # x = UpSampling2D((2, 2))(x)
-    # print(x)
-
     x = Conv2D(16, (3, 3), activation='relu', padding='same')(x)
     print(x)
     x = UpSampling2D((2, 2))(x)
@@ -83,7 +72,6 @@ def _buildModel():
 
     decoded = Conv2D(26, (3, 3), activation='sigmoid', padding='same', input_shape=(24,30,26))(x)
     print(decoded)
-
 
     # this model maps an input to its reconstruction
     autoencoder = Model(input_img, decoded)
@@ -101,7 +89,7 @@ def _train(autoencoder, x_train, x_test):
     Train the autoencoder
     """
     autoencoder.fit(x_train, x_train,
-                    epochs=100,
+                    epochs=200,
                     batch_size=128,
                     shuffle=True,
                     validation_data=(x_test, x_test),
@@ -179,7 +167,7 @@ def main(_):
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--plot', type = str, default = 'False',
+    parser.add_argument('--plot', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
 
     FLAGS, unparsed = parser.parse_known_args()
