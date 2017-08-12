@@ -17,21 +17,23 @@ feature selection 		load dataframes							                                      
 
 ensemble classifier 	create models (SVM, bayesian, random forest, mlp)																			DONE
 											train using K-fold with replacement 																									DONE
-											ensemble (adaboost or bagging)																												DONE
+											ensemble (adaboost or bagging)																												Try soft voting
 											evaluate																																							DONE
 											save model																																						DONE
-											predict																																								Details
+											predict																																								Predict on whole not implemented
 											save card codes and their labels																											DONE
 
 feature engineering 	Load cubes																																						DONE
 											create convolutional autoencoder																											DONE
-											train encoder																																					Needs to be tuned
-											save model 																																						TO DO
+											train encoder																																					Only 150 iterations to avoid overfit
+											save model 																																						DONE
 											encode samples																																				DONE
 											visualize low dimensional data																												DONE
 											save data																																							DONE
 
-clustering 						k-means																																								Details
+clustering 						k-means																																								Run several times
+											save card codes
+											find their associated records
 											cluster analysis (silhouettes samples for cluster membership)													TO DO
 
 
@@ -48,40 +50,16 @@ currently transforming data over whole data set and not over train/test or cross
 				list of slices, instead of list of values (vector)
 	con: scientifically correct? travel time and distance has large tail, thus the distribution really depends on the data
 
-Papers to get:
-Reconstructing individual mobility from smart card transactions: a collaborative space alignment approach
-
 Improvements to report:
-transfer time focus on tail
-Mention hierarchy in traffic areas will cause correlation
-Attributes summary: numerical vs categorical
-Section: deal with categorical -> tokenize, encode, bins
-comment on ordinal structure vs one hot
-random forests deal well with categorical (large node size), adaboost with missing info
-feature selection by some sort of ensemble, voting system
+analyze results: ensemble two different classifiers would be better. try code for this
+rewrite classification performance according to cluster results
+remove side colorbar
 
-categorize mode, stop, line: zero cannot be used cause it means empty.
+
 
 STEP BY STEP:
-Preparation job
-		 records number plot
-		 vocabularies cummulative plot
-
 Preprocessing job
     full: unlabeled, std -> cubes
 
-Ensemble code
-     classifiers: bayesian -> individual accuracy (save in txt file)
-     adaboost ensemble -> accuracy (save in txt file)
-     link sample to code -> two txt, one for commuters one for non-commuters
-Ensemble job -> lists
-
-Feature extraction code
-     build autoencoder -> vectors
-Feature extraction job -> vectors
-
 Clustering code
-    tune
-    evaluate
-    link sample
-Clustering job -> lists
+    analysis
