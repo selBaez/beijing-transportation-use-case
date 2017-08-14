@@ -248,6 +248,8 @@ def _store(data):
     """
     Store codes, features and labels
     """
+    print("Store ", len(data[0])," samples")
+
     directory = paths.LOWDIM_DIR_DEFAULT
     with open(directory+"supervised.pkl", "w") as fp: cPickle.dump(data, fp)
 
