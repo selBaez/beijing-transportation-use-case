@@ -66,7 +66,6 @@ def _cluster(optimalNClusters, data):
     """
     Run K means on data
     """
-
     # TODO: Run several instances of K means to account for random initalization
     clusterer = KMeans(n_clusters = optimalNClusters, random_state=0)
     labels = clusterer.fit_predict(data)
@@ -82,14 +81,44 @@ def _visualize(name, data, labels):
     features = manifold.fit_transform(data)
     shared._tsneScatter(name, features, labels=labels)
 
+def _loadFrames(directory):
+    """
+    Load csv data on pandas
+    """
+    # Read many sample files
+    allFiles = glob.glob(directory + "/*.csv")
+    data = pd.DataFrame()
+    list_ = []
+    for file_ in allFiles:
+        df = pd.read_csv(file_,index_col='ID', header=0)
+        list_.append(df)
+    data = pd.concat(list_)
 
-def _analysis(data):
+    print(len(data.index), "records loaded")
+
+    return data
+
+
+def _analysis(data, labels):
     """
     Determine intra and inter cluster statistics.
     """
-    # Some plots
+    # Load data
+    data = _loadData(paths.PREPROCESSED_DIR_DEFAULT+'labeled')
 
+    # Match code to label
+    #TODO
 
+    # Group by label
+    data = list(data.groupby('CLUSTER'))
+
+    for clusterLabel, trips in data:
+        trips = list(trips.groupby('CARD_CODE'))
+
+        print(len(trips), ' card codes found')
+
+        # Summary
+        print(trips.mean(axis=0))
 
 def _store(data):
     """
@@ -100,6 +129,7 @@ def _store(data):
 def cluster():
     print("---------------------------- Load data ----------------------------")
     [codes, samples] = _loadData()
+    print(len(codes), " records loaded")
 
     print("----------------------------- Tune  k -----------------------------")
     optimalNClusters = _tune(samples)
@@ -111,7 +141,7 @@ def cluster():
     _visualize('Clustered', samples, labels)
 
     print("------------------------ Cluster  analysis ------------------------")
-    _analysis(samples)
+    _analysis(samples, labels)
 
     print("------------------------ Save labeled data ------------------------")
     # _store(data)
