@@ -473,7 +473,7 @@ As mentioned in Section \ref{sec:data}, this project considers data correspondin
 
 The reduced labeled dataset is used for Part II (Section \ref{sec:partII}) of this project. 
 
-\item[Behavior clustering:] %TODO use full dataset?
+\item[Behavior clustering:] 
 Clustering, being an unsupervised learning task, does not require labels. Therefore, for this task we are able to use the full dataset. Though rich in its contents, this poses some computational challenges which will be further explained in Section \ref{sec:partI}. 
 \end{description}
 
@@ -586,13 +586,12 @@ The percentage of data eliminated by each filter is shown in Figure \ref{fig:pre
 \subsection{Extraction}
 From the raw records, we can further extract attributes to complement the trip information. For example, taking the date of the travel we can further obtain two important attributes. The "Day" attribute, corresponding to the number of day on the month, from 1 to 31. The "Weekday" attribute is a number from 1 to 7 corresponding to the day of the week, starting on Monday.
 
-Furthermore, we calculate the "Number of trips" attribute which counts the trip records each user has in a day. Figure \ref{fig:preprocessing/num_trips} shows the distribution of this attribute on a random weekday. We note that most people perform two trips per day, followed by people who perform only one trip a day. %TODO plot for busuiest day
-
+Furthermore, we calculate the "Number of trips" attribute which counts the trip records each user has in a day. Figure \ref{fig:preprocessing/num_trips} shows the distribution of this attribute on a random weekday. We note that most people perform two trips per day, followed by people who perform only one trip a day. 
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=.7\linewidth]{"./images/Number of trips"}
-  \caption{Number of trips distribution. 2500 record sample.}
+  \caption{Number of trips distribution. 5,000 record sample.}
   \label{fig:preprocessing/num_trips}
 \end{figure}
 
@@ -604,11 +603,11 @@ Using hourly time bins is standard practice in the field and has proven sufficie
 \begin{figure}[H]
   \centering
   \includegraphics[width=.7\linewidth]{"./images/Hour of trip"}
-  \caption{Distribution of start/end hours for trips. 2500 records sample.}
+  \caption{Distribution of start/end hours for trips. 5,000 records sample.}
   \label{fig:preprocessing/start_end_hour}
 \end{figure}
 
-From Figure \ref{fig:preprocessing/start_end_hour}, we note that our data follows the expected distribution for the domain, showing clear morning and evening peaks. Furthermore, we note that boarding and alighting patterns during the peaks hours are shifted by one hour. %TODO revise this
+From Figure \ref{fig:preprocessing/start_end_hour}, we note that our data follows the expected distribution for the domain, showing clear morning and evening peaks. Furthermore, we note that boarding and alighting patterns during the peaks hours are shifted by one hour. For example, the morning peak for boarding is at 7:00 am, while the alighting peaks at 8:00 am. Similarly, the evening peak happens between 6:00pm and 7:00pm for boarding, but between 19:00pm and 20:00pm for alighting. 
 
 \subsubsection{Trip parsing} 
 \label{sec:tripParsing}
@@ -648,12 +647,12 @@ Usually, bus routes are identified by a number. However, in Beijing a single bus
   \centering
   \begin{subfigure}[b]{.7\textwidth}
   	\centering
-  	\includegraphics[width=.8\linewidth]{"./images/Cummulative lines vocabulary size"}
+  	\includegraphics[width=.85\linewidth]{"./images/Cummulative lines vocabulary size"}
   	\caption{Vocabulary containing subway lines and bus routes}
   \end{subfigure}
   \begin{subfigure}[b]{.7\textwidth}
   	\centering
-  	\includegraphics[width=.8\linewidth]{"./images/Cummulative stops vocabulary size"}
+  	\includegraphics[width=.85\linewidth]{"./images/Cummulative stops vocabulary size"}
   	\caption{Vocabulary containing subway and bus stops, as well as bikes drop off spots.}
   \end{subfigure}
   \caption{Cummulative plots.}
@@ -662,7 +661,7 @@ Usually, bus routes are identified by a number. However, in Beijing a single bus
 
 Vocabularies are created from the available data. As such, the first time a line/route/stop is seen it is assigned the next available numerical ID. Thus, the vocabulary is dependent on the order on which the records are processed. Moreover, the size of the vocabulary increases as we process more daily files. Figure \ref{fig:preprocessing/cummulativeVoc} shows the size of each of the vocabularies. We find  \textasciitilde 840 lines and \textasciitilde 6740 stops. Though different in size, both vocabularies exhibit the same growing behavior. 92\% of lines and 97 \% of stops are seen since on the first file, and by the 7th file we have seen 99\% of both vocabularies.
 
-Examples of parsed routes for each mode of transportation are shown in Figure \ref{fig:preprocessing/parsed_routes}. %TODO chinese latex!
+Examples of parsed routes for each mode of transportation are shown in Figure \ref{fig:preprocessing/parsed_routes}. 
 
 \begin{figure}[H]
   \centering
@@ -693,7 +692,7 @@ We note that the number of transfers and the path link fields of some records do
 \begin{figure}[H]
   \centering
   \includegraphics[width=.7\linewidth]{"./images/Number of transfers"}
-  \caption{Transfer number distribution before and after recalculation.}
+  \caption{Transfer number distribution before and after recalculation. 5,000 records sample.}
   \label{fig:preprocessing/num_transfers}
 \end{figure}
 
@@ -708,7 +707,7 @@ In data mining, it is a standard practice to perform whitening. This technique e
 \begin{figure}[H]
   \centering
   \includegraphics[width=.7\linewidth]{"./images/distance vs time"}
-  \caption{Travel distance vs travel time. 2500 record sample.}
+  \caption{Travel distance vs travel time. 5,000 record sample.}
   \label{fig:preprocessing/distance_time_correlation}
 \end{figure}
 
@@ -726,7 +725,7 @@ Travel time, travel distance, total transfer time and average transfer time are 
   	\includegraphics[width=\linewidth]{"./images/Travel distance standardized"}
   	\caption{Travel distance}
   \end{subfigure}
-  \caption{Time and distance standardize distributions. 2500 records sample.}
+  \caption{Time and distance standardize distributions. 5,000 records sample.}
   	\label{fig:preprocessing/timeDist}
 \end{figure}
 
@@ -781,29 +780,28 @@ Finally, the spatial attributes are:
 \end{enumerate}
 
 \subsection{User cubes}
-%TODO add weekdays of missing dates
-Figure \ref{fig:preprocessing/cubes} shows the first slice for a random Commuter and a random Non-commuter
+Figure \ref{fig:preprocessing/cubes} shows the first slice for a random Commuter and a random Non-commuter.
+
+For the case of the Commuter, we identify a pattern between the 15th and 20th of November. We observe several trips at 6 in the morning and 5 in the evening, suggesting a typical working schedule. The Non-commuter, in contrast, has an irregular distribution of trips. 
+
+It is important to note that as the data between Monday November 9th and Saturday November 14th is missing. Thus, both cases show a gap in records during these days. However, we note that the gaps are not restricted to these days, and that the behavior is very irregular, even for the case labeled as commuter. 
 
 
 \begin{figure}[H]
   \centering
-  \begin{subfigure}[b]{.75\textwidth}
+  \begin{subfigure}[b]{.9\textwidth}
   	\centering
 	\includegraphics[width=\linewidth]{"./images/Commuter Day"}
   	\caption{Sample Day slice for random Commuter.}
   \end{subfigure}
-  \begin{subfigure}[b]{.75\textwidth}
+  \begin{subfigure}[b]{.9\textwidth}
   	\centering
 	\includegraphics[width=\linewidth]{"./images/Non-commuter Day"}
   	\caption{Sample Day slice for random Non-commuter.}
   \end{subfigure}
   \caption{Sample cube slices.}
-  	\label{fig:preprocessing/cubes} %TODO crop
+  	\label{fig:preprocessing/cubes} 
 \end{figure}
-
-For the case of the Commuter, we identify a pattern between the 15th and 20th of November. We observe several trips at 6 in the morning and 5 in the evening, suggesting a typical working schedule. The Non-commuter, in contrast, has an irregular distribution of trips. 
-
-It is important to note that as the data between November 9th and November 14th is missing. Thus, both cases show a gap in records during these days. However, we note that the gaps are not restricted to these days, and that the behavior is very irregular, even for the case labeled as commuter. 
 
 
 \newpage
@@ -812,7 +810,7 @@ It is important to note that as the data between November 9th and November 14th 
 In this part of the project we focus on the task of classifying public transit users into one of two categories: Commuter or Non commuter. To do so, examine the relevance of each pf the trips attributes and we reduce the dimensionality of the original user cubes by selecting the most informative feature slices. Subsequently, several weak classifiers are trained and evaluated. The best classifiers are selected and incrementally added to an ensemble model.The final model is selected according to the highest accuracy achieved.
 
 \subsection{Attributes correlation} 
-First, we perform an exploratory study of the relationships among all the attributes of a trip. We calculate the correlation matrix of the trip attributes using the labeled dataset refer to in Section \ref{sec:datasets}. This set contains 12,584 trips corresponding to 639 labeled card codes.
+First, we perform an exploratory study of the relationships among all the attributes of a trip. We calculate the correlation matrix of the trip attributes using the labeled dataset refer to in Section \ref{sec:datasets}. This set contains 12,584 trips corresponding to 639 labeled card codes. %TODO Class balancing
 
 \begin{figure}[H]
   \centering
@@ -848,7 +846,7 @@ Each method's scores are normalized to sum up to 1. Then, we aggregate them and 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.9\linewidth]{"./images/scores"}
+  \includegraphics[width=.95\linewidth]{"./images/scores"}
   \caption{Attributes scores.}
   \label{fig:classification/scores}
 \end{figure}
@@ -878,7 +876,7 @@ We train four weak classifiers: one linear SVM, one Gaussian Process, one Gaussi
 \hline
 \textbf{Classifier} & \textbf{Parameters} \\ [0.5ex] 
 \hline \hline
-SVM & Linear kernel \\
+SVM & Linear kernel, One vs all decision function \\
 Gaussian process & RBF kernel\\
 Gaussian Naive Bayes & Prior probabilities set according to data \\
 Multilayer perceptron & 100 layers, ReLu activation function \\
@@ -891,7 +889,7 @@ Bagging of decision trees & 100 trees\\ [1ex]
 \label{table:classifiersParam}
 \end{table}
 
-The seven weak classifiers are trained and evaluated separately. The dataset to be used contains 639 user cubes to be classified into one of the two categories. We flatten the reduced user cubes since the classifiers require the data to be represented as vectors. For evaluation we split the dataset into 60\% for training and 40\% for testing, as evaluated by Tu. Furthermore, we evaluated via cross validation over 5 folds.  
+The seven weak classifiers are trained and evaluated separately. The dataset to be used contains 639 user cubes to be classified into one of the two categories. We flatten the reduced user cubes since the classifiers require the data to be represented as vectors. For evaluation we split the dataset into 70\% for training and 30\% for testing, as evaluated by Tu. Furthermore, we evaluate using more robust techniques, such as cross validation over 5 folds. 
 
 We proceed to build an ensemble model based on a Majority Vote aggregation method. This method takes the prediction from each individual classifier, and select the class which was predicted by the most classifiers. When facing a tie among classes, the model selects the class based on ascending order. Since we perform binary classification, that means the default category is Non-Commuter. 
 %TODO soft voting?
@@ -899,7 +897,7 @@ We proceed to build an ensemble model based on a Majority Vote aggregation metho
 Incrementally, we incorporating the best $k$ classifiers and evaluate at each step. The final model is selected according to the largest accuracy using cross validation over 5 folds. 
 
 \subsection{Experiments}
-The weak classifiers performance is reported by its accuracy (True positives rate) on two experiments: a) one run on a single train/test division of the dataset, and b) average of cross validation over 5 folds. Table \ref{table:weakClassifiers} summarizes the results. 
+The weak classifiers performance is reported by its weighted mean accuracy over both classes. We report two experiments: a) one run on a single train/test division of the dataset, and b) average of cross validation over 5 folds. Table \ref{table:weakClassifiers} summarizes the results. 
 
 \begin{table}[H]
 \centering
@@ -987,50 +985,67 @@ The model with highest accuracy corresponds to ensembling the best 2 classifiers
 \end{figure}
 
 %TODO start checking from here
-%TODO change and comment on matrices
+Interestingly, both classifiers have a similar behavior. Figures \ref{fig:classification/rf_confusion} and \ref{fig:classification/bag_confusion} show that both perform well in identifying commuters. Random forests achieves 80.0\% closely followed by Adaboost with 77.1\%. However, they both perform poorly when identifying Non-commuters, with 39.2\% and 42.8\% correspondingly. 
+ 
 
 \subsection{Discussion}
+
+\textbf{Dataset and representation}
+
+
 With the goal in mind of comparing our work to Tu's, we selected the same training parameters for the linear SVM classifier. However, Tu's results could not be replicated. We consider that this is a consequence of using a different dataset for training. 
 
 In terms of quantity, Tu's dataset was \textasciitilde 150\% larger, having 978 labeled user card codes against ours with 639 labeled user card codes. Furthermore, the labels for user card codes were gathered during January 2015. Presumably, some users might have altered their behavior by changing their traveling patterns or stopped being active public transit users completely by November 2015. This brings noise to the labels in the dataset.
 
-In terms of representation, Tu's dataset presents a simpler representation, including only three spatial features and one week data. In contrast, our representation includes a mixture of general, temporal, and spatial features gathered over a month. As a result, we suspect that that the dataset is not linearly separable anymore. 
+In terms of representation, Tu's dataset presents a simpler representation, including only one temporal and two spatial features for one week of public transit usage. In contrast, our representation includes a mixture of general, temporal, and spatial features gathered over a month. As a result, we suspect that that the dataset is not linearly separable anymore. 
 
-After visualizing the reduced user cubes using t-Distributed Stochastic Neighbor Embedding (TSNE) we confirm this hypothesis. Figure \ref{fig:classification/tsne} shows the data samples by class, represented on its lower dimensional space after feature selection. It is clear that the classes are not linearly separable anymore, contrary to what was expected when starting the project.
+In order to investigate this hypothesis we visualize both representations using two dimensional t-Distributed Stochastic Neighbor Embedding (TSNE). 
+
+Figures \ref{fig:classification/tu} and \ref{fig:classification/tsne} show each representation's manifold. Tu's straightforward representation gathers most commuters in three separate clusters. Non commuters are spread along a larger cluster, with some commuters blended in.  In contrast, the reduced user cubes for only one cluster. Though most commuters align in the lower part of the space, and non commuters are present in the upper part of the space, both classes are virtually merged. 
+
+Thus, we confirm our hypothesis. It is clear that the classes are not linearly separable anymore, contrary to what was expected when starting the project. This suggests our representation is not fit for binary classification.
+  
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.9\linewidth]{"./images/Tu's features"}
+  \caption{Visualization of samples and their labels after feature selection.}
+  \label{fig:classification/tu}
+\end{figure} 
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=.9\linewidth]{"./images/Selected features"}
   \caption{Visualization of samples and their labels after feature selection.}
   \label{fig:classification/tsne}
-\end{figure} %TODO add labels
+\end{figure}  
+
+\textbf{Ensemble models}
 
 The findings of this part of the project confirm the hypothesis that an ensemble model performs significantly better than a linear SVM, as designed by Tu. However, a specific type of ensemble model is required to maximize performance. 
 
 The final model consists of combining two simple ensemble models based on decision trees. This suggests that decision trees are ideal for our data due to its categorical nature. Furthermore, the model is ensembled by two levels. On a first instance, a large number of classifiers of the same type are aggregated. On a second instance, a small number of classifiers of a different type are aggregated. The result leads to a 10\% increase in performance over any weak classifier alone.  
 
+However, though the chosen ensemble model maximizes performance, the diversity between the selected classifiers is unsatisfactory. Both classifiers have similar behavior and performance on each class. Ideally, two classifiers that differ in their strengths would benefit each other better. 
 
-%TODO check level of competency with other studies
-In comparison with other studies on the field, our results are below the median. We believe that the missing information from the second week of the month might have affected the classifiers performance. This suggests that either others overfit, or our representation is not good for binary classification. 
+In comparison the state of the art for commuters classification, our results fall short. Ma et al. achieve 94.1\% detection accuracy; however, their dataset is small, containing 118 labeled samples only \cite{ma2017understanding}. Tu et al. report 94.24\% accuracy in detecting commuters. Yet, their evaluation technique contains only one test set thus making it prone to overfitting. 
 
-
+Furthermore, we believe that the missing information in our dataset might have affected the classifiers performance. 
 
 \newpage
 \section{Commuters clustering}
 \label{sec:partIII}
-In this part of the project we perform an unsupervised learning task to cluster public transit users according to patterns in their travel behavior. This time we perform dimensionality reduction by passing the original user cubes through an autoencoder. Then, we cluster the user features and analyze each cluster. 
+In this part of the project we perform an unsupervised learning task to cluster public transit users according to patterns in their travel behavior. This time we perform dimensionality reduction by processing the original user cubes through an autoencoder. Then, we cluster the user features and analyze each cluster's characteristics. 
 
 \subsection{Feature extraction}
 As mentioned in Section \ref{sec:structure}, the proposed representation is sparse, hence dimensionality reduction has the potential to extract the relevant information and disregard noise. Furthermore, the proposed representation is local, in the same sense as images are. Combining these two characteristics, it is natural to think of convolutional filters as a tool to extract features from the user cubes. 
 
 \subsubsection{Convolutional filters}
-We apply two dimensional filters to the three dimensional user cubes. Therefore, the x and y dimensions of the filter align with the day and time dimensions of the structures. Similarly, each of the feature planes is considered a channel. 
+We apply two dimensional filters to the three dimensional user cubes. Therefore, the x and y dimensions of the filter align with the day and time dimensions of the structures. Similarly to images and RGB channels, each of the feature planes is considered a channel in the convolutional filter. 
 
-The size of the filters is fixed to $3 \times 3$, since it leads to the best performance according to literature. The stride is set to 1 and we perform padding in order for the dimensionalities of the network to be suitable.
+The size of the filters is fixed to $3 \times 3$, since it leads to the best performance according state of the art techniques. The stride is set to 1 and we perform padding in order for the dimensionalities of the network to be suitable.
 
 
 \subsubsection{Autoencoder}
-%TODO network structure
 Using Keras and Tensorflow as backend, we create an autoencoder. The network structure is shown below:
 
 \begin{table}[H]
@@ -1057,19 +1072,29 @@ Convolutional & [3, 3] & 26 & 1 & Sigmoid  & [12, 15, 26]\\ [1ex]
 \label{table:autoencoderStructure}
 \end{table}
 
-The first block corresponds to the encoder, and the second block corresponds to the decoder modules. The dimensionality of the encoded features is $4 \times 5 \times 8 = 160$. This represents more than 110\% compression. 
+The first block corresponds to the encoder, and the second block corresponds to the decoder modules. The dimensionality of the encoded features is $4 \times 5 \times 8 = 160$. This represents more than 110\% compression from the original dimensionality. 
 
-We evaluate the autoencoder using the binary crossentropy loss between the original user cube and the reconstructed user cube. As an optimizer we use Adadelta. We train on 60\% of the data and validate on 40\% of the data for 100 iterations. The loss over the validation set is shown in Figure \ref{fig:clustering/loss}
+We evaluate the autoencoder using the binary crossentropy loss between the original user cube and the reconstructed user cube. As an optimizer we use Adadelta. We train on 60\% of the data and validate on 40\% of the data for 200 iterations. The loss over the validation set is shown in Figure \ref{fig:clustering/loss}
+
+%TODO explain it ran for 1000 iterations but it overfits
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.9\linewidth]{"./images/autoencoder loss"}
+  \begin{subfigure}[b]{.9\textwidth}
+  	\centering
+	\includegraphics[width=.9\linewidth]{"./images/autoencoder loss"}
+  \caption{Loss over training set.}
+  \end{subfigure}
+  \begin{subfigure}[b]{.9\textwidth}
+  	\centering
+	\includegraphics[width=.9\linewidth]{"./images/validation loss"}
   \caption{Loss over validation set.}
-  \label{fig:clustering/loss}
+  \end{subfigure}
+  \caption{Binary cross entropy loss in autoencoder.}
+  	\label{fig:clustering/loss} 
 \end{figure}
 
 \subsection{Clustering}
-%TODO what is the silhouette score
 The K means algorithm has only one parameter: the number of clusters in which to allocate the data. As such, we split the data into train and test sets and tune K parameter via the silhouette score. The silhouette score is determine using the mean intra-cluster distance and the nearest cluster distance (which the sample does not belong to). The score is measured per sample, and average over all the set. 
 
 \begin{figure}[H]
@@ -1079,7 +1104,10 @@ The K means algorithm has only one parameter: the number of clusters in which to
   \label{fig:clustering/tuning}
 \end{figure}
 
-From Figure \ref{fig:clustering/tuning} we see that the average score peaks at 5 clusters. Therefore, we select 5 as the optimal number of clusters. 
+From Figure \ref{fig:clustering/tuning} we see that the average score peaks at 5 and 11 clusters. We select 5 as the optimal number of clusters. 
+
+\subsection{Cluster analysis}
+Figure \ref{fig:clustering/tsne} shows the samples, as visualized by TSNE, and their corresponding cluster label. 
 
 \begin{figure}[H]
   \centering
@@ -1088,7 +1116,31 @@ From Figure \ref{fig:clustering/tuning} we see that the average score peaks at 5
   \label{fig:clustering/tsne}
 \end{figure}
 
-\subsection{Cluster analysis}
+\begin{table}[H]
+\centering
+\begin{tabular}{||c|c|c|c|c|c||}
+\hline
+ & \textbf{Cluster 1} & \textbf{Cluster 2} & \textbf{Cluster 3} & \textbf{Cluster 4} & \textbf{Cluster 5} \\
+[0.5ex] 
+\hline \hline
+Number of cards & None & None & None & None  & None \\
+Percentage or cards & None & None & None & None  & None \\
+\hline
+Number of Trips & None & None & None & None  & None \\
+Travel time & None & None & None & None  & None \\
+Travel distance & None & None & None & None  & None \\
+\hline
+Start hour & None & None & None & None  & None \\
+End hour & None & None & None & None  & None \\
+\hline
+On mode & None & None & None & None  & None \\ %or percentage by each of the three modes
+Off mode & None & None & None & None  & None \\ [1ex]
+\hline 
+\end{tabular}
+\caption{Cluster analysis}
+\label{table:clusterAnalysis}
+\end{table}
+
 
 
 
