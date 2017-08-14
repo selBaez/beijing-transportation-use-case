@@ -68,7 +68,7 @@ def _labelData(data):
 
 def _visualize(data, condition, general=False):
     # Sample 'size' random points
-    size = 1000 if len(data.index) > 500 else len(data.index)
+    size = 5000 if len(data.index) > 500 else len(data.index)
 
     indices = random.sample(data.index, size)
     sample = data.ix[indices]
