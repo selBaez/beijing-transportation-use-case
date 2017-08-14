@@ -102,7 +102,7 @@ def _ensembleClassifiers(individualScores):
         print("Best {}: {}".format(k, individualScores[:,0][selectedModelIdx]))
 
         # Ensemble and evaluate
-        model = VotingClassifier(estimators)
+        model = VotingClassifier(estimators, voting='soft')
         avScore, stdScore = _crossVal(model, features, labels)
         ensembleScores.append([model, avScore])
 
@@ -131,12 +131,12 @@ def train():
 
     print("--------------------------- Create sets ---------------------------")
     global train_data, test_data, train_labels, test_labels
-    train_data, test_data, train_labels, test_labels = train_test_split(features, labels, test_size=0.4)
+    train_data, test_data, train_labels, test_labels = train_test_split(features, labels, test_size=0.3)
 
     print("--------------------- Build weak  classifiers ---------------------")
     #################### Individual classifiers ####################
     # Original SVM
-    model_svm =  svm.SVC(C=0.1, degree=1, kernel='linear', tol=0.001)
+    model_svm =  svm.SVC(C=0.1, degree=1, kernel='linear', tol=0.0001, probability=True)
 
     # Gaussian Process
     model_gp = GaussianProcessClassifier()
