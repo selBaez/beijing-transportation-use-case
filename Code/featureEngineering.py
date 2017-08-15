@@ -24,7 +24,7 @@ def _loadData():
     """
     Load user cubes stored as pickle
     """
-    with open(paths.CUBES_DIR_DEFAULT+'labeled.pkl', 'r') as fp: userStructures = cPickle.load(fp)
+    with open(paths.CUBES_DIR_DEFAULT+'all.pkl', 'r') as fp: userStructures = cPickle.load(fp)
 
     # Array contains three columns: code, vector, label %TODO update to unsupervised cube format
     codes = []

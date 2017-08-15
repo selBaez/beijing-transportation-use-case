@@ -103,7 +103,7 @@ def _analysis(data, codes, labels):
     Determine intra and inter cluster statistics.
     """
     # Load data
-    data = _loadFrames(paths.PREPROCESSED_DIR_DEFAULT+'labeled')
+    data = _loadFrames(paths.PREPROCESSED_DIR_DEFAULT+'all')
 
     # Match code to label
     data['CLUSTER'] = data['CARD_CODE'].replace(to_replace=codes, value=labels)
