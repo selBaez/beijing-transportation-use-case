@@ -102,7 +102,7 @@ def _ensembleClassifiers(individualScores):
         print("Best {}: {}".format(k, individualScores[:,0][selectedModelIdx]))
 
         # Ensemble and evaluate
-        model = VotingClassifier(estimators, voting='soft')
+        model = VotingClassifier(estimators, voting=FLAGS.voting)
         avScore, stdScore = _crossVal(model, features, labels)
         ensembleScores.append([model, avScore])
 
@@ -209,6 +209,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--plot', type = str, default = 'True',
                         help='Boolean to decide if we plot distributions.')
+    parser.add_argument('--voting', type = str, default = 'hard',
+                        help='Hard of soft voting.')
     parser.add_argument('--num_trees', type = int, default = NUM_TREES_DEFAULT,
                         help='Number of trees in random forest.')
     parser.add_argument('--depth_trees', type = int, default = DEPTH_TREES_DEFAULT,
