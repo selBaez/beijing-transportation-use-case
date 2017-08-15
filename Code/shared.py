@@ -32,7 +32,8 @@ def _tsneScatter(feature_name, features, labels=None):
 
         for typeL in typesLabel:
             condition = labels == typeL
-            plt.scatter(features[condition,0], features[condition,1], color = colors[int(typeL)], label=str(int(typeL)))
+            label = 'Label:' + str(int(typeL)) + ', Num samples: ' + str(len(features[condition,0]))
+            plt.scatter(features[condition,0], features[condition,1], color = colors[int(typeL)], label=label)
 
     plt.legend(numpoints=1, loc="upper left")
     plt.title(feature_name)
