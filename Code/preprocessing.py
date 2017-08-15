@@ -29,7 +29,7 @@ def _loadData(fileName):
 
     return data
 
-def _matchLabel(code, commutersCodes, nonCommutersCodes):
+def _matchLabel(code, commutersCodes, nonCommutersCodes, sampleCodes=np.zeros(1)):
     """
     Match commuters to label 1, non commuters to label 0 and codes without information to NaN
     """
@@ -37,6 +37,8 @@ def _matchLabel(code, commutersCodes, nonCommutersCodes):
         return 1
     elif code in nonCommutersCodes:
         return 0
+    elif code in sampleCodes:
+        return -1
     else:
         return None
 
@@ -66,9 +68,36 @@ def _labelData(data):
 
     return data
 
+def _reduceData(data):
+    """
+    Keep card codes whose label is available, and selected sample card codes
+    """
+    total = len(data.index)
+
+    # Load label sets
+    commutersCodes = np.loadtxt(paths.LABELS_DIR_DEFAULT+'commuterCardCodes.txt')
+    nonCommutersCodes = np.loadtxt(paths.LABELS_DIR_DEFAULT+'nonCommuterCardCodes.txt')
+    sampleCodes = np.loadtxt(paths.LABELS_DIR_DEFAULT+'unknownCardCodes.txt')
+
+    # Assign label
+    data['LABEL'] = data['CARD_CODE'].apply(lambda x : _matchLabel(x, commutersCodes, nonCommutersCodes, sampleCodes) )
+
+    # Eliminate records without labels
+    data, numRemoved = shared._filter(data, data[~data['LABEL'].isnull()], "card code not selected available")
+
+    if FLAGS.plot == 'True':
+        shared._plotPie([numRemoved, len(data.index)], ['Removed', 'Kept'], 'sampled', FLAGS.file)
+
+    # Save day statistics
+    with open(paths.STAT_DIR_DEFAULT+'sampled.txt', 'a') as fp:
+        writer = csv.writer(fp, delimiter='\t')
+        writer.writerow([data['DAY'][0], total]+[numRemoved, len(data.index)])
+
+    return data
+
 def _visualize(data, condition, general=False):
     # Sample 'size' random points
-    size = 5000 if len(data.index) > 500 else len(data.index)
+    size = 5000 if len(data.index) > 5000 else len(data.index)
 
     indices = random.sample(data.index, size)
     sample = data.ix[indices]
@@ -127,6 +156,7 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True')
         name = 'labeled' if labeled == 'True'  else 'all'
         directory = paths.CUBES_DIR_DEFAULT
 
+        print('Reading from directory:', directory )
         with open(directory+name+'.pkl', 'r') as fp: userStructures = cPickle.load(fp)
 
     data = list(data.groupby('CARD_CODE'))
@@ -138,45 +168,24 @@ def _buildCubes(data, cubeShape=(24,16,26), createDict='False', labeled= 'True')
     print(len(data), ' card codes found')
 
     for userCode, userTrips in data:
-        if labeled == 'True':
-            if FLAGS.verbose == 'True': print('code:', userCode, 'label:', userTrips['LABEL'][0], 'number of trips:', userTrips['NUM_TRIPS'][0])
+        if FLAGS.verbose == 'True': print('code:', userCode, 'label:', userTrips['LABEL'][0], 'number of trips:', userTrips['NUM_TRIPS'][0])
 
-            userCube, userLabel = userStructures.setdefault(userCode, [np.zeros(shape=cubeShape), userTrips['LABEL'][0]])
+        userCube, userLabel = userStructures.setdefault(userCode, [np.zeros(shape=cubeShape), userTrips['LABEL'][0]])
 
-            for index, trip in userTrips.iterrows():
-                y = trip['START_HOUR']
-                x = trip['DAY']
+        for index, trip in userTrips.iterrows():
+            y = trip['START_HOUR']
+            x = trip['DAY']
 
-                details = trip[1:-1].values
+            details = trip[1:-1].values
 
-                userCube[int(y), int(x)-1, :] = details
+            userCube[int(y), int(x)-1, :] = details
 
-            userStructures[userCode] = [userCube, userLabel]
-
-        else:
-            if FLAGS.verbose == 'True': print('code:', userCode, 'number of trips:', userTrips['NUM_TRIPS'][0])
-
-            userCube = userStructures.setdefault(userCode, np.zeros(shape=cubeShape))
-
-            for index, trip in userTrips.iterrows():
-                y = trip['START_HOUR']
-                x = trip['DAY']
-
-                details = trip[1:].values
-                userCube[int(y), int(x-1), :] = details
-
-            userStructures[userCode] = [userCube]
+        userStructures[userCode] = [userCube, userLabel]
 
     for i in range(5):
-        if labeled == 'True':
-            code, [cube, label] = random.choice(list(userStructures.items()))
-            className = 'Commuter' if label == 1.0 else 'Non-commuter'
-            if FLAGS.verbose == 'True': print(className, ' with code: ', str(code))
-
-        else:
-            code, [cube] = random.choice(list(userStructures.items()))
-            className = 'Unknown'
-            if FLAGS.verbose == 'True': print(className, ' with code: ', str(code))
+        code, [cube, label] = random.choice(list(userStructures.items()))
+        className = 'Commuter' if label == 1.0 else 'Non-commuter'
+        if FLAGS.verbose == 'True': print(className, ' with code: ', str(code))
 
         if FLAGS.plot == 'True':
             # Plot several feature slices
@@ -255,12 +264,15 @@ def preprocess():
         print("------------------------ Storing dataframe ------------------------")
         _storeDataframe(data, labeled=True)
 
-    else: # do not select labeled data
-        print("-------------------------- Standardizing --------------------------")
-        data = _standardize(data)
+    else: # do not select labeled data, save dataframes before standardizing
+        print("---------------------- Select data ----------------------")
+        data = _reduceData(data)
 
         print("------------------------ Storing dataframe ------------------------")
         _storeDataframe(data, labeled=False)
+
+        print("-------------------------- Standardizing --------------------------")
+        data = _standardize(data)
 
     if FLAGS.plot == 'True':
         print("------------------- Visualize standardized data -------------------")
