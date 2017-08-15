@@ -143,7 +143,7 @@ def _featureSliceHeatmap(matrix, featureName, className, code):
     Not annotated values with range according to distribution
     """
     fig, ax = plt.subplots()
-    sns.heatmap(matrix, vmin=0, vmax=1)
+    sns.heatmap(matrix, vmin=0, vmax=1, cbar=False)
 
     plt.xticks(range(1, matrix.shape[1]+1), range(1, matrix.shape[1]+1), rotation=0, ha='right', fontsize=11)
     plt.yticks(range(matrix.shape[0]), reversed(range(matrix.shape[0])), rotation=0, va='bottom', fontsize=11)
