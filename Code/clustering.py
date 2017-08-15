@@ -3,7 +3,8 @@ This module clusters the manifolds to find common public transit behaviors.
 """
 from __future__ import print_function
 
-import argparse
+import argparse, glob
+import pandas as pd
 import numpy as np
 import random, cPickle
 from sklearn.cluster import KMeans
@@ -67,11 +68,10 @@ def _cluster(optimalNClusters, data):
     Run K means on data
     """
     # TODO: Run several instances of K means to account for random initalization
-    clusterer = KMeans(n_clusters = optimalNClusters, random_state=0)
+    clusterer = KMeans(n_clusters = optimalNClusters, random_state=0, init='k-means++')
     labels = clusterer.fit_predict(data)
 
-    return data, labels
-
+    return clusterer, data, labels
 
 def _visualize(name, data, labels):
     """
@@ -98,53 +98,57 @@ def _loadFrames(directory):
 
     return data
 
-
-def _analysis(data, labels):
+def _analysis(data, codes, labels):
     """
     Determine intra and inter cluster statistics.
     """
     # Load data
-    data = _loadData(paths.PREPROCESSED_DIR_DEFAULT+'labeled')
+    data = _loadFrames(paths.PREPROCESSED_DIR_DEFAULT+'labeled')
 
     # Match code to label
-    #TODO
+    data['CLUSTER'] = data['CARD_CODE'].replace(to_replace=codes, value=labels)
 
-    # Group by label
-    data = list(data.groupby('CLUSTER'))
+    # Summary by cluster
+    dataPerCluster = data.groupby('CLUSTER')
+    print(dataPerCluster['NUM_TRIPS', 'TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_NUM'].mean(), '\n')
+    print(dataPerCluster['ON_RINGROAD', 'OFF_RINGROAD', 'ON_MODE', 'OFF_MODE'].mean(), '\n')
+    print(dataPerCluster.aggregate({'CARD_CODE': pd.Series.nunique, 'LABEL': len}), '\n')
 
-    for clusterLabel, trips in data:
-        trips = list(trips.groupby('CARD_CODE'))
+    # Find percentage of commuters as label from survey
+    test = data.drop_duplicates(['LABEL', 'CARD_CODE'])
+    cT = pd.crosstab(test['LABEL'], test['CLUSTER'], margins= True)
+    print(cT, '\n')
 
-        print(len(trips), ' card codes found')
+    return data[['CARD_CODE', 'CLUSTER']]
 
-        # Summary
-        print(trips.mean(axis=0))
-
-def _store(data):
+def _store(model, data):
     """
-    Store pickle
+    Store model and card codes with its cluster label
     """
-    with open(paths.LOWDIM_DIR_DEFAULT+'.pkl', 'w') as fp: cPickle.dump(encodedData, fp)
+    directory = paths.MODELS_DIR_DEFAULT
+    with open(directory+"clusterer.pkl", "w") as fp: cPickle.dump(model, fp)
+
+    data.to_csv(paths.LABELS_DIR_DEFAULT+'clusteredCodes.csv', encoding='utf-8')
 
 def cluster():
     print("---------------------------- Load data ----------------------------")
     [codes, samples] = _loadData()
-    print(len(codes), " records loaded")
+    print(len(codes), " samples loaded")
 
     print("----------------------------- Tune  k -----------------------------")
     optimalNClusters = _tune(samples)
 
     print("----------------------------- Cluster -----------------------------")
-    samples, labels = _cluster(optimalNClusters, samples)
+    model, samples, labels = _cluster(optimalNClusters, samples)
 
     print("----------------------- Visualize  clusters -----------------------")
     _visualize('Clustered', samples, labels)
 
     print("------------------------ Cluster  analysis ------------------------")
-    _analysis(samples, labels)
+    data = _analysis(samples, codes, labels)
 
     print("------------------------ Save labeled data ------------------------")
-    # _store(data)
+    _store(model, data)
 
 
 def print_flags():
