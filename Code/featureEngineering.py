@@ -26,7 +26,7 @@ def _loadData():
     """
     with open(paths.CUBES_DIR_DEFAULT+'all.pkl', 'r') as fp: userStructures = cPickle.load(fp)
 
-    # Array contains three columns: code, vector, label %TODO update to unsupervised cube format
+    # Array contains three columns: code, vector, label
     codes = []
     original = []
     labels = []
@@ -89,7 +89,7 @@ def _train(autoencoder, x_train, x_test):
     Train the autoencoder
     """
     autoencoder.fit(x_train, x_train,
-                    epochs=200,
+                    epochs=1000,
                     batch_size=128,
                     shuffle=True,
                     validation_data=(x_test, x_test),
@@ -113,10 +113,13 @@ def _visualize(encodedData):
     features = manifold.fit_transform(encodedData)
     shared._tsneScatter('Encoded', features)
 
-def _store(encodedData):
+def _store(model, encodedData):
     """
-    Store pickle
+    Store model and low dimensional encoded features
     """
+    directory = paths.MODELS_DIR_DEFAULT
+    with open(directory+"autoencoder.pkl", "w") as fp: cPickle.dump(model, fp)
+
     with open(paths.LOWDIM_DIR_DEFAULT+'unsupervised.pkl', 'w') as fp: cPickle.dump(encodedData, fp)
 
 def featureEngineering():
@@ -135,8 +138,6 @@ def featureEngineering():
     print("------------------------- Evaluate  model -------------------------")
     encoded_samples = _encode(encoder, cubes)  # Test data ideally
 
-    # TODO save model
-
     print("------------------------ Flatten  features ------------------------")
     print(encoded_samples.shape)
     encoded_samples = encoded_samples.reshape((len(encoded_samples), np.prod(encoded_samples.shape[1:])))
@@ -146,8 +147,8 @@ def featureEngineering():
         print("----------------------- Visualize  features -----------------------")
         _visualize(encoded_samples)
 
-    print("-------------------------- Save features --------------------------")
-    _store([codes, encoded_samples])
+    print("--------------------- Save features and model ---------------------")
+    _store(autoencoder, [codes, encoded_samples])
 
 
 def print_flags():
