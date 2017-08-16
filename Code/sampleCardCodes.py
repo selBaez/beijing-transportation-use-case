@@ -17,10 +17,12 @@ def _loadFrames(directory):
     data = pd.DataFrame()
     list_ = []
     for file_ in allFiles:
+        print("Reading file:", file_)
         df = pd.read_csv(file_, usecols=['CARD_CODE'], header=0)
         list_.append(df)
     data = pd.concat(list_)
 
+    print('\n')
     print(len(data.index), "records loaded")
 
     return data
@@ -48,17 +50,17 @@ def main(_):
 
     # Keep unique
     data.drop_duplicates(['CARD_CODE'], inplace=True)
-    print(len(data.index), "card codes")
+    print(len(data.index), "unique card codes loaded\n")
 
     # Filter out labeled
     data = _removeLabeled(data)
 
     # Sample 'size' random points
-    size = 50000 if len(data.index) > 50000 else len(data.index)
+    size = 1500 if (len(data.index) > 1500) else len(data.index)
+    print('\nChoose ', size, ' codes')
 
-    indices = random.sample(data.index, size)
-    sample = data.ix[indices]
-    print(len(data.index), "card codes unknown sampled")
+    sample = data.sample(size)
+    print(len(sample.index), "unknown card codes sampled\n")
 
     # Save
     np.savetxt(paths.LABELS_DIR_DEFAULT+'unknownCardCodes.txt', sample.values, '%5.0f')
