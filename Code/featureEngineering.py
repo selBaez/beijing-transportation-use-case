@@ -89,7 +89,7 @@ def _train(autoencoder, x_train, x_test):
     Train the autoencoder
     """
     autoencoder.fit(x_train, x_train,
-                    epochs=1000,
+                    epochs=500,
                     batch_size=128,
                     shuffle=True,
                     validation_data=(x_test, x_test),
@@ -118,7 +118,7 @@ def _store(model, encodedData):
     Store model and low dimensional encoded features
     """
     directory = paths.MODELS_DIR_DEFAULT
-    with open(directory+"autoencoder.pkl", "w") as fp: cPickle.dump(model, fp)
+    # with open(directory+"autoencoder.pkl", "w") as fp: cPickle.dump(model, fp)
 
     with open(paths.LOWDIM_DIR_DEFAULT+'unsupervised.pkl', 'w') as fp: cPickle.dump(encodedData, fp)
 
