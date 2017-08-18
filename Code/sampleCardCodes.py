@@ -56,7 +56,7 @@ def main(_):
     data = _removeLabeled(data)
 
     # Sample 'size' random points
-    size = 1500 if (len(data.index) > 1500) else len(data.index)
+    size = 100000 if (len(data.index) > 100000) else len(data.index)
     print('\nChoose ', size, ' codes')
 
     sample = data.sample(size)
