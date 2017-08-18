@@ -111,12 +111,23 @@ def _analysis(data, codes, labels):
     # Summary by cluster
     dataPerCluster = data.groupby('CLUSTER')
     print(dataPerCluster['NUM_TRIPS', 'TRAVEL_TIME', 'TRAVEL_DISTANCE', 'TRANSFER_NUM'].mean(), '\n')
-    print(dataPerCluster['ON_RINGROAD', 'OFF_RINGROAD', 'ON_MODE', 'OFF_MODE'].mean(), '\n')
     print(dataPerCluster.aggregate({'CARD_CODE': pd.Series.nunique, 'LABEL': len}), '\n')
 
     # Find percentage of commuters as label from survey
-    test = data.drop_duplicates(['LABEL', 'CARD_CODE'])
-    cT = pd.crosstab(test['LABEL'], test['CLUSTER'], margins= True)
+    labelDist = data.drop_duplicates(['LABEL', 'CARD_CODE'])
+    cT = pd.crosstab(labelDist['LABEL'], labelDist['CLUSTER'], margins= True, normalize='columns')
+    print('Normalize by cluster\n', cT, '\n')
+    cT = pd.crosstab(labelDist['LABEL'], labelDist['CLUSTER'], margins= True, normalize='index')
+    print('Normalize by label\n', cT, '\n')
+
+    # Find percentage of  trips in each mode
+    cT = pd.crosstab([data['ON_MODE'], data['OFF_MODE']], data['CLUSTER'], normalize='columns')
+    print('Normalize by cluster\n', cT, '\n')
+    cT = pd.crosstab([data['ON_MODE'], data['OFF_MODE']], data['CLUSTER'], normalize='index')
+    print('Normalize by modes\n', cT, '\n')
+    cT = pd.crosstab(data['ON_MODE'], data['CLUSTER'], margins= True, normalize='columns')
+    print(cT, '\n')
+    cT = pd.crosstab(data['OFF_MODE'], data['CLUSTER'], margins= True, normalize='columns')
     print(cT, '\n')
 
     return data[['CARD_CODE', 'CLUSTER']]
