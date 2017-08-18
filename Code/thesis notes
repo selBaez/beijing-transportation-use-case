@@ -17,7 +17,7 @@ feature selection 		load dataframes							                                      
 
 ensemble classifier 	create models (SVM, bayesian, random forest, mlp)																			DONE
 											train using K-fold with replacement 																									DONE
-											ensemble (adaboost or bagging)																												Try soft voting
+											ensemble (adaboost or bagging)																												DONE
 											evaluate																																							DONE
 											save model																																						DONE
 											predict																																								Predict on whole not implemented
@@ -25,41 +25,21 @@ ensemble classifier 	create models (SVM, bayesian, random forest, mlp)										
 
 feature engineering 	Load cubes																																						DONE
 											create convolutional autoencoder																											DONE
-											train encoder																																					Only 150 iterations to avoid overfit
+											train encoder																																					DONE
 											save model 																																						DONE
 											encode samples																																				DONE
 											visualize low dimensional data																												DONE
 											save data																																							DONE
 
 clustering 						k-means																																								Run several times
-											save card codes
-											find their associated records
-											cluster analysis (silhouettes samples for cluster membership)													TO DO
+											save card codes																																				DONE
+											find their associated records																													DONE
+											cluster analysis (silhouettes samples for cluster membership)													DONE
 
 
 TODO:
-num of transfer as pie chart
-fix start/end hour 0. change to 24?
-fix two trips one start -> merge trips?
-
-
-NOTE:
-currently transforming data over whole data set and not over train/test or cross validation.
- 	pro: convenient because normalization is over type of feature, meaning 'TRAVEL TIME' over all trips BEFORE merging per user
-				to change it would mean to grab feature slices from each cube, instead of values from each vector
-				list of slices, instead of list of values (vector)
-	con: scientifically correct? travel time and distance has large tail, thus the distribution really depends on the data
+run preprocessing day 30 to get mean
+refactor: load dataframes in shared
 
 Improvements to report:
-analyze results: ensemble two different classifiers would be better. try code for this
 rewrite classification performance according to cluster results
-remove side colorbar
-
-
-
-STEP BY STEP:
-Preprocessing job
-    full: unlabeled, std -> cubes
-
-Clustering code
-    analysis
