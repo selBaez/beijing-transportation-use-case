@@ -38,7 +38,7 @@ def _tune(data):
     train_data, test_data = train_test_split(data, test_size=0.4)
 
     # Tune number of clusters with silhoutte
-    for nClusters in range(2,maxClusters+1):
+    for nClusters in range(3,maxClusters+1):
         clusterer = KMeans(n_clusters = int(nClusters), random_state=0, init='k-means++')
 
         clusterer.fit(train_data)
@@ -55,10 +55,10 @@ def _tune(data):
     scores = np.array(scores)
 
     if FLAGS.plot == 'True':
-        shared._sampleWithStd(range(2,maxClusters+1), scores[:,0], scores[:,0], 'Number of clusters', 'Score', 'Tuning for k')
+        shared._sampleWithStd(range(3,maxClusters+1), scores[:,0], scores[:,0], 'Number of clusters', 'Score', 'Tuning for k')
 
     # Choose number of clusters with best score
-    optimalNClusters = np.argmax(scores[:,0]) + 2
+    optimalNClusters = np.argmax(scores[:,0]) + 3
     print('Optimal number of clusters is: ', optimalNClusters)
 
     return optimalNClusters
@@ -67,7 +67,9 @@ def _cluster(optimalNClusters, data):
     """
     Run K means on data
     """
-    # TODO: Run several instances of K means to account for random initalization
+    optimalNClusters = 7
+
+    # Run several instances of K means to account for random initalization
     clusterer = KMeans(n_clusters = optimalNClusters, random_state=0, init='k-means++')
     labels = clusterer.fit_predict(data)
 
@@ -77,9 +79,16 @@ def _visualize(name, data, labels):
     """
     Visualize data with TSNE, and color by label
     """
+    # Sample 'size' random points
+    size = 5000 if len(data) > 5000 else len(data)
+    indices = np.random.choice(range(len(data)), size, replace=False)
+
+    sample = data[indices]
+    sampleLabels = labels[indices]
+
     manifold = TSNE(n_components=2, random_state=0)
-    features = manifold.fit_transform(data)
-    shared._tsneScatter(name, features, labels=labels)
+    features = manifold.fit_transform(sample)
+    shared._tsneScatter(name, features, labels=sampleLabels)
 
 def _loadFrames(directory):
     """
@@ -106,7 +115,12 @@ def _analysis(data, codes, labels):
     data = _loadFrames(paths.PREPROCESSED_DIR_DEFAULT+'all')
 
     # Match code to label
-    data['CLUSTER'] = data['CARD_CODE'].replace(to_replace=codes, value=labels)
+    data['CLUSTER'] = np.where(data['CARD_CODE'].isnull(), 'wrong', 'good')
+
+    for i in range(len(codes)):
+        idx = np.where(data['CARD_CODE'] == codes[i])
+        data['CLUSTER'].ix[idx] = labels[i]
+
 
     # Summary by cluster
     dataPerCluster = data.groupby('CLUSTER')
@@ -159,7 +173,7 @@ def cluster():
     data = _analysis(samples, codes, labels)
 
     print("------------------------ Save labeled data ------------------------")
-    _store(model, data)
+    # _store(model, data)
 
 
 def print_flags():
