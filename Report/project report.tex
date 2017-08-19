@@ -180,7 +180,7 @@ Finally, we gather conclusions regarding the proposed representation. We compare
 
 \newpage
 \section{Literature review}
-In this section we look at studies within the last decade that are related to smart card transit data. First, we summarize the approach and the most relevant findings of each paper in order grasp a broad view of the Transportation domain. Secondly, we explore representations for spatiotemporal data and compare the way traveling behavior is usually represented in the Transportation domain, and other types of representations available in the Artificial Intelligence domain. Thirdly, we discuss techniques for pattern recognition through supervised and unsupervised learning. %TODO Finally we explore some pioneer work in end-to-end learning. 
+In this section we look at studies within the last decade that are related to smart card transit data. First, we summarize the approach and the most relevant findings of each paper in order grasp a broad view of the Transportation domain. Secondly, we explore representations for spatiotemporal data and compare the way traveling behavior is usually represented in the Transportation domain, and other types of representations available in the Artificial Intelligence domain. Thirdly, we discuss techniques for pattern recognition through supervised and unsupervised learning. %Finally we explore some pioneer work in end-to-end learning. 
 
 \subsection{Data mining on transit card data}
 % What questions and approaches are common. How do they interpret traveling behavior? What's the volume of data?
@@ -308,7 +308,7 @@ As a conclusion, we note that while there has been research applying basic clust
 
 %Though applied to supervised learning tasks, end to end learning is yet to be studied for unsupervised tasks. While supervised learning has quantitative ways of evaluation (such as objective functions to be minimized), unsupervised learning cannot be evaluated in the same way due to the lack of labels. taking our case for pattern recognition tasks, the error in classification can easily be identified whereas there is no intuitive error to measure for clustering. 
 
-%There exists a few pioneer studies that explore this idea. %TODO include notes from papers
+%There exists a few pioneer studies that explore this idea. %include notes from papers
 
 %2017 Depict \cite{dizaji2017deep}
 
@@ -557,7 +557,7 @@ The data acquired for this project corresponds to November 2015. In total, 219,4
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.9\linewidth]{"./images/Daily volume of records"}
+  \includegraphics[width=\linewidth]{"./images/Daily volume of records"}
   \caption{Performance in parallel computing.}
   \label{fig:preprocessing/volume}
 \end{figure}
@@ -569,6 +569,8 @@ Yet, the pattern for the third week of the month is more complex. While the week
 With regards to the second week of the month, from this plot we note a gap of six days with 0 records collected. Due to defective collection methods, the data from November 9th to November 14th is not available. 
 
 The figure also shows an increase of public transit usage between Thursday 19th and Wednesday 25th. According to domain expert PhD. Liang Qu, the heavy usage is explained by weather conditions. During those days the weather was rainy and snowy; therefore there were more passengers than usual days.
+
+Overall, it takes 45 minutes to preprocess and create the labeled dataset. It takes 48 hours to preprocess and create the reduced unlabeled dataset.
 
 \subsection{Cleaning}
 As first step for preparing the data for its mining, we eliminate faulty records. To this end, we apply the following four filters:
@@ -592,14 +594,14 @@ The percentage of data eliminated by each filter is shown in Figure \ref{fig:pre
 \subsection{Extraction}
 From the raw records, we can further extract attributes to complement the trip information. For example, taking the date of the travel we can further obtain two important attributes. The "Day" attribute, corresponding to the number of day on the month, from 1 to 31. The "Weekday" attribute is a number from 1 to 7 corresponding to the day of the week, starting on Monday.
 
-Furthermore, we calculate the "Number of trips" attribute which counts the trip records each user has in a day. Figure \ref{fig:preprocessing/num_trips} shows the distribution of this attribute on a random weekday. We note that most people perform two trips per day, followed by people who perform only one trip a day. 
-
 \begin{figure}[H]
   \centering
   \includegraphics[width=.7\linewidth]{"./images/Number of trips"}
   \caption{Number of trips distribution.}
   \label{fig:preprocessing/num_trips}
 \end{figure}
+
+Furthermore, we calculate the "Number of trips" attribute which counts the trip records each user has in a day. Figure \ref{fig:preprocessing/num_trips} shows the distribution of this attribute on a random weekday. We note that most people perform two trips per day, followed by people who perform only one trip a day. 
 
 Other fields, such as "Start/End time" and "Trip details" require more specialized algorithms for attribute extraction.
 
@@ -645,25 +647,25 @@ where elements surrounded by squared brackets and followed by a question mark (e
 
 Once the elements of a trip are extracted, they must be labeled by unique numerical IDs. These IDs are not available from the TOCC, hence we label them using our own system. IDs are assigned incrementally by 1, meaning that the next available ID is equal to the size of the vocabulary. Furthermore, IDs start from number 1 since the value 0 has a special meaning in the proposed representation.
 
-Two different vocabularies are created, the first one for subway lines/bus routes, and the second one for stops. Modes of transportation are assigned ID 1 for subway, ID 2 for bus and ID 3 for bicycle.
-
-Usually, bus routes are identified by a number. However, in Beijing a single bus route number can be associated to different paths. For example, night buses, express buses and other special cases of a bus route may follow different paths even if they are described with the same number. For this reason we create a vocabulary with all unique parsed routes according to their full description and not only their number.  
-
 \begin{figure}[H]
   \centering
   \begin{subfigure}[b]{.7\textwidth}
   	\centering
-  	\includegraphics[width=.85\linewidth]{"./images/Cummulative lines vocabulary size"}
+  	\includegraphics[width=.9\linewidth]{"./images/Cummulative lines vocabulary size"}
   	\caption{Vocabulary containing subway lines and bus routes}
   \end{subfigure}
   \begin{subfigure}[b]{.7\textwidth}
   	\centering
-  	\includegraphics[width=.85\linewidth]{"./images/Cummulative stops vocabulary size"}
+  	\includegraphics[width=.9\linewidth]{"./images/Cummulative stops vocabulary size"}
   	\caption{Vocabulary containing subway and bus stops, as well as bikes drop off spots.}
   \end{subfigure}
   \caption{Cummulative plots.}
   \label{fig:preprocessing/cummulativeVoc}
 \end{figure}
+
+Two different vocabularies are created, the first one for subway lines/bus routes, and the second one for stops. Modes of transportation are assigned ID 1 for subway, ID 2 for bus and ID 3 for bicycle. 
+
+Usually, bus routes are identified by a number. However, in Beijing a single bus route number can be associated to different paths. For example, night buses, express buses and other special cases of a bus route may follow different paths even if they are described with the same number. For this reason we create a vocabulary with all unique parsed routes according to their full description and not only their number. 
 
 Vocabularies are created from the available data. As such, the first time a line/route/stop is seen it is assigned the next available numerical ID. Thus, the vocabulary is dependent on the order on which the records are processed. Moreover, the size of the vocabulary increases as we process more daily files. Figure \ref{fig:preprocessing/cummulativeVoc} shows the size of each of the vocabularies. We find  \textasciitilde 840 lines and \textasciitilde 6740 stops. Though different in size, both vocabularies exhibit the same growing behavior. 92\% of lines and 97 \% of stops are seen since on the first file, and by the 7th file we have seen 99\% of both vocabularies.
 
@@ -739,10 +741,11 @@ Travel time, travel distance, total transfer time and average transfer time are 
 
 Figure \ref{fig:preprocessing/timeDist} shows distributions for travel time and distance. Since the nature of the data prevents negative values (time and distance must be positive), the original distribution is truncated at 0. Standardization maintains the shape of the distribution, but shifts and contracts it to be closer to zero values.
 
-The mean travel time is \textasciitilde 31.9 minutes, and the mean travel distance is \textasciitilde 13.5 kilometers.  %TODO recalculate
-% Too low, and traffic jam?
+The mean travel time is \textasciitilde 35.18 minutes for weekdays and \textasciitilde 36.56 minutes for weekends. The mean travel distance is \textasciitilde 14.37 kilometres for weekdays and \textasciitilde 15.36 kilometres for weekends. These values are relatively small for a busy city such as Beijing, with constant traffic jams. We believe that bikes (commonly used for short distances and short periods of time) and the efficiency of its subway system helps to alleviate the stress over the mean travel time and distance. 
 
-%TRAVEL_TIME          1.916065e+06, TRAVEL_DISTANCE      1.353649e+04, TRANSFER_TIME_AVG    9.023386e+04, TRANSFER_TIME_SUM    1.017949e+05
+%TRAVEL_TIME          2.11123695238 / 2.1936035e+06, 
+%TRAVEL_DISTANCE      1.4378304619 / 1.53654675e+04, 
+%TRANSFER_TIME_AVG    9.023386e+04, TRANSFER_TIME_SUM    1.017949e+05
 
 \textbf{Categorical values}
 
@@ -1069,8 +1072,6 @@ The final model consists of combining two simple ensemble models based on decisi
 
 However, though the chosen ensemble model maximizes performance, the diversity between the selected classifiers is unsatisfactory. Both classifiers have similar behavior and performance on each class. Ideally, two classifiers that differ in their strengths would benefit each other better. 
 
-%TODO Gaussian Naive Bayes is the most diferent
-
 In comparison the state of the art for commuters classification, our results fall short. Ma et al. \cite{ma2017understanding} achieve 94.1\% detection accuracy; however, their dataset is small, containing 118 labeled samples only. Tu et al. \cite{tu2016impact} report 94.24\% accuracy in detecting commuters. Yet, their evaluation technique contains only one test set thus making it prone to overfitting. Furthermore, we believe that the missing information in our dataset might have affected the classifiers performance, thus making it unsuitable for a fair comparison.
 
 \newpage
@@ -1078,7 +1079,7 @@ In comparison the state of the art for commuters classification, our results fal
 \label{sec:partIII}
 In this part of the project we perform an unsupervised learning task to cluster public transit users according to patterns in their travel behavior. This time we perform dimensionality reduction by encoding the original user cubes onto a low dimensional space by means of an autoencoder. Then, we cluster the user features and analyze each cluster's characteristics. 
 
-For this part of the project we use the reduced unlabeled dataset as described in Section \ref{sec:datasets}. The set contains 30,011 trips corresponding to 2,074 card codes. 
+For this part of the project we use the reduced unlabeled dataset as described in Section \ref{sec:datasets}. The set contains 1,191,862 trips corresponding to 95,565 card codes. 
 
 \subsection{Feature extraction}
 As mentioned in Section \ref{sec:structure}, the proposed representation is sparse, hence dimensionality reduction has the potential to extract the relevant information and disregard noise. Furthermore, the proposed representation is local, in the same sense as images are. Combining these two characteristics, it is natural to think of convolutional filters as a tool to extract features from the user cubes. 
@@ -1088,7 +1089,6 @@ We apply two dimensional filters to the three dimensional user cubes. Therefore,
 
 The size of the filters is fixed to $3 \times 3$, since it leads to the best performance according state of the art techniques. The stride is set to 1 and we perform padding in order for the dimensionalities of the network to be suitable.
 
-%TODO start checking from here
 \subsubsection{Autoencoder}
 Using Keras and Tensorflow as backend, we create an autoencoder. The network structure is shown below:
 
@@ -1118,9 +1118,9 @@ Convolutional & [3, 3] & 26 & 1 & Sigmoid  & [12, 15, 26]\\ [1ex]
 
 The first block corresponds to the encoder module, while the second block corresponds to the decoder module. The dimensionality of the encoded features is $4 \times 5 \times 8 = 160$. This represents more than 110\% compression from the original dimensionality. 
 
-We evaluate the autoencoder using the binary crossentropy loss between the original user cube and the reconstructed user cube. As an optimizer we use Adadelta. We train on 60\% of the data and validate on 40\% of the data for 1,000 iterations. The loss over training and validation sets is shown in Figure \ref{fig:clustering/loss}.
+We evaluate the autoencoder using the binary crossentropy loss between the original user cube and the reconstructed user cube. As an optimizer we use Adadelta. We train on 60\% of the data and validate on 40\% of the data for 500 iterations. The loss over training and validation sets is shown in Figure \ref{fig:clustering/loss}.
 
-We note that at around 200 iterations the validation loss begins to rise, even though the training loss keeps decreasing. This is a sign for overfitting since the autoencoder is learning the specific representations for the samples in the training set, but loses generality on the validation set. Thus, the final autoencoder is trained for only 200 iterations.
+We note that at around 200 iterations the validation loss begins to rise, closely followed by an increase in training loss. This is a sign for overfitting since the autoencoder is learning the specific representations for the samples in the the current batch of the training set, but loses generality on the rest of the training set and the validation set. Thus, the final autoencoder is trained for only 200 iterations.
 
 \begin{figure}[H]
   \centering
@@ -1134,101 +1134,102 @@ We note that at around 200 iterations the validation loss begins to rise, even t
 	\includegraphics[width=.9\linewidth]{"./images/validation loss"}
   \caption{Loss over validation set.}
   \end{subfigure}
-  \caption{Binary cross entropy loss in autoencoder.}
+  \caption{Binary cross entropy loss against training steps in autoencoder.}
   	\label{fig:clustering/loss} 
 \end{figure}
 
 \subsection{Clustering}
-The K means algorithm has only one parameter: the number of clusters in which to allocate the data. As such, this parameter must be properly tuned in order for the algorithm to produce valuable results. 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.75\linewidth]{"./images/Tuning for k"}
+  \includegraphics[width=.9\linewidth]{"./images/Tuning for k"}
   \caption{Silhouette average scores and their standard deviation.}
   \label{fig:clustering/tuning}
 \end{figure}
 
-In order to tune \textit{K}, we split the data into train and test sets on a 6:4 ratio. Then, we test the performance on values for \textit{K} from 2 to 15. The training set serves the purpose for calculating the clusters centers. The test set aids in evaluating the quality of the clusters, according to how test samples are assigned. For evaluation purposes we calculate the silhouette score. 
+The K means algorithm has only one parameter: the number of clusters in which to allocate the data. As such, this parameter must be properly tuned in order for the algorithm to produce valuable results. 
+
+In order to tune \textit{K}, we split the data into train and test sets on a 6:4 ratio. Then, we test the performance on values for \textit{K} from 3 to 15, since we want to go beyond binary classification but we want to keep the number of clusters manageable. The training set serves the purpose for calculating the clusters centers. The test set aids in evaluating the quality of the clusters, according to how test samples are assigned. For evaluation purposes we calculate the silhouette score. 
 
 The silhouette score is determined using the mean intra-cluster distance and the nearest-cluster distance (which the sample does not belong to). It ranges from 0 to 1, with higher scores corresponding to more condensed well-formed clusters. The score is measured per sample, and averaged over all the set. 
 
-Figure \ref{fig:clustering/tuning}, shows the average score per \textit{K} value, as well as the standard deviation in the samples scores distribution. The average score peaks at $\textit{K} = 5 $ and $\textit{K} = 11 $. We select 5 as the optimal number of clusters. 
+Figure \ref{fig:clustering/tuning}, shows the average score per \textit{K} value, as well as the standard deviation in the samples scores distribution. The average score peaks at $\textit{K} = 3 $. However, we would like to explore a larger set of behaviors. Thus, we choose the second highest peak at $\textit{K} = 7 $. We select 7 as the optimal number of clusters. 
 
 \subsection{Cluster analysis}
 
 \textbf{Qualitative analysis}
 
 
-Figure \ref{fig:clustering/tsne} shows the samples, as visualized by two dimensional t-Distributed Stochastic Neighbor Embedding (TSNE), and their corresponding cluster label. Though not completely separable, samples assigned to the same cluster according to their encoded representation indeed gather together in the visualization. 
-
-With regards to the distribution, clusters are significantly unbalanced. For instance, Cluster 2 twice as many members than Cluster 4.
+Figure \ref{fig:clustering/tsne} shows the samples, as visualized by two dimensional t-Distributed Stochastic Neighbor Embedding (TSNE), and their corresponding cluster label. Though not completely separable, there exists a manifold gathering similar samples close to each other. . 
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\linewidth]{"./images/Clustered"}
-  \caption{Visualization of samples and their labels according to clustering.}
+  \caption{Visualization of samples and their labels according to clustering. 5,000 sample.}
   \label{fig:clustering/tsne}
 \end{figure}
 
 \textbf{Quantitative analysis}
 
+Table \ref{table:clusterDistribution} shows the distribution of samples over the different clusters. With regards to the users distribution, clusters are significantly unbalanced. For instance, Cluster 5 has around twice as many users as any other Cluster, except for Cluster 6. In fact, Cluster 5 is the largest user group containing more than 23\% of the users, while Cluster 3 is the smallest user group with 10.51\% or the users.
 
-Table \ref{table:clusterDistribution} shows the distribution of samples over the different clusters. Cluster 3 is the largest cluster containing more than 27\% of the samples. As such, it also contains the largest amounts of trips. Notably, regardless of being the smaller cluster, Cluster 5 contains the largest number of trips starting by bus and finishing by metro. Furthermore, Cluster 1 contains more than a third of bicycle rides, while Cluster 3 contains none. 
+However, the trips distribution differs from the users distribution. Cluster 6 contains almost half of the trips for the month, even though it is not the largest user cluster. Therefore, we hypothesize that users in Cluster 6 are heavy users of the public transit. Comparably, Cluster 4 contains the least amount of trips but it is not the smallest user group. 
 
-% Cluster 0 bicycle
-% Cluster 1 
-% Cluster 2 commuters, change in mode. metro users.  largest distance and time
-% Cluster 3 
-% Cluster 4 bus to metro
+We compare the labels acquired by survey data to the labels assigned in clustering. We note that more than half of the Commuters (as labeled by survey data) are grouped in Cluster 6. In contrast, Clusters 1 and 4 contain the least amount of commuters. As for Non-commuters, most of them gather in Cluster 5, while Cluster 3 contains the least of them.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{||c|c|c|c|c|c||}
+\begin{tabular}{||c|c|c|c|c|c|c|c||}
 \hline
- & \textbf{Cluster 0} & \textbf{Cluster 1} & \textbf{Cluster 2} & \textbf{Cluster 3} & \textbf{Cluster 4} \\
+ & \textbf{C 0} & \textbf{C 1} & \textbf{C 2} & \textbf{C 3} & \textbf{C 4}  & \textbf{C 5} & \textbf{C 6} \\
 [0.5ex] 
 \hline \hline
-Number of cards & 43 & 54 & 76 & 64 & 37 \\
-Percentage or cards & 15.69 & 19.70 & 27.73 & 23.35 & 13.50 \\
+Number of cards & 12133 & 10481 & 11715 & 100045 & 11823 & \textbf{22359} & 17009 \\
+Percentage of cards & 12.69 & 10.96 & 12.25 & 10.51 & 12.37 & \textbf{23.39} & 17.79 \\
 \hline
-Metro - Metro trips [\%] & 6.31 & 17.47 & \textbf{47.08} & 13.59 & 15.53 \\ 
-Metro - Bus trips [\%] & 16.66 & 16.66 & \textbf{37.50} & 8.33 & 20.83 \\
-Bus - Bus trips [\%] & 4.00 & 12.00 & \textbf{48.00} & 16.00 & 20.00 \\ 
-Bus - Metro trips [\%] & 14.75 & 20.21 & 20.21 & 19.12 & \textbf{25.68} \\ 
-Bicycle trips [\%] & \textbf{39.13} & 26.08 & 0.00 & 34.78 & 0.00 \\
+Number of trips & 70508 & 54552 & 177415 & 184850 & 44994 & 65671 & \textbf{593872} \\
+Percentage of trips & 5.91 & 4.57 & 14.88 & 15.50 & 3.77 & 5.50 & \textbf{49.82} \\
 \hline
-Commuters [\%] & 14.28 & 14.28 & \textbf{42.85} & 28.57 & 0.00 \\ 
-Non-commuters [\%] & \textbf{35.36} & 20.73 & 7.31 & 30.48 & 6.09 \\ 
-Unknown [\%] & 7.02 & 19.45 & \textbf{36.21} & 20.00 & 17.29 \\  [1ex]
+Commuters [\%] & 5.09 & 3.68 & 13.59 & 14.16 & 3.68 & 7.08 & \textbf{52.69} \\ 
+Non-commuters [\%] & 13.28 & 11.18 & 16.08 & 16.43 & 10.83 & \textbf{18.53} & 13.63 \\ 
+Unknown [\%] & 12.72 & 10.99 & 12.24 & 10.47 & 12.40 & \textbf{23.47} & 17.68 \\  [1ex]
 \hline 
 \end{tabular}
 \caption{Cluster Distribution} %distribution of samples over cluster
 \label{table:clusterDistribution}
 \end{table}
 
+In order to look further into its differences, Table \ref{table:clusterAnalysis} analyses the characteristics of each cluster. We confirm our previous hypothesis, as Cluster 6 has the highest average number of trips, and Cluster 4 has the lowest average number of trips. However, Cluster 5 contains the longest trips, also corresponding to the longest traveled distance. Cluster 2 groups users who perform the shortest trips, and the least average traveled distance. 
 
-Table \ref{table:clusterAnalysis} analyses the characteristics of each cluster. 
+With regards to the modes of transportation, most trips have bus as its boarding and alighting modes of transportation. Thus, most clusters have a high percentage of Bus - Bus trips. However, Cluster 6 is the exception as it mostly contains Metro - Metro trips. 
+
+Cluster 0 contains trips with the least amount of transfers. We also note that trips with only one mode of transportation (Metro - Metro, Bus - Bus, and Bike - Bike) account for 92.88\% of its trips.
+
+The largest usage of bus trips are gathered in Cluster 1. More than 61\% of trips performed by its users are performed by bus only, and 67.50\% of its trips contain bus and another mode of transportation.  
+
+The highest number of bicycle trips are gathered in Cluster 4. Notably, this group contains Bike only trips. In contrast, Cluster 3 shows the most variety in bike usage, as trips combining bicycles and other modes of transportation amount to 0.31\%. 
 
 \begin{table}[H]
 \centering
-\begin{tabular}{||c|c|c|c|c|c||}
+\begin{tabular}{||c|c|c|c|c|c|c|c||}
 \hline
- & \textbf{Cluster 0} & \textbf{Cluster 1} & \textbf{Cluster 2} & \textbf{Cluster 3} & \textbf{Cluster 4} \\
+ & \textbf{C 0} & \textbf{C 1} & \textbf{C 2} & \textbf{C 3} & \textbf{C 4}  & \textbf{C 5} & \textbf{C 6} \\
 [0.5ex] 
-\hline \hline
-Average number of trips & 1.40 & 2.0 & 2.05 & 1.36 & 2.59 \\
-Average travel time [minutes] & 27.55 & 31.61 & 35.63 & 26.38 & 30.22 \\
-Average travel distance [km] & 10.67 & 13.88 & 15.18 & 10.86 & 12.82 \\ 
+\hline \hline 
+Avg number of trips & 2.34 & 1.94 & 2.28 & 2.27 & \textbf{1.78} & 1.67 & \textbf{2.4} \\
+Avg travel time [min] & 35.38 & 35.31 & \textbf{32.39} & 34.97 & 35.98 & \textbf{38.72} & 36.10 \\
+Avg travel distance [km] & 14.47 & 14.51 & \textbf{12.92} & 14.10 & 14.62 & \textbf{16.49} & 15.06 \\ 
+Avg number of transfer & \textbf{0.21} & \textbf{0.30} & 0.22 & 0.29 & 0.23 & 0.29 & 0.24 \\ 
 \hline
-Metro - Metro trips [\%] & 24.07 & 41.86 & \textbf{62.58} & 36.36 & 35.95 \\ 
-Metro - Bus trips [\%] & 7.40 & 4.65 & 5.80 & 2.59 & 5.61  \\
-Bus - Bus trips [\%] & 1.85 & 3.48 & 7.74 & 5.19 & 5.61 \\ 
-Bus - Metro trips [\%] & \textbf{50.00} & \textbf{43.02} & 23.87 & \textbf{45.45} & \textbf{52.80} \\ 
-Bicycle trips [\%] & 16.66 & 6.97 & 0.0 & 10.38 & 0.0 \\
-\hline
-Commuters [\%] & 30.23 & \textbf{66.66} & \textbf{88.15} & \textbf{57.81} & \textbf{86.48} \\ 
-Non-commuters [\%] & \textbf{67.44} & 31.48 & 11.11 & 46.29 & 13.51 \\ 
-Unknown [\%] & 2.32 & 1.85 & 3.94 & 3.12 & 0.0 \\  [1ex]
+Metro - Metro trips [\%] & 41.05 & 32.19 & 38.15 & 31.84 & 38.73 & 43.52 & \textbf{47.94} \\ 
+Metro - Bus trips [\%] & 3.56 & 3.03 & 3.80 & 3.57 & 3.44 & 3.16 & 4.62 \\
+Metro - Bike trips [\%] & 0.00 & 0.02 & 0.01 & 0.02 & 0.00 & 0.00 & 0.04 \\
+Bus - Metro trips [\%] & 3.52 & 3.09 & 3.70 & 3.57 & 3.27 & 3.19 & 4.63 \\ 
+Bus - Bus trips [\%] & 51.62 & \textbf{61.38} & 54.02 & 60.65 & 54.14 & 49.74 & 42.57    \\ 
+Bus - Bike trips [\%] & 0.00 & 0.00 & 0.00 & 0.01 & 0.00 & 0.00 & 0.00  \\
+Bike - Metro trips [\%] & 0.00 & 0.00 & 0.02 & 0.02 & 0.00 & 0.00 & 0.03 \\
+Bike - Bus trips [\%] & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 & 0.01  \\
+Bike - Bike trips [\%] & 0.21 & 0.25 & 0.25 & 0.27 & \textbf{0.37} & 0.35 & 0.13 \\  [1ex]
 \hline 
 \end{tabular}
 \caption{Cluster analysis} %distribution within each cluster
@@ -1237,7 +1238,30 @@ Unknown [\%] & 2.32 & 1.85 & 3.94 & 3.12 & 0.0 \\  [1ex]
 
 
 \subsection{Discussion}
+This part of the project makes an argument for a better characterization of public transit users. We set the goal to identify distinct traveling behaviors, without restricting these to typical commuting and non-commuting behaviors. As such, we tune the parameter \textit{K} to cluster behaviors beyond binary classification. 
 
+We find seven distinct behaviors in the reduced unlabeled dataset. These are:
+
+\begin{itemize}
+
+\item Cluster 0 : Users who prefer to travel without transfers, or transfers between the same mode of transportation. When these users do transfer, they do so between Metro and Bus only.
+
+\item Cluster 1 : Users with preference for bus as mode of transportation. These users, combined with Cluster 4, are the least related to the "commuters" acquired by labeled data.
+
+\item Cluster 2 : Users performing short trips. These users travel the shortest distances and spend the least amount of time per trip. These users do not show a specific preference for mode of transportation, showing a distributed usage among almost all combinations (except for Bus and Bike combinations).
+
+\item Cluster 3 : Users who complement their trips by bicycle usage. These is the smallest user group. It is also the least related to "Non-commuters".
+
+\item Cluster 4 : Rare public transit users with the lowest average number of trips. When they travel, they have the highest usage of bike only trips. These users, combined with Cluster 1, are the least related to the "commuters" acquired by labeled data.
+
+\item Cluster 5 : This is the largest user group, and it is weakly related to Non-commuters. These users perform the longest longest trips, and travel the largest distances.
+
+\item Cluster 6 : These users are the heaviest public transit users since they perform largest amount of trips. Furthermore, they show a strong preference for Metro only trips. These users are strongly related to "commuters" as labeled by survey data. 
+
+\end{itemize}
+
+Our analysis unravels basic attributes of the seven behaviors. However, we acknowledge that a more detailed statistical analysis could potentially demonstrate each user group's characteristics more in depth. Furthermore, Metropolitan Transportation experts may bring in special domain knowledge to better explain the differences among clusters. 
+ 
 
 \newpage
 \section{Conclusion and future work}
@@ -1248,7 +1272,7 @@ In this project we examine public transit traveling behavior using data mining t
 
 The most significant advantage of the proposed representation is the ability to analyze spatiotemporal features as a unit. This is a result of representing the distribution of each user's trips overtime on a plane, and the spatial attributes as depth. As such, each temporal pixel may contain at most one trip, according to its boarding time. In our work we crop all boarding times to use the hour as a key. However, this may result in overlapping trips if more than one trip started at during the same hour (i.e. Trip 1 starts at 10:01 am, Trip 2 starts at 10:59 am). Possible simple solutions include to concatenate said trips, or create a finer temporal pixel grid. 
 
-However, the main drawback of our representation is its sparsity. The first major implication of this is the growth in computational resources needs, as three dimensional arrays require more storage space and ram requirements than the original raw csv files. In fact, the space requirements became unmanageable while attempting to analyze the whole dataset during the unsupervised task, leading to the decision to use only a reduced dataset.
+However, the main drawback of our representation is its sparsity. The first major implication of this is the growth in computational resources needs, as three dimensional arrays require more storage space and ram requirements than the original raw csv files. In fact, the space requirements became unmanageable while attempting to analyze the whole dataset during the unsupervised task, leading to the decision to use only a reduced dataset. Future work could focus on stronger techniques for parallel computing and multi-threading, and compression, in order to analyze the whole dataset. 
 
 The second major implication is the meaning of zero values in our representation. When constructed, all user cubes are "empty", which is signaled by having zero values in all its cells. However, some trip attributes  may have zero values that do not necessarily mean empty fields. Thus, while considerable effort was put into avoiding zero values (i.e. in the creation of numerical IDs for modes, lines and stops), some attributes still contain them (i.e. start/end hours or number of transfers). Future work could investigate the effect of having a separate special value for empty fields (-1, for example).
 
@@ -1264,13 +1288,11 @@ To the best of our knowledge, three dimensional representations and autoencoding
 
 Our findings show that ensemble models improve performance over any weak classifier alone. Furthermore, they illustrate that the required complexity of the model has a balance between same-type and different-type learning algorithms. 
 
-Still, the task of binary classification for identifying commuters is ill formed. Studies with high performance models are able to find commuters as labeled by self report surveys. These labels are noisy and do not always represent what a commuter actually is, as shown in Section \ref{sec:userCubes}. Furthermore, the labels are limited to the time they were collected, as behavior changes over time.  
+Still, the task of binary classification for identifying commuters is ill formed. Studies with high performance models are able to find commuters as labeled by self report surveys. These labels are noisy and do not always represent what a commuter really is, as shown in Section \ref{sec:userCubes}. Furthermore, the labels are limited to the time they were collected, as behavior changes over time.  
 
 Therefore, this work takes a step towards applying unsupervised machine learning techniques and proving its usefulness goes beyond what supervised learning can. Firstly, by using unsupervised techniques, much more data is available for mining. Secondly, the findings are based on the data itself, not on self reported information from users. 
 
-Our findings show that there are 5 types of distinct traveling behaviors in our dataset. 
- 
- 
+Our findings show that there are 7 types of distinct traveling behaviors in our dataset. These show distinct behaviors, such as preferences for modes of transportation, level of usage of the public transit network, or transfer habits. Future work can focus on exploiting the original three dimensional representation and having an in-depth analysis of spatiotemporal features.  
  
 \textbf{Use case relevance}
 
