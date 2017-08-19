@@ -38,8 +38,4 @@ clustering 						k-means																																								Run several time
 
 
 TODO:
-run preprocessing day 30 to get mean
 refactor: load dataframes in shared
-
-Improvements to report:
-rewrite classification performance according to cluster results
