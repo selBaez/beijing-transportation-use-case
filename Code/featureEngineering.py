@@ -89,7 +89,7 @@ def _train(autoencoder, x_train, x_test):
     Train the autoencoder
     """
     autoencoder.fit(x_train, x_train,
-                    epochs=500,
+                    epochs=200,
                     batch_size=128,
                     shuffle=True,
                     validation_data=(x_test, x_test),
@@ -109,8 +109,12 @@ def _visualize(encodedData):
     """
     Visualize data with TSNE
     """
+    # Sample 'size' random points
+    size = 5000 if len(encodedData) > 5000 else len(encodedData)
+    sample = random.sample(encodedData, size)
+
     manifold = TSNE(n_components=2, random_state=0)
-    features = manifold.fit_transform(encodedData)
+    features = manifold.fit_transform(sample)
     shared._tsneScatter('Encoded', features)
 
 def _store(model, encodedData):
