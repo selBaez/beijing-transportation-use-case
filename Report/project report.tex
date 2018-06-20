@@ -26,7 +26,7 @@
 \newcommand{\domainDoubt}[1]{\footnote{\textcolor{teal}{#1}}}
 \newcommand{\technicalDoubt}[1]{\footnote{\textcolor{blue}{#1}}}
 
-\title{Commuter classification and behavior clustering: Beijing use case}
+\title{Pattern recognition of traveling behavior: Beijing use case}
 
 % The \author macro works with any number of authors. There are two
 % commands used to separate the names and addresses of multiple
@@ -49,11 +49,11 @@
 \maketitle
 
 \begin{abstract}
-  Public metropolitan transportation is a data-rich domain that can benefit from data mining and machine learning techniques. Different stakeholders (i.e. government, transport management, and operators) can benefit from insights regarding the traveling behavior of public transit users. However, traveling behavior consists of complex  spatiotemporal patterns that so far have not been analyzed as a whole.
+  Public metropolitan transportation is a data-rich domain that can benefit from data mining and machine learning techniques. Different stakeholders can benefit from insights regarding the traveling behavior of public transit users. However, traveling behavior consists of complex  spatiotemporal patterns that so far have not been analyzed as a whole.
   
-  This project proposes a three dimensional representation for pattern recognition in traveling behavior. We perform dimensionality reduction on this representation to abstract the most relevant information regarding public transit usage. Furthermore, we perform supervised and unsupervised learning tasks for recognizing typical behaviors in users. First, ensemble models aid us on the task of binary classification of commuters (as labeled by self-reported survey data). Then, we further characterize users by encoding their behaviors using an convolutional autoencoder, and performing clustering on their behaviors. The city of Beijing, China is posed as an use case for the project. 
+  This project proposes a three dimensional representation for pattern recognition of traveling behavior. We carry out dimensionality reduction on this representation and compare supervised and unsupervised learning tasks for recognizing typical behaviors in users. First, ensemble models aid us on the task of binary classification of commuters (as labeled by self-reported survey data). Then, we characterize users by encoding their behaviors using an convolutional autoencoder, and performing clustering. The city of Beijing, China is posed as an use case for the project. 
   
-  Our results on binary classification are not competitive with other studies on the field. However, typically the labels obtained via surveys are noisy, and thus a high classification rate does not necessarily benefit Transportation specialists. Additionally, we obtained very detailed results on the clustering task leading to a better understanding or user's routines and needs. In conclusion, we believe state of the art techniques for  unsupervised learning and local representations should be exploited in this domain. As such, the knowledge extracted can lead to better target policies and services in pro of improving the transportation network in large and complex cities.    
+  With 75\% average accuracy, our results on binary classification are not competitive with other studies on the field. However, labeled data obtained via surveys is typically noisy, and thus a high classification rate does not necessarily benefit Transportation specialists. In contrast, we found 7 distinct user groups on the clustering task leading to a better understanding of the users' routines and needs. In conclusion, we believe state of the art techniques for  unsupervised learning and local representations should be exploited in this domain. As such, the knowledge extracted can lead to better target policies and services in pro of improving the transportation network in large and complex cities.    
   
 \end{abstract}
 
@@ -303,20 +303,6 @@ Though clustering algorithms are common in the field, they are not always used f
 As a conclusion, we note that while there has been research applying basic clustering and classification algorithms, most studies lack further specialized data mining techniques for preprocessing data, tuning algorithms parameters, and/or visualizing results. 
 
 
-%\subsection{End to end learning}
-%As mentioned in Section \ref{sec:representations}, the effectiveness of a representation depends on the task for which it is used. Hence, it is reasonable to believe that if the representations are able to learn according to the task performance, then the representations will improve leading to an improvement in the task itself. This is an example of end to end learning, a principle applied in new popular areas such as Deep Learning for image classification.
-
-%Though applied to supervised learning tasks, end to end learning is yet to be studied for unsupervised tasks. While supervised learning has quantitative ways of evaluation (such as objective functions to be minimized), unsupervised learning cannot be evaluated in the same way due to the lack of labels. taking our case for pattern recognition tasks, the error in classification can easily be identified whereas there is no intuitive error to measure for clustering. 
-
-%There exists a few pioneer studies that explore this idea. %include notes from papers
-
-%2017 Depict \cite{dizaji2017deep}
-
-%2016 Jule \cite{yang2016joint}
-
-%2016 DEC \cite{xie2016unsupervised}
-
-
 \newpage
 \section{Research framework}
 The underlying goal of this project is to find an accurate spatiotemporal representation for public traveling behavior while accounting for big data constraints and the inherent data nature. The main two objectives are:
@@ -558,7 +544,7 @@ The data acquired for this project corresponds to November 2015. In total, 219,4
 \begin{figure}[H]
   \centering
   \includegraphics[width=\linewidth]{"./images/Daily volume of records"}
-  \caption{Performance in parallel computing.}
+  \caption{Volume of raw data.}
   \label{fig:preprocessing/volume}
 \end{figure}
 
@@ -1199,7 +1185,7 @@ Unknown [\%] & 12.72 & 10.99 & 12.24 & 10.47 & 12.40 & \textbf{23.47} & 17.68 \\
 \label{table:clusterDistribution}
 \end{table}
 
-In order to look further into its differences, Table \ref{table:clusterAnalysis} analyses the characteristics of each cluster. We confirm our previous hypothesis, as Cluster 6 has the highest average number of trips, and Cluster 4 has the lowest average number of trips. However, Cluster 5 contains the longest trips, also corresponding to the longest traveled distance. Cluster 2 groups users who perform the shortest trips, and the least average traveled distance. 
+In order to look further into its differences, Table \ref{table:clusterAnalysis} analyses the characteristics of each cluster. We confirm our previous hypothesis, as Cluster 6 has the highest average number of trips, and Cluster 5 has the lowest average number of trips. Cluster 5 contains the longest trips, also corresponding to the longest traveled distance. Cluster 2 groups users who perform the shortest trips, and the least average traveled distance. 
 
 With regards to the modes of transportation, most trips have bus as its boarding and alighting modes of transportation. Thus, most clusters have a high percentage of Bus - Bus trips. However, Cluster 6 is the exception as it mostly contains Metro - Metro trips. 
 
@@ -1216,7 +1202,7 @@ The highest number of bicycle trips are gathered in Cluster 4. Notably, this gro
  & \textbf{C 0} & \textbf{C 1} & \textbf{C 2} & \textbf{C 3} & \textbf{C 4}  & \textbf{C 5} & \textbf{C 6} \\
 [0.5ex] 
 \hline \hline 
-Avg number of trips & 2.34 & 1.94 & 2.28 & 2.27 & \textbf{1.78} & 1.67 & \textbf{2.4} \\
+Avg number of trips & 2.34 & 1.94 & 2.28 & 2.27 & 1.78 & \textbf{1.67} & \textbf{2.4} \\
 Avg travel time [min] & 35.38 & 35.31 & \textbf{32.39} & 34.97 & 35.98 & \textbf{38.72} & 36.10 \\
 Avg travel distance [km] & 14.47 & 14.51 & \textbf{12.92} & 14.10 & 14.62 & \textbf{16.49} & 15.06 \\ 
 Avg number of transfer & \textbf{0.21} & \textbf{0.30} & 0.22 & 0.29 & 0.23 & 0.29 & 0.24 \\ 
@@ -1292,7 +1278,16 @@ Still, the task of binary classification for identifying commuters is ill formed
 
 Therefore, this work takes a step towards applying unsupervised machine learning techniques and proving its usefulness goes beyond what supervised learning can. Firstly, by using unsupervised techniques, much more data is available for mining. Secondly, the findings are based on the data itself, not on self reported information from users. 
 
-Our findings show that there are 7 types of distinct traveling behaviors in our dataset. These show distinct behaviors, such as preferences for modes of transportation, level of usage of the public transit network, or transfer habits. Future work can focus on exploiting the original three dimensional representation and having an in-depth analysis of spatiotemporal features.  
+Our findings show that there are 7 types of traveling behaviors in our dataset. These show distinct behaviors, such as preferences for modes of transportation, level of usage of the public transit network, or transfer habits.For a direct comparison, future work could perform clustering with $K = 2$, so we compare the task of binary classification with noisy labels, and biclustering.
+
+\textbf{End to end learning}
+
+
+As mentioned in Section \ref{sec:representations}, the effectiveness of a representation depends on the task for which it is used. Hence, it is reasonable to believe that if the representations are able to learn according to the task performance, then the representations will improve leading to an improvement in the task itself. This is an example of end to end learning, a principle applied in new popular areas such as Deep Learning for image classification.
+
+Though applied to supervised learning tasks, end to end learning is yet to be studied for unsupervised tasks. While supervised learning has quantitative ways of evaluation (such as objective functions to be optimized), unsupervised learning cannot be evaluated in the same way due to the lack of labels. Thus, the crucial part for this approach is to find an evaluation metric for the clusters that are created. There exists a few pioneer studies that explore this idea. For example, DEC \cite{xie2016unsupervised}, Jule \cite{yang2016joint}, and Depict \cite{dizaji2017deep}, all models for image clustering developed in the last year. 
+
+In the context of this project, if we find a way to evaluate the clusters, taking advantage of the domain knowledge from Transportation specialists, we could be able to propagate the error from the clustering to the autoencoder. 
  
 \textbf{Use case relevance}
 
